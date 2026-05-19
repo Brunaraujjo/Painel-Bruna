@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
+<html lang="pt-BR"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Painel Bruna</title>
@@ -42,7 +40,7 @@
   link.href = url;
   document.currentScript.parentNode.appendChild(link);
 })();
-</script>
+</script><link rel="manifest" href="blob:null/a84a21ea-5eec-48f0-a283-dbd6c3f7db5b">
 
 <!-- Service Worker para funcionar offline -->
 <script>
@@ -77,7 +75,7 @@ if('serviceWorker' in navigator){
 }
 </script>
 
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&amp;family=DM+Sans:wght@300;400;500&amp;family=DM+Serif+Display:ital@0;1&amp;family=DM+Mono:wght@300;400;500&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet">
 <style>
 /* ===== RESET & BASE ===== */
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -531,7 +529,7 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
     <div class="daily-card" id="daily-card">
       <div class="daily-card-header">
         <div class="daily-card-title">Medicações de hoje</div>
-        <div class="daily-card-date" id="daily-date"></div>
+        <div class="daily-card-date" id="daily-date">Ter, 19 de mai</div>
       </div>
 
       <div class="daily-med-row" id="daily-fluox" onclick="dailyToggle('fluox')">
@@ -591,13 +589,277 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
       <div class="med-legend-item"><div class="med-legend-dot" style="background:#7ed8c8"></div>Topiramato</div>
       <div class="med-legend-item"><div class="med-legend-dot" style="background:#f4a96a"></div>Miosan</div>
     </div>
-    <div id="med-phases-container"></div>
+    <div id="med-phases-container"><div class="med-phase active open" data-phase-id="semana1">
+    <div class="med-phase-header" onclick="medTogglePhase('semana1')">
+      <div class="med-phase-header-left">
+        <div class="med-phase-tag">Semana 1 · 12/05 – 18/05</div>
+        <div class="med-phase-title">Início suave</div>
+      </div>
+      <div class="med-phase-progress">
+        <div class="med-progress-circle">
+          <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="17"></circle><circle class="fill" cx="22" cy="22" r="17" stroke-dasharray="106.81415022205297" stroke-dashoffset="106.81415022205297"></circle></svg>
+          <div class="med-progress-text">0/7</div>
+        </div>
+      </div>
+      <div class="med-toggle-arrow">▼</div>
+    </div>
+    <div class="med-meds-summary"><span class="med-pill lamo" title="25mg noite">Lamotrigina · 25mg noite</span><span class="med-pill topi" title="25mg noite">Topiramato · 25mg noite</span><span class="med-pill mios" title="10mg noite">Miosan · 10mg noite</span></div>
+    <div class="med-days-grid"><div class="med-days-grid-inner"><div></div><div></div><div class="med-day-cell past" data-date="2026-05-12" onclick="medToggleDay('2026-05-12')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">12/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell past" data-date="2026-05-13" onclick="medToggleDay('2026-05-13')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">13/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell today" data-date="2026-05-14" onclick="medToggleDay('2026-05-14')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">14/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-15" onclick="medToggleDay('2026-05-15')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">15/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-16" onclick="medToggleDay('2026-05-16')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">16/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-17" onclick="medToggleDay('2026-05-17')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">17/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-18" onclick="medToggleDay('2026-05-18')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">18/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div></div></div>
+    <div class="med-phase-note">⚠️ Tomar os três juntos à noite. Miosan pode dar sonolência — ótimo para o sono.</div></div><div class="med-phase" data-phase-id="semana2">
+    <div class="med-phase-header" onclick="medTogglePhase('semana2')">
+      <div class="med-phase-header-left">
+        <div class="med-phase-tag">Semana 2 · 19/05 – 25/05</div>
+        <div class="med-phase-title">Lamotrigina sobe</div>
+      </div>
+      <div class="med-phase-progress">
+        <div class="med-progress-circle">
+          <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="17"></circle><circle class="fill" cx="22" cy="22" r="17" stroke-dasharray="106.81415022205297" stroke-dashoffset="106.81415022205297"></circle></svg>
+          <div class="med-progress-text">0/7</div>
+        </div>
+      </div>
+      <div class="med-toggle-arrow">▼</div>
+    </div>
+    <div class="med-meds-summary"><span class="med-pill lamo" title="25mg manhã + 25mg noite">Lamotrigina · 25mg manhã + 25mg noite</span><span class="med-pill topi" title="25mg noite">Topiramato · 25mg noite</span><span class="med-pill mios" title="10mg noite">Miosan · 10mg noite</span></div>
+    <div class="med-days-grid"><div class="med-days-grid-inner"><div></div><div></div><div class="med-day-cell" data-date="2026-05-19" onclick="medToggleDay('2026-05-19')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">19/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-20" onclick="medToggleDay('2026-05-20')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">20/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-21" onclick="medToggleDay('2026-05-21')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">21/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-22" onclick="medToggleDay('2026-05-22')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">22/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-23" onclick="medToggleDay('2026-05-23')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">23/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-24" onclick="medToggleDay('2026-05-24')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">24/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-25" onclick="medToggleDay('2026-05-25')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">25/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div></div></div>
+    <div class="med-phase-note">📌 Lamotrigina agora em duas tomadas: manhã e noite.</div></div><div class="med-phase" data-phase-id="semana3">
+    <div class="med-phase-header" onclick="medTogglePhase('semana3')">
+      <div class="med-phase-header-left">
+        <div class="med-phase-tag">Semana 3 · 26/05 – 01/06</div>
+        <div class="med-phase-title">Quase na dose final</div>
+      </div>
+      <div class="med-phase-progress">
+        <div class="med-progress-circle">
+          <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="17"></circle><circle class="fill" cx="22" cy="22" r="17" stroke-dasharray="106.81415022205297" stroke-dashoffset="106.81415022205297"></circle></svg>
+          <div class="med-progress-text">0/7</div>
+        </div>
+      </div>
+      <div class="med-toggle-arrow">▼</div>
+    </div>
+    <div class="med-meds-summary"><span class="med-pill lamo" title="25mg manhã + 50mg noite">Lamotrigina · 25mg manhã + 50mg noite</span><span class="med-pill topi" title="25mg noite">Topiramato · 25mg noite</span><span class="med-pill mios" title="10mg noite">Miosan · 10mg noite</span></div>
+    <div class="med-days-grid"><div class="med-days-grid-inner"><div></div><div></div><div class="med-day-cell" data-date="2026-05-26" onclick="medToggleDay('2026-05-26')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">26/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-27" onclick="medToggleDay('2026-05-27')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">27/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-28" onclick="medToggleDay('2026-05-28')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">28/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-29" onclick="medToggleDay('2026-05-29')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">29/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-30" onclick="medToggleDay('2026-05-30')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">30/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-31" onclick="medToggleDay('2026-05-31')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">31/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-01" onclick="medToggleDay('2026-06-01')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">1/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div></div></div>
+    <div class="med-phase-note">📌 Última semana do Topiramato e Miosan. Lamotrigina 75mg/dia.</div></div><div class="med-phase" data-phase-id="manutencao">
+    <div class="med-phase-header" onclick="medTogglePhase('manutencao')">
+      <div class="med-phase-header-left">
+        <div class="med-phase-tag">Manutenção · 02/06 – 30/06</div>
+        <div class="med-phase-title">Dose plena — contínuo</div>
+      </div>
+      <div class="med-phase-progress">
+        <div class="med-progress-circle">
+          <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="17"></circle><circle class="fill" cx="22" cy="22" r="17" stroke-dasharray="106.81415022205297" stroke-dashoffset="106.81415022205297"></circle></svg>
+          <div class="med-progress-text">0/29</div>
+        </div>
+      </div>
+      <div class="med-toggle-arrow">▼</div>
+    </div>
+    <div class="med-meds-summary"><span class="med-pill lamo" title="50mg manhã + 50mg noite">Lamotrigina · 50mg manhã + 50mg noite</span></div>
+    <div class="med-days-grid"><div class="med-days-grid-inner"><div></div><div></div><div class="med-day-cell" data-date="2026-06-02" onclick="medToggleDay('2026-06-02')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">2/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-03" onclick="medToggleDay('2026-06-03')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">3/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-04" onclick="medToggleDay('2026-06-04')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">4/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-05" onclick="medToggleDay('2026-06-05')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">5/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-06" onclick="medToggleDay('2026-06-06')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">6/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-07" onclick="medToggleDay('2026-06-07')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">7/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-08" onclick="medToggleDay('2026-06-08')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">8/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-09" onclick="medToggleDay('2026-06-09')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">9/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-10" onclick="medToggleDay('2026-06-10')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">10/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-11" onclick="medToggleDay('2026-06-11')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">11/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-12" onclick="medToggleDay('2026-06-12')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">12/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-13" onclick="medToggleDay('2026-06-13')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">13/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-14" onclick="medToggleDay('2026-06-14')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">14/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-15" onclick="medToggleDay('2026-06-15')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">15/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-16" onclick="medToggleDay('2026-06-16')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">16/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-17" onclick="medToggleDay('2026-06-17')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">17/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-18" onclick="medToggleDay('2026-06-18')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">18/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-19" onclick="medToggleDay('2026-06-19')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">19/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-20" onclick="medToggleDay('2026-06-20')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">20/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-21" onclick="medToggleDay('2026-06-21')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">21/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-22" onclick="medToggleDay('2026-06-22')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">22/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-23" onclick="medToggleDay('2026-06-23')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">23/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-24" onclick="medToggleDay('2026-06-24')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">24/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-25" onclick="medToggleDay('2026-06-25')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">25/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-26" onclick="medToggleDay('2026-06-26')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">26/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-27" onclick="medToggleDay('2026-06-27')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">27/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-28" onclick="medToggleDay('2026-06-28')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">28/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-29" onclick="medToggleDay('2026-06-29')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">29/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-30" onclick="medToggleDay('2026-06-30')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">30/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div></div></div>
+    <div class="med-phase-note">✅ Topiramato e Miosan encerrados. Lamotrigina 100mg/dia contínuo.</div></div></div>
     <div class="med-summary-bar" id="med-summary-bar">
       <div class="med-summary-stat"><div class="num" id="med-stat-total">0</div><div class="lbl">Dias tomados</div></div>
       <div class="med-summary-divider"></div>
       <div class="med-summary-stat"><div class="num" id="med-stat-streak">0</div><div class="lbl">Sequência</div></div>
       <div class="med-summary-divider"></div>
-      <div class="med-summary-stat"><div class="num" id="med-stat-remaining">0</div><div class="lbl">Restantes</div></div>
+      <div class="med-summary-stat"><div class="num" id="med-stat-remaining">48</div><div class="lbl">Restantes</div></div>
     </div>
   </div>
 </div>
@@ -648,7 +910,7 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
           <thead><tr>
             <th>Dia</th><th>Intensidade</th><th>Localização</th><th>Sintomas</th><th>Resgate</th><th>Observações</th>
           </tr></thead>
-          <tbody id="dor-table-body"></tbody>
+          <tbody id="dor-table-body"><tr data-day="1"><td class="dor-day-num">01</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="2"><td class="dor-day-num">02</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="3"><td class="dor-day-num">03</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="4"><td class="dor-day-num">04</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="5"><td class="dor-day-num">05</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="6"><td class="dor-day-num">06</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="7"><td class="dor-day-num">07</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="8"><td class="dor-day-num">08</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="9"><td class="dor-day-num">09</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="10"><td class="dor-day-num">10</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="11"><td class="dor-day-num">11</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="12"><td class="dor-day-num">12</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="13"><td class="dor-day-num">13</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="14"><td class="dor-day-num">14</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="15"><td class="dor-day-num">15</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="16"><td class="dor-day-num">16</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="17"><td class="dor-day-num">17</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="18"><td class="dor-day-num">18</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="19"><td class="dor-day-num">19</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="20"><td class="dor-day-num">20</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="21"><td class="dor-day-num">21</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="22"><td class="dor-day-num">22</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="23"><td class="dor-day-num">23</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="24"><td class="dor-day-num">24</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="25"><td class="dor-day-num">25</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="26"><td class="dor-day-num">26</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="27"><td class="dor-day-num">27</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="28"><td class="dor-day-num">28</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="29"><td class="dor-day-num">29</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="30"><td class="dor-day-num">30</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="31"><td class="dor-day-num">31</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr></tbody>
         </table>
       </div>
       <div style="margin-bottom:1rem;">
@@ -823,7 +1085,43 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
       <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#b07ab0"></div>Reconstrução</div>
       <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#7aab7a"></div>Concluída</div>
     </div>
-    <div id="cap-schedule"></div>
+    <div id="cap-schedule"><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 1</span><span class="cap-week-dates">03–07 de maio</span></div><div class="cap-wash-card done"><div class="cap-check-circle" style="color:#7aab7a">✓</div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Sáb, 03 de maio <span style="font-size:10px;color:#7aab7a;font-weight:500">• Concluída</span></div>
+        <span class="cap-wash-step cap-step-N"><span class="cap-step-dot"></span>🌿 Nutrição</span>
+      </div></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#7bb8d4"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Qua, 07 de maio</div>
+        <span class="cap-wash-step cap-step-H"><span class="cap-step-dot"></span>💧 Hidratação</span>
+      </div></div><div class="cap-tip-box">Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 2</span><span class="cap-week-dates">11–14 de maio</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#b07ab0"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Dom, 11 de maio</div>
+        <span class="cap-wash-step cap-step-R"><span class="cap-step-dot"></span>✨ Reconstrução</span>
+      </div></div><div class="cap-tip-box">Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.</div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#c9a96e"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Qua, 14 de maio</div>
+        <span class="cap-wash-step cap-step-N"><span class="cap-step-dot"></span>🌿 Nutrição</span>
+      </div></div><div class="cap-tip-box">Máscara Kolene de óleos africanos, touca plástica, 20–30 min.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 3</span><span class="cap-week-dates">18–21 de maio</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#7bb8d4"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Dom, 18 de maio</div>
+        <span class="cap-wash-step cap-step-H"><span class="cap-step-dot"></span>💧 Hidratação</span>
+      </div></div><div class="cap-tip-box">Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.</div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#b07ab0"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Qua, 21 de maio</div>
+        <span class="cap-wash-step cap-step-R"><span class="cap-step-dot"></span>✨ Reconstrução</span>
+      </div></div><div class="cap-tip-box">Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 4</span><span class="cap-week-dates">25–28 de maio</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#7bb8d4"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Dom, 25 de maio</div>
+        <span class="cap-wash-step cap-step-H"><span class="cap-step-dot"></span>💧 Hidratação</span>
+      </div></div><div class="cap-tip-box">Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.</div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#c9a96e"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Qua, 28 de maio</div>
+        <span class="cap-wash-step cap-step-N"><span class="cap-step-dot"></span>🌿 Nutrição</span>
+      </div></div><div class="cap-tip-box">Máscara Kolene de óleos africanos, touca plástica, 20–30 min.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Início de Junho</span><span class="cap-week-dates">01 de junho</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#b07ab0"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Dom, 01 de junho</div>
+        <span class="cap-wash-step cap-step-R"><span class="cap-step-dot"></span>✨ Reconstrução</span>
+      </div></div><div class="cap-tip-box">Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.</div></div></div>
     <div class="cap-glossary">
       <h3>O que fazer em cada etapa</h3>
       <div class="cap-glossary-item">
@@ -1035,24 +1333,77 @@ function medUpdateStats(){
 }
 medRender();
 
-/* ===== DIÁRIO DE DORES ===== */
+/* ===== DIÁRIO DE DORES — JSONBin ===== */
 const dorLocations=['Frontal','Temporal E','Temporal D','Occipital','Hemicraniana E','Hemicraniana D','Difusa','Outra'];
 const dorSymptoms=['Náusea','Vômito','Fotofobia','Fonofobia','Aura','Formigamento','Outro'];
-function dorLoadState(){try{const el=document.getElementById('dor-data');return el?JSON.parse(el.textContent||'{}'):{};}catch{return{};}}
-function dorSaveState(s){try{const el=document.getElementById('dor-data');if(el)el.textContent=JSON.stringify(s);}catch{}}
-let dorState=dorLoadState();
 
-function dorGetRowData(row){
-  const intBtn=row.querySelector('.dor-int-btn[data-active="1"]');
-  return{
-    int:intBtn?parseInt(intBtn.dataset.val):0,
-    loc:row.querySelector('select:nth-of-type(1)').value,
-    sym:row.querySelector('select:nth-of-type(2)').value,
-    resc:row.querySelector('input[type="text"]').value,
-    notes:row.querySelector('textarea').value
-  };
+const DOR_API_KEY='$2a$10$LPu0C0Qytg2Dj9efTLFrBuS.8iKnCTZo9Nw/b663zEfSukhZ8w.Zi';
+let dorBinId=(function(){try{const el=document.getElementById('dor-bin-id');return(el&&el.textContent.trim())||null;}catch{return null;}})();
+let dorState={};
+let dorSaveTimer=null;
+
+function dorPersistBinId(id){
+  try{const el=document.getElementById('dor-bin-id');if(el)el.textContent=id;}catch{}
 }
-function dorSaveAll(){
+
+function dorShowStatus(msg,color){
+  let el=document.getElementById('dor-sync-status');
+  if(!el){el=document.createElement('div');el.id='dor-sync-status';
+    Object.assign(el.style,{position:'fixed',bottom:'90px',left:'16px',background:'#1a3a5c',color:'white',
+      fontFamily:"'DM Mono',monospace",fontSize:'.68rem',letterSpacing:'.06em',padding:'6px 12px',
+      borderRadius:'20px',zIndex:'300',transition:'opacity .4s',pointerEvents:'none'});
+    document.body.appendChild(el);}
+  el.textContent=msg;el.style.color=color||'white';el.style.opacity='1';
+  clearTimeout(el._t);el._t=setTimeout(()=>el.style.opacity='0',3000);
+}
+
+async function dorCreateBin(data){
+  try{
+    const r=await fetch('https://api.jsonbin.io/v3/b',{method:'POST',
+      headers:{'Content-Type':'application/json','X-Master-Key':DOR_API_KEY,'X-Bin-Name':'painel-dores'},
+      body:JSON.stringify(data)});
+    const j=await r.json();
+    if(j.metadata&&j.metadata.id){
+      dorBinId=j.metadata.id;
+      dorPersistBinId(dorBinId);
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+const DOR_LOCAL_KEY='painel_dores_local_v1';
+function dorSaveLocal(data){try{localStorage.setItem(DOR_LOCAL_KEY,JSON.stringify(data));}catch{}}
+function dorLoadLocal(){try{const s=localStorage.getItem(DOR_LOCAL_KEY);return s?JSON.parse(s):null;}catch{return null;}}
+
+async function dorPushData(data){
+  // Always save locally first
+  dorSaveLocal(data);
+  if(!dorBinId){
+    const ok=await dorCreateBin(data);
+    if(!ok){dorShowStatus('✓ Salvo localmente','#c9a87c');return;}
+  }
+  try{
+    const r=await fetch(`https://api.jsonbin.io/v3/b/${dorBinId}`,{method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':DOR_API_KEY},
+      body:JSON.stringify(data)});
+    if(r.ok){dorShowStatus('✓ Salvo','#4caf8a');}
+    else{dorShowStatus('✓ Salvo localmente','#c9a87c');}
+  }catch(e){dorShowStatus('✓ Salvo localmente (sem conexão)','#c9a87c');}
+}
+
+async function dorLoadFromBin(){
+  if(!dorBinId)return null;
+  try{
+    const r=await fetch(`https://api.jsonbin.io/v3/b/${dorBinId}/latest`,{
+      headers:{'X-Master-Key':DOR_API_KEY}});
+    if(!r.ok)return null;
+    const j=await r.json();
+    return j.record||null;
+  }catch(e){return null;}
+}
+
+function dorCollectData(){
   const rows=document.querySelectorAll('#dor-table-body tr');
   const data={
     month:document.getElementById('dor-month-title').value,
@@ -1063,76 +1414,108 @@ function dorSaveAll(){
   };
   rows.forEach(row=>{
     const d=row.dataset.day;
-    const rd=dorGetRowData(row);
+    const intBtn=row.querySelector('.dor-int-btn[data-active="1"]');
+    const rd={
+      int:intBtn?parseInt(intBtn.dataset.val):0,
+      loc:row.querySelector('select:nth-of-type(1)').value,
+      sym:row.querySelector('select:nth-of-type(2)').value,
+      resc:row.querySelector('input[type="text"]').value,
+      notes:row.querySelector('textarea').value
+    };
     if(rd.int||rd.loc||rd.sym||rd.resc||rd.notes)data.days[d]=rd;
   });
-  dorSaveState(data);
+  return data;
+}
+
+function dorSaveAll(){
+  clearTimeout(dorSaveTimer);
+  dorSaveTimer=setTimeout(()=>{
+    const data=dorCollectData();
+    dorPushData(data);
+  },1200);
+}
+
+function dorApplyData(saved){
+  if(!saved)return;
+  const tbody=document.getElementById('dor-table-body');
+  tbody.querySelectorAll('tr').forEach(row=>{
+    const d=row.dataset.day;
+    const sd=saved.days&&saved.days[d]?saved.days[d]:{};
+    if(sd.int){
+      const wrap=row.querySelector('.dor-int-wrap');
+      const btns=wrap.querySelectorAll('.dor-int-btn');
+      btns.forEach(b=>{b.className='dor-int-btn';delete b.dataset.active;});
+      const target=wrap.querySelector(`[data-val="${sd.int}"]`);
+      if(target){target.className=`dor-int-btn active-${sd.int}`;target.dataset.active='1';}
+    }
+    const sels=row.querySelectorAll('select');
+    if(sd.loc&&sels[0])sels[0].value=sd.loc;
+    if(sd.sym&&sels[1])sels[1].value=sd.sym;
+    const inp=row.querySelector('input[type="text"]');
+    if(sd.resc&&inp)inp.value=sd.resc;
+    const ta=row.querySelector('textarea');
+    if(sd.notes&&ta)ta.value=sd.notes;
+  });
+  if(saved.month){
+    document.getElementById('dor-month-title').value=saved.month;
+    document.getElementById('dor-footer-month').textContent=saved.month;
+  }
+  if(saved.meds){
+    const checks=document.querySelectorAll('.dor-med-check');
+    saved.meds.forEach((v,i)=>{if(checks[i])checks[i].checked=v;});
+  }
+  if(saved.medOther){
+    const others=document.querySelectorAll('.dor-med-item input[type="text"]');
+    saved.medOther.forEach((v,i)=>{if(others[i])others[i].value=v;});
+  }
+  if(saved.obs){
+    const areas=document.querySelectorAll('.dor-notes-area');
+    saved.obs.forEach((v,i)=>{if(areas[i])areas[i].value=v;});
+  }
+  dorUpdateSummary();
 }
 
 function dorBuildTable(){
   const tbody=document.getElementById('dor-table-body');
-  const saved=dorState;
   for(let d=1;d<=31;d++){
-    const saved_d=saved.days&&saved.days[d]?saved.days[d]:{};
     const tr=document.createElement('tr');tr.dataset.day=d;
     const tdDay=document.createElement('td');tdDay.className='dor-day-num';tdDay.textContent=String(d).padStart(2,'0');tr.appendChild(tdDay);
     const tdInt=document.createElement('td');tdInt.style.minWidth='120px';
     const wrap=document.createElement('div');wrap.className='dor-int-wrap';
     for(let i=1;i<=5;i++){
-      const btn=document.createElement('button');btn.className='dor-int-btn';btn.textContent=i;btn.dataset.val=i;
-      if(saved_d.int===i){btn.className=`dor-int-btn active-${i}`;btn.dataset.active='1';}
-      btn.onclick=function(){
-        const btns=wrap.querySelectorAll('.dor-int-btn');btns.forEach(b=>{b.className='dor-int-btn';delete b.dataset.active;});
-        if(this.dataset.active==='1'){delete this.dataset.active;}
-        else{this.className=`dor-int-btn active-${i}`;this.dataset.active='1';}
-        dorUpdateSummary();dorSaveAll();
-      };
+      const btn=document.createElement('button');btn.className='dor-int-btn';btn.textContent=i;btn.dataset.val=String(i);
+      (function(val){
+        btn.onclick=function(){
+          const wasActive=this.dataset.active==='1';
+          const btns=wrap.querySelectorAll('.dor-int-btn');
+          btns.forEach(b=>{b.className='dor-int-btn';delete b.dataset.active;});
+          if(!wasActive){this.className=`dor-int-btn active-${val}`;this.dataset.active='1';}
+          dorUpdateSummary();dorSaveAll();
+        };
+      })(i);
       wrap.appendChild(btn);
     }
     tdInt.appendChild(wrap);tr.appendChild(tdInt);
     const tdLoc=document.createElement('td');tdLoc.style.minWidth='120px';
     const selLoc=document.createElement('select');selLoc.innerHTML='<option value="">—</option>'+dorLocations.map(l=>`<option>${l}</option>`).join('');
-    if(saved_d.loc)selLoc.value=saved_d.loc;
     selLoc.addEventListener('change',()=>{dorUpdateSummary();dorSaveAll();});
     tdLoc.appendChild(selLoc);tr.appendChild(tdLoc);
     const tdSym=document.createElement('td');tdSym.style.minWidth='100px';
     const selSym=document.createElement('select');selSym.innerHTML='<option value="">—</option>'+dorSymptoms.map(s=>`<option>${s}</option>`).join('');
-    if(saved_d.sym)selSym.value=saved_d.sym;
     selSym.addEventListener('change',()=>{dorUpdateSummary();dorSaveAll();});
     tdSym.appendChild(selSym);tr.appendChild(tdSym);
     const tdResc=document.createElement('td');tdResc.style.minWidth='100px';
     const inpResc=document.createElement('input');inpResc.type='text';inpResc.placeholder='qual?';
-    if(saved_d.resc)inpResc.value=saved_d.resc;
     inpResc.addEventListener('input',()=>{dorUpdateSummary();dorSaveAll();});
     tdResc.appendChild(inpResc);tr.appendChild(tdResc);
     const tdNotes=document.createElement('td');tdNotes.style.minWidth='140px';
     const inpNotes=document.createElement('textarea');inpNotes.placeholder='gatilho...';
-    if(saved_d.notes)inpNotes.value=saved_d.notes;
     inpNotes.addEventListener('input',dorSaveAll);
     tdNotes.appendChild(inpNotes);tr.appendChild(tdNotes);
     tbody.appendChild(tr);
   }
-  // Restore month title
-  if(saved.month){
-    document.getElementById('dor-month-title').value=saved.month;
-    document.getElementById('dor-footer-month').textContent=saved.month;
-  }
-  // Restore med checkboxes
-  if(saved.meds){
-    const checks=document.querySelectorAll('.dor-med-check');
-    saved.meds.forEach((v,i)=>{if(checks[i])checks[i].checked=v;});
-  }
-  // Restore med other fields
-  if(saved.medOther){
-    const others=document.querySelectorAll('.dor-med-item input[type="text"]');
-    saved.medOther.forEach((v,i)=>{if(others[i])others[i].value=v;});
-  }
-  // Restore obs/perguntas textareas
-  if(saved.obs){
-    const areas=document.querySelectorAll('.dor-notes-area');
-    saved.obs.forEach((v,i)=>{if(areas[i])areas[i].value=v;});
-  }
 }
+
 function dorGetIntVal(row){const a=row.querySelector('.dor-int-btn[data-active="1"]');if(!a)return 0;return[0,1.5,3.5,5.5,7.5,9.5][parseInt(a.dataset.val)];}
 function dorUpdateSummary(){
   const rows=document.querySelectorAll('#dor-table-body tr');
@@ -1148,15 +1531,41 @@ function dorUpdateSummary(){
   document.getElementById('dor-worst-day').textContent=worstDay>0?`Dia ${worstDay}`:'—';
 }
 document.getElementById('dor-month-title').addEventListener('input',function(){
-  document.getElementById('dor-footer-month').textContent=this.value;
-  dorSaveAll();
+  document.getElementById('dor-footer-month').textContent=this.value;dorSaveAll();
 });
-// Save on med checkbox changes
 document.querySelectorAll('.dor-med-check').forEach(c=>c.addEventListener('change',dorSaveAll));
 document.querySelectorAll('.dor-med-item input[type="text"]').forEach(i=>i.addEventListener('input',dorSaveAll));
 document.querySelectorAll('.dor-notes-area').forEach(t=>t.addEventListener('input',dorSaveAll));
+
 dorBuildTable();
-dorUpdateSummary();
+dorShowStatus('⟳ Carregando...','#c9a87c');
+(async function(){
+  // Always try localStorage first (instant)
+  const localData=dorLoadLocal();
+  if(localData){dorApplyData(localData);}
+
+  if(!dorBinId){
+    // Primeira abertura — criar bin vazio
+    const ok=await dorCreateBin(localData||{days:{}});
+    if(ok){
+      dorShowStatus('✓ Registro criado','#4caf8a');
+    } else {
+      dorShowStatus(localData?'✓ Carregado localmente':'⚠ Sem conexão com JSONBin','#c9a87c');
+    }
+  } else {
+    const data=await dorLoadFromBin();
+    if(data){
+      // Merge: keep local if newer (local can have changes not yet synced)
+      dorApplyData(data);
+      dorSaveLocal(data);
+      dorShowStatus('✓ Dados carregados','#4caf8a');
+    } else if(localData){
+      dorShowStatus('✓ Carregado localmente (offline)','#c9a87c');
+    } else {
+      dorShowStatus('⚠ Erro ao carregar','#f4a96a');
+    }
+  }
+})();
 
 /* ===== SKINCARE ===== */
 const skinPanels={
@@ -1164,8 +1573,35 @@ const skinPanels={
   'skin-noite-a':{count:3,ids:['a1','a2','a3']},
   'skin-noite-b':{count:3,ids:['b1','b2','b3']}
 };
-const skinState={'skin-manha':{},'skin-noite-a':{},'skin-noite-b':{}};
+const SKIN_STORAGE_KEY='painel_skincare_v1';
+function skinTodayKey(){const d=new Date();return`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
+function skinLoadState(){
+  try{
+    const s=JSON.parse(localStorage.getItem(SKIN_STORAGE_KEY)||'{}');
+    // Auto-reset if it's a new day
+    if(s.date!==skinTodayKey())return{'skin-manha':{},'skin-noite-a':{},'skin-noite-b':{}};
+    return s.panels||{'skin-manha':{},'skin-noite-a':{},'skin-noite-b':{}};
+  }catch{return{'skin-manha':{},'skin-noite-a':{},'skin-noite-b':{}};}
+}
+function skinSaveState(){
+  try{localStorage.setItem(SKIN_STORAGE_KEY,JSON.stringify({date:skinTodayKey(),panels:skinState}));}catch{}
+}
+const skinState=skinLoadState();
 const skinProgMap={'skin-manha':'skin-prog-manha','skin-noite-a':'skin-prog-noite-a','skin-noite-b':'skin-prog-noite-b'};
+
+// Apply saved state to DOM on load
+(function skinApplyLoaded(){
+  Object.keys(skinState).forEach(panel=>{
+    skinPanels[panel].ids.forEach((id,i)=>{
+      if(skinState[panel][id]){
+        const el=document.querySelector(`[data-id="${id}"]`);
+        if(el){el.classList.add('done');el.querySelector('.skin-step-num').textContent='✓';}
+      }
+    });
+    skinUpdateProgress(panel);
+  });
+})();
+
 function skinToggle(el,panel){
   const id=el.dataset.id;
   skinState[panel][id]=!skinState[panel][id];
@@ -1173,6 +1609,7 @@ function skinToggle(el,panel){
   const num=el.querySelector('.skin-step-num');
   num.textContent=skinState[panel][id]?'✓':skinPanels[panel].ids.indexOf(id)+1;
   skinUpdateProgress(panel);
+  skinSaveState();
 }
 function skinUpdateProgress(panel){
   const done=Object.values(skinState[panel]).filter(Boolean).length;
@@ -1186,6 +1623,7 @@ function skinReset(panel){
     if(el){el.classList.remove('done');el.querySelector('.skin-step-num').textContent=i+1;}
   });
   skinUpdateProgress(panel);
+  skinSaveState();
 }
 function skinSwitchTab(tab,e){
   document.querySelectorAll('.skin-tab').forEach(t=>t.classList.remove('active'));
@@ -1199,16 +1637,48 @@ const CAP_STEPS=['N','H','R','N','H','R','H','N','R'];
 const CAP_STEP_LABELS={H:'Hidratação',N:'Nutrição',R:'Reconstrução'};
 const CAP_STEP_EMOJI={H:'💧',N:'🌿',R:'✨'};
 const CAP_TIPS={H:'Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.',N:'Máscara Kolene de óleos africanos, touca plástica, 20–30 min.',R:'Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.'};
+// Each entry has an ISO date string for auto-advance comparison
 const CAP_DATES=[
-  {label:'Sáb, 03 de maio',week:1},{label:'Qua, 07 de maio',week:1},{label:'Dom, 11 de maio',week:2},
-  {label:'Qua, 14 de maio',week:2},{label:'Dom, 18 de maio',week:3},{label:'Qua, 21 de maio',week:3},
-  {label:'Dom, 25 de maio',week:4},{label:'Qua, 28 de maio',week:4},{label:'Dom, 01 de junho',week:5},
+  {label:'Sáb, 03 de maio',week:1,date:'2026-05-03'},
+  {label:'Qua, 07 de maio',week:1,date:'2026-05-07'},
+  {label:'Dom, 11 de maio',week:2,date:'2026-05-11'},
+  {label:'Qua, 14 de maio',week:2,date:'2026-05-14'},
+  {label:'Dom, 18 de maio',week:3,date:'2026-05-18'},
+  {label:'Qua, 21 de maio',week:3,date:'2026-05-21'},
+  {label:'Dom, 25 de maio',week:4,date:'2026-05-25'},
+  {label:'Qua, 28 de maio',week:4,date:'2026-05-28'},
+  {label:'Dom, 01 de junho',week:5,date:'2026-06-01'},
 ];
 const CAP_WEEK_LABELS=['','Semana 1','Semana 2','Semana 3','Semana 4','Início de Junho'];
 const CAP_WEEK_DATES=['','03–07 de maio','11–14 de maio','18–21 de maio','25–28 de maio','01 de junho'];
 const CAP_STORAGE_KEY='cronograma_capilar_v1';
-function capLoadDone(){try{const r=JSON.parse(localStorage.getItem(CAP_STORAGE_KEY)||'[true]');while(r.length<CAP_DATES.length)r.push(false);r[0]=true;return r;}catch{return[true,...Array(CAP_DATES.length-1).fill(false)];}}
-function capSaveDone(arr){try{localStorage.setItem(CAP_STORAGE_KEY,JSON.stringify(arr));}catch{}}
+
+function capTodayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+function capLoadDone(){
+  try{
+    const r=JSON.parse(localStorage.getItem(CAP_STORAGE_KEY)||'[true]');
+    while(r.length<CAP_DATES.length)r.push(false);
+    r[0]=true;
+    // Auto-advance: mark past dates as done if not already marked
+    const today=capTodayStr();
+    CAP_DATES.forEach((d,i)=>{if(d.date<today)r[i]=true;});
+    return r;
+  }catch{
+    // If no saved state, auto-mark all past dates
+    const today=capTodayStr();
+    return CAP_DATES.map(d=>d.date<=today?true:false).map((v,i)=>i===0?true:v);
+  }
+}
+function capSaveDone(arr){
+  try{
+    // Re-apply auto-advance before saving so past dates stay marked
+    const today=capTodayStr();
+    CAP_DATES.forEach((d,i)=>{if(d.date<today)arr[i]=true;});
+    arr[0]=true;
+    localStorage.setItem(CAP_STORAGE_KEY,JSON.stringify(arr));
+  }catch{}
+}
 let capDone=capLoadDone();
 function capCountDone(){return capDone.filter(Boolean).length;}
 function capUpdateProgress(){
@@ -1220,6 +1690,7 @@ function capUpdateProgress(){
 function capRender(){
   const container=document.getElementById('cap-schedule');container.innerHTML='';
   let currentWeek=0,weekBlock=null;
+  const today=capTodayStr();
   CAP_DATES.forEach((d,i)=>{
     if(d.week!==currentWeek){
       weekBlock=document.createElement('div');weekBlock.className='cap-week-block';
@@ -1228,15 +1699,24 @@ function capRender(){
       weekBlock.appendChild(wh);container.appendChild(weekBlock);currentWeek=d.week;
     }
     const step=CAP_STEPS[i];const isDone=capDone[i];
+    const isToday=d.date===today;
+    const isPast=d.date<today;
     const colorVar=step==='H'?'#7bb8d4':step==='N'?'#c9a96e':'#b07ab0';
     const card=document.createElement('div');
     card.className='cap-wash-card'+(isDone?' done':'');
+    if(isToday)card.style.cssText='border-left:3px solid '+colorVar+';background:#fffaf5;';
+    const todayBadge=isToday?` <span style="font-size:10px;color:${colorVar};font-weight:600">• Hoje!</span>`:'';
+    const doneBadge=isDone&&!isToday?' <span style="font-size:10px;color:#7aab7a;font-weight:500">• Concluída</span>':'';
     card.innerHTML=`<div class="cap-check-circle" style="color:${isDone?'#7aab7a':colorVar}">${isDone?'✓':''}</div>
       <div class="cap-wash-info">
-        <div class="cap-wash-day">${d.label}${i===0?' <span style="font-size:10px;color:#7aab7a;font-weight:500">• Concluída</span>':''}</div>
+        <div class="cap-wash-day">${d.label}${todayBadge}${doneBadge}</div>
         <span class="cap-wash-step cap-step-${step}"><span class="cap-step-dot"></span>${CAP_STEP_EMOJI[step]} ${CAP_STEP_LABELS[step]}</span>
       </div>`;
-    if(i>0){card.addEventListener('click',()=>{capDone[i]=!capDone[i];capSaveDone(capDone);capRender();capUpdateProgress();});}
+    // Allow toggling future and today dates; past are auto-done but can still be untoggled
+    card.addEventListener('click',()=>{
+      if(isPast&&!isToday){return;}// past dates are auto — don't toggle
+      capDone[i]=!capDone[i];capSaveDone(capDone);capRender();capUpdateProgress();
+    });
     weekBlock.appendChild(card);
     if(!isDone&&i>0){
       const tipBox=document.createElement('div');tipBox.className='cap-tip-box';tipBox.textContent=CAP_TIPS[step];
@@ -1248,7 +1728,7 @@ function capRender(){
   capUpdateProgress();
 }
 capRender();
-</script>
+</script><div id="dor-sync-status" style="position: fixed; bottom: 90px; left: 16px; background: rgb(26, 58, 92); color: rgb(76, 175, 138); font-family: &quot;DM Mono&quot;, monospace; font-size: 0.68rem; letter-spacing: 0.06em; padding: 6px 12px; border-radius: 20px; z-index: 300; transition: opacity 0.4s; pointer-events: none; opacity: 0;">✓ Registro criado — baixe o arquivo para guardar o ID</div>
 
 <!-- PLANTAS via React (lazy render) -->
 <script>
@@ -1475,6 +1955,7 @@ function renderPlantas(){
 .fab-toast.show{opacity:1;transform:translateY(0);}
 </style>
 
+<script id="dor-bin-id" type="application/json">6a0cd58d6877513b279cd2e4</script>
 <script id="dor-data" type="application/json">{}</script>
 <button class="fab-download" onclick="downloadPainel()" title="Salvar painel no dispositivo">⬇</button>
 <div class="fab-toast" id="fab-toast">Arquivo salvo!</div>
@@ -1494,5 +1975,6 @@ function downloadPainel(){
   setTimeout(()=>toast.classList.remove('show'), 2200);
 }
 </script>
-</body>
-</html>
+
+
+</body></html>
