@@ -1038,10 +1038,8 @@ medRender();
 /* ===== DIÁRIO DE DORES ===== */
 const dorLocations=['Frontal','Temporal E','Temporal D','Occipital','Hemicraniana E','Hemicraniana D','Difusa','Outra'];
 const dorSymptoms=['Náusea','Vômito','Fotofobia','Fonofobia','Aura','Formigamento','Outro'];
-const DOR_KEY='dor_diario_v1';
-
-function dorLoadState(){try{return JSON.parse(localStorage.getItem(DOR_KEY)||'{}');}catch{return{};}}
-function dorSaveState(s){try{localStorage.setItem(DOR_KEY,JSON.stringify(s));}catch{}}
+function dorLoadState(){try{const el=document.getElementById('dor-data');return el?JSON.parse(el.textContent||'{}'):{};}catch{return{};}}
+function dorSaveState(s){try{const el=document.getElementById('dor-data');if(el)el.textContent=JSON.stringify(s);}catch{}}
 let dorState=dorLoadState();
 
 function dorGetRowData(row){
@@ -1477,6 +1475,7 @@ function renderPlantas(){
 .fab-toast.show{opacity:1;transform:translateY(0);}
 </style>
 
+<script id="dor-data" type="application/json">{}</script>
 <button class="fab-download" onclick="downloadPainel()" title="Salvar painel no dispositivo">⬇</button>
 <div class="fab-toast" id="fab-toast">Arquivo salvo!</div>
 
