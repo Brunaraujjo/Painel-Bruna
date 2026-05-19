@@ -558,6 +558,30 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
         <div class="daily-med-dose" style="background:rgba(244,169,106,.15);color:#f4a96a">20 mg</div>
       </div>
 
+      <div class="daily-med-row" id="daily-minox" onclick="dailyToggle('minox')">
+        <div class="daily-med-check" id="daily-check-minox"></div>
+        <div class="daily-med-info">
+          <div class="daily-med-name">Minoxidil</div>
+          <div class="daily-med-when">
+            <div class="daily-med-dot" style="background:#b48ef4"></div>
+            Horário indiferente · 1x ao dia
+          </div>
+        </div>
+        <div class="daily-med-dose" style="background:rgba(180,142,244,.15);color:#b48ef4">0,5 mg</div>
+      </div>
+
+      <div class="daily-med-row" id="daily-endofer" onclick="dailyToggle('endofer')">
+        <div class="daily-med-check" id="daily-check-endofer"></div>
+        <div class="daily-med-info">
+          <div class="daily-med-name">Endofer</div>
+          <div class="daily-med-when">
+            <div class="daily-med-dot" style="background:#7ed8c8"></div>
+            Fora das refeições
+          </div>
+        </div>
+        <div class="daily-med-dose" style="background:rgba(126,216,200,.15);color:#7ed8c8">Sulfato ferroso</div>
+      </div>
+
       <div class="daily-all-done" id="daily-alldone">✓ Todas as medicações de hoje tomadas</div>
       <button class="daily-reset" onclick="dailyReset()">↺ Reiniciar dia</button>
     </div>
@@ -876,9 +900,9 @@ function showPage(id, btn) {
   }
   function loadDaily(){
     try{const r=JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
-      if(r.date!==todayKey())return{date:todayKey(),fluox:false,riva:false};
+      if(r.date!==todayKey())return{date:todayKey(),fluox:false,riva:false,minox:false,endofer:false};
       return r;
-    }catch{return{date:todayKey(),fluox:false,riva:false};}
+    }catch{return{date:todayKey(),fluox:false,riva:false,minox:false,endofer:false};}
   }
   function saveDaily(s){localStorage.setItem(DAILY_KEY,JSON.stringify(s));}
 
@@ -890,13 +914,13 @@ function showPage(id, btn) {
     `${WEEKDAYS[now.getDay()]}, ${now.getDate()} de ${MONTHS[now.getMonth()]}`;
 
   function dailyRenderState(){
-    ['fluox','riva'].forEach(id=>{
+    ['fluox','riva','minox','endofer'].forEach(id=>{
       const row=document.getElementById(`daily-${id}`);
       const check=document.getElementById(`daily-check-${id}`);
       if(dailyState[id]){row.classList.add('taken');check.textContent='✓';}
       else{row.classList.remove('taken');check.textContent='';}
     });
-    const allDone=dailyState.fluox&&dailyState.riva;
+    const allDone=dailyState.fluox&&dailyState.riva&&dailyState.minox&&dailyState.endofer;
     document.getElementById('daily-alldone').classList.toggle('visible',allDone);
   }
 
@@ -906,7 +930,7 @@ function showPage(id, btn) {
     dailyRenderState();
   };
   window.dailyReset=function(){
-    dailyState={date:todayKey(),fluox:false,riva:false};
+    dailyState={date:todayKey(),fluox:false,riva:false,minox:false,endofer:false};
     saveDaily(dailyState);
     dailyRenderState();
   };
