@@ -1038,37 +1038,101 @@ medRender();
 /* ===== DIÁRIO DE DORES ===== */
 const dorLocations=['Frontal','Temporal E','Temporal D','Occipital','Hemicraniana E','Hemicraniana D','Difusa','Outra'];
 const dorSymptoms=['Náusea','Vômito','Fotofobia','Fonofobia','Aura','Formigamento','Outro'];
+const DOR_KEY='dor_diario_v1';
+
+function dorLoadState(){try{return JSON.parse(localStorage.getItem(DOR_KEY)||'{}');}catch{return{};}}
+function dorSaveState(s){try{localStorage.setItem(DOR_KEY,JSON.stringify(s));}catch{}}
+let dorState=dorLoadState();
+
+function dorGetRowData(row){
+  const intBtn=row.querySelector('.dor-int-btn[data-active="1"]');
+  return{
+    int:intBtn?parseInt(intBtn.dataset.val):0,
+    loc:row.querySelector('select:nth-of-type(1)').value,
+    sym:row.querySelector('select:nth-of-type(2)').value,
+    resc:row.querySelector('input[type="text"]').value,
+    notes:row.querySelector('textarea').value
+  };
+}
+function dorSaveAll(){
+  const rows=document.querySelectorAll('#dor-table-body tr');
+  const data={
+    month:document.getElementById('dor-month-title').value,
+    meds:Array.from(document.querySelectorAll('.dor-med-check')).map(c=>c.checked),
+    medOther:Array.from(document.querySelectorAll('.dor-med-item input[type="text"]')).map(i=>i.value),
+    obs:Array.from(document.querySelectorAll('.dor-notes-area')).map(t=>t.value),
+    days:{}
+  };
+  rows.forEach(row=>{
+    const d=row.dataset.day;
+    const rd=dorGetRowData(row);
+    if(rd.int||rd.loc||rd.sym||rd.resc||rd.notes)data.days[d]=rd;
+  });
+  dorSaveState(data);
+}
+
 function dorBuildTable(){
   const tbody=document.getElementById('dor-table-body');
+  const saved=dorState;
   for(let d=1;d<=31;d++){
+    const saved_d=saved.days&&saved.days[d]?saved.days[d]:{};
     const tr=document.createElement('tr');tr.dataset.day=d;
     const tdDay=document.createElement('td');tdDay.className='dor-day-num';tdDay.textContent=String(d).padStart(2,'0');tr.appendChild(tdDay);
     const tdInt=document.createElement('td');tdInt.style.minWidth='120px';
     const wrap=document.createElement('div');wrap.className='dor-int-wrap';
     for(let i=1;i<=5;i++){
       const btn=document.createElement('button');btn.className='dor-int-btn';btn.textContent=i;btn.dataset.val=i;
+      if(saved_d.int===i){btn.className=`dor-int-btn active-${i}`;btn.dataset.active='1';}
       btn.onclick=function(){
         const btns=wrap.querySelectorAll('.dor-int-btn');btns.forEach(b=>{b.className='dor-int-btn';delete b.dataset.active;});
         if(this.dataset.active==='1'){delete this.dataset.active;}
         else{this.className=`dor-int-btn active-${i}`;this.dataset.active='1';}
-        dorUpdateSummary();
+        dorUpdateSummary();dorSaveAll();
       };
       wrap.appendChild(btn);
     }
     tdInt.appendChild(wrap);tr.appendChild(tdInt);
     const tdLoc=document.createElement('td');tdLoc.style.minWidth='120px';
     const selLoc=document.createElement('select');selLoc.innerHTML='<option value="">—</option>'+dorLocations.map(l=>`<option>${l}</option>`).join('');
+    if(saved_d.loc)selLoc.value=saved_d.loc;
+    selLoc.addEventListener('change',()=>{dorUpdateSummary();dorSaveAll();});
     tdLoc.appendChild(selLoc);tr.appendChild(tdLoc);
     const tdSym=document.createElement('td');tdSym.style.minWidth='100px';
     const selSym=document.createElement('select');selSym.innerHTML='<option value="">—</option>'+dorSymptoms.map(s=>`<option>${s}</option>`).join('');
+    if(saved_d.sym)selSym.value=saved_d.sym;
+    selSym.addEventListener('change',()=>{dorUpdateSummary();dorSaveAll();});
     tdSym.appendChild(selSym);tr.appendChild(tdSym);
     const tdResc=document.createElement('td');tdResc.style.minWidth='100px';
-    const inpResc=document.createElement('input');inpResc.type='text';inpResc.placeholder='qual?';inpResc.addEventListener('input',dorUpdateSummary);
+    const inpResc=document.createElement('input');inpResc.type='text';inpResc.placeholder='qual?';
+    if(saved_d.resc)inpResc.value=saved_d.resc;
+    inpResc.addEventListener('input',()=>{dorUpdateSummary();dorSaveAll();});
     tdResc.appendChild(inpResc);tr.appendChild(tdResc);
     const tdNotes=document.createElement('td');tdNotes.style.minWidth='140px';
     const inpNotes=document.createElement('textarea');inpNotes.placeholder='gatilho...';
+    if(saved_d.notes)inpNotes.value=saved_d.notes;
+    inpNotes.addEventListener('input',dorSaveAll);
     tdNotes.appendChild(inpNotes);tr.appendChild(tdNotes);
     tbody.appendChild(tr);
+  }
+  // Restore month title
+  if(saved.month){
+    document.getElementById('dor-month-title').value=saved.month;
+    document.getElementById('dor-footer-month').textContent=saved.month;
+  }
+  // Restore med checkboxes
+  if(saved.meds){
+    const checks=document.querySelectorAll('.dor-med-check');
+    saved.meds.forEach((v,i)=>{if(checks[i])checks[i].checked=v;});
+  }
+  // Restore med other fields
+  if(saved.medOther){
+    const others=document.querySelectorAll('.dor-med-item input[type="text"]');
+    saved.medOther.forEach((v,i)=>{if(others[i])others[i].value=v;});
+  }
+  // Restore obs/perguntas textareas
+  if(saved.obs){
+    const areas=document.querySelectorAll('.dor-notes-area');
+    saved.obs.forEach((v,i)=>{if(areas[i])areas[i].value=v;});
   }
 }
 function dorGetIntVal(row){const a=row.querySelector('.dor-int-btn[data-active="1"]');if(!a)return 0;return[0,1.5,3.5,5.5,7.5,9.5][parseInt(a.dataset.val)];}
@@ -1085,8 +1149,16 @@ function dorUpdateSummary(){
   document.getElementById('dor-avg-int').textContent=daysWithPain>0?(totalInt/daysWithPain).toFixed(1):'—';
   document.getElementById('dor-worst-day').textContent=worstDay>0?`Dia ${worstDay}`:'—';
 }
-document.getElementById('dor-month-title').addEventListener('input',function(){document.getElementById('dor-footer-month').textContent=this.value;});
+document.getElementById('dor-month-title').addEventListener('input',function(){
+  document.getElementById('dor-footer-month').textContent=this.value;
+  dorSaveAll();
+});
+// Save on med checkbox changes
+document.querySelectorAll('.dor-med-check').forEach(c=>c.addEventListener('change',dorSaveAll));
+document.querySelectorAll('.dor-med-item input[type="text"]').forEach(i=>i.addEventListener('input',dorSaveAll));
+document.querySelectorAll('.dor-notes-area').forEach(t=>t.addEventListener('input',dorSaveAll));
 dorBuildTable();
+dorUpdateSummary();
 
 /* ===== SKINCARE ===== */
 const skinPanels={
