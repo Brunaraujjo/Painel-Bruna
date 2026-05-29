@@ -263,12 +263,17 @@ table.dor-table td input[type="text"],table.dor-table td select,table.dor-table 
 table.dor-table td input[type="text"]:focus,table.dor-table td select:focus,table.dor-table td textarea:focus{outline:none;border-bottom-color:#1a3a5c;}
 table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
 .dor-int-wrap{display:flex;gap:3px;align-items:center;}
-.dor-int-btn{width:22px;height:22px;border-radius:50%;border:1.5px solid #ddd8d0;background:white;cursor:pointer;font-family:'DM Mono',monospace;font-size:.65rem;font-weight:500;color:#888;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.dor-int-btn{width:22px;height:22px;border-radius:50%;border:1.5px solid #ddd8d0;background:white;cursor:pointer;font-family:'DM Mono',monospace;font-size:.6rem;font-weight:500;color:#888;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
 .dor-int-btn.active-1{background:#27ae60;border-color:#27ae60;color:white;}
-.dor-int-btn.active-2{background:#f1c40f;border-color:#f1c40f;color:#333;}
-.dor-int-btn.active-3{background:#e67e22;border-color:#e67e22;color:white;}
-.dor-int-btn.active-4{background:#c0392b;border-color:#c0392b;color:white;}
-.dor-int-btn.active-5{background:#7b0000;border-color:#7b0000;color:white;}
+.dor-int-btn.active-2{background:#6abf69;border-color:#6abf69;color:white;}
+.dor-int-btn.active-3{background:#f1c40f;border-color:#f1c40f;color:#333;}
+.dor-int-btn.active-4{background:#f39c12;border-color:#f39c12;color:white;}
+.dor-int-btn.active-5{background:#e67e22;border-color:#e67e22;color:white;}
+.dor-int-btn.active-6{background:#e74c3c;border-color:#e74c3c;color:white;}
+.dor-int-btn.active-7{background:#c0392b;border-color:#c0392b;color:white;}
+.dor-int-btn.active-8{background:#922b21;border-color:#922b21;color:white;}
+.dor-int-btn.active-9{background:#6e1010;border-color:#6e1010;color:white;}
+.dor-int-btn.active-10{background:#2d0000;border-color:#2d0000;color:white;}
 .dor-notes-area{width:100%;border:1px solid #ddd8d0;border-radius:2px;background:#f8f5f0;font-family:'DM Sans',sans-serif;font-size:.85rem;color:#2c2c2c;padding:.8rem 1rem;resize:vertical;min-height:70px;line-height:1.6;}
 .dor-notes-area:focus{outline:none;border-color:#1a3a5c;}
 .dor-print-btn{display:block;width:100%;padding:.9rem;background:#1a3a5c;color:white;border:none;font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s;margin-top:1.5rem;}
@@ -1590,7 +1595,7 @@ function dorBuildTable(){
     const tdDay=document.createElement('td');tdDay.className='dor-day-num';tdDay.textContent=String(d).padStart(2,'0');tr.appendChild(tdDay);
     const tdInt=document.createElement('td');tdInt.style.minWidth='120px';
     const wrap=document.createElement('div');wrap.className='dor-int-wrap';
-    for(let i=1;i<=5;i++){
+    for(let i=1;i<=10;i++){
       const btn=document.createElement('button');
       btn.className='dor-int-btn';
       btn.textContent=i;
