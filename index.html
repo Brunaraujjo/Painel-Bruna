@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Painel Bruna</title>
+
+<!-- PWA: aparece como app na tela inicial -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Painel">
+<meta name="application-name" content="Painel Bruna">
+<meta name="theme-color" content="#1a1410">
+<meta name="description" content="Painel pessoal — medicações, skincare, plantas e mais.">
+
+<!-- Manifest inline via blob (não precisa de arquivo separado) -->
+<script>
+(function(){
+  const manifest = {
+    name: "Painel Bruna",
+    short_name: "Painel",
+    description: "Medicações, skincare, plantas e mais.",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#1a1410",
+    theme_color: "#1a1410",
+    orientation: "portrait",
+    icons: [
+      {
+        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%231a1410'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle'%3E🌿%3C/text%3E%3C/svg%3E",
+        sizes: "192x192",
+        type: "image/svg+xml",
+        purpose: "any maskable"
+      }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = url;
+  document.currentScript.parentNode.appendChild(link);
+})();
+</script>
+
+<!-- Service Worker: apenas desregistra versões antigas, não faz cache -->
+<script>
+if('serviceWorker' in navigator){
+  // Desregistrar qualquer service worker antigo que possa estar interferindo
+  navigator.serviceWorker.getRegistrations().then(function(registrations){
+    for(let reg of registrations){ reg.unregister(); }
+  });
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --nav-bg:#1a1410;
+  --nav-border:#2e2416;
+  --tab-active:#c9a87c;
+  --tab-text:#8c7a6a;
+  --page-bg:#faf6f1;
+}
+body{
+  background:var(--page-bg);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+  padding-bottom:80px;
+}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:var(--nav-bg);
+  border-top:1px solid var(--nav-border);
+  display:flex;
+  z-index:100;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.nav-btn{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:10px 4px 12px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.nav-icon{font-size:20px;line-height:1;}
+.nav-label{
+  font-family:'DM Sans',sans-serif;
+  font-size:9px;
+  font-weight:500;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--tab-text);
+  transition:color 0.2s;
+}
+.nav-btn.active .nav-label{color:var(--tab-active);}
+.nav-btn.active .nav-icon{filter:drop-shadow(0 0 6px rgba(201,168,124,0.5));}
+
+/* ===== PAGES ===== */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ===== PAGE HEADER SHARED ===== */
+.page-header-bar{
+  text-align:center;
+  padding:28px 16px 20px;
+  border-bottom:1px solid #ede5df;
+  margin-bottom:0;
+}
+.page-header-bar h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.7rem;
+  font-weight:300;
+  color:#3d2b24;
+  letter-spacing:0.03em;
+}
+.page-header-bar p{
+  font-size:0.72rem;
+  color:#8c6e65;
+  margin-top:4px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+}
+
+/* ===========================
+   PAGE 1 — MEDICAMENTOS (dark)
+   =========================== */
+#page-med{
+  background:#0f0e17;
+  min-height:100vh;
+  padding-bottom:80px;
+  background-image:radial-gradient(ellipse at 20% 10%,rgba(180,142,244,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(126,216,200,.06) 0%,transparent 50%);
+}
+/* all med styles from original, namespaced via #page-med */
+#page-med .med-inner{color:#e8e4f7;}
+#page-med header{text-align:center;margin-bottom:32px;padding-top:28px;}
+#page-med header h1{font-family:'DM Serif Display',serif;font-size:1.8rem;color:#e8e4f7;letter-spacing:-.02em;line-height:1.2;}
+#page-med header h1 em{font-style:italic;color:#b48ef4;}
+#page-med header p{font-size:.8rem;color:#8b85a8;margin-top:6px;font-weight:300;letter-spacing:.05em;text-transform:uppercase;}
+.med-legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:28px;padding:0 16px;}
+.med-legend-item{display:flex;align-items:center;gap:6px;font-size:.72rem;color:#8b85a8;font-weight:500;letter-spacing:.03em;}
+.med-legend-dot{width:10px;height:10px;border-radius:50%;}
+.med-phase{background:#1a1929;border:1px solid #2e2a45;border-radius:16px;margin-bottom:16px;overflow:hidden;transition:border-color .2s;}
+.med-phase.active{border-color:#b48ef4;box-shadow:0 0 0 1px rgba(180,142,244,.2),0 4px 24px rgba(180,142,244,.08);}
+.med-phase-header{padding:16px 20px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;cursor:pointer;user-select:none;}
+.med-phase-header-left{flex:1;}
+.med-phase-tag{font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#b48ef4;margin-bottom:4px;}
+.med-phase-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:#e8e4f7;line-height:1.3;}
+.med-phase-dates{font-size:.75rem;color:#8b85a8;margin-top:3px;font-weight:300;}
+.med-phase-progress{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:52px;}
+.med-progress-circle{width:44px;height:44px;position:relative;}
+.med-progress-circle svg{width:44px;height:44px;transform:rotate(-90deg);}
+.med-progress-circle .bg{fill:none;stroke:#2e2a45;stroke-width:3;}
+.med-progress-circle .fill{fill:none;stroke:#b48ef4;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .4s ease;}
+.med-progress-circle .fill.done{stroke:#4caf8a;}
+.med-progress-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.65rem;font-weight:600;color:#e8e4f7;}
+.med-meds-summary{display:flex;gap:6px;flex-wrap:wrap;padding:0 20px 14px;}
+.med-pill{font-size:.68rem;font-weight:500;padding:3px 10px;border-radius:20px;letter-spacing:.02em;}
+.med-pill.lamo{background:rgba(180,142,244,.15);color:#b48ef4;}
+.med-pill.topi{background:rgba(126,216,200,.15);color:#7ed8c8;}
+.med-pill.mios{background:rgba(244,169,106,.15);color:#f4a96a;}
+.med-days-grid{padding:4px 16px 20px;display:none;}
+.med-phase.open .med-days-grid{display:block;}
+.med-days-grid-inner{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.med-day-cell{aspect-ratio:1;border-radius:8px;background:#231f35;border:1px solid #2e2a45;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;position:relative;gap:2px;}
+.med-day-cell:active{transform:scale(.95);}
+.med-day-cell.checked{background:rgba(76,175,138,.15);border-color:#4caf8a;}
+.med-day-cell.today{border-color:#b48ef4;background:rgba(180,142,244,.12);}
+.med-day-cell.today.checked{border-color:#4caf8a;background:rgba(76,175,138,.2);}
+.med-day-cell.past:not(.checked){opacity:.45;}
+.med-day-num{font-size:.72rem;font-weight:600;color:#e8e4f7;line-height:1;}
+.med-day-weekday{font-size:.55rem;color:#8b85a8;text-transform:uppercase;letter-spacing:.05em;}
+.med-day-check{font-size:.85rem;line-height:1;}
+.med-dose-dots{display:flex;gap:2px;margin-top:1px;}
+.med-dose-dot{width:4px;height:4px;border-radius:50%;opacity:.7;}
+.med-phase-note{margin:0 16px 16px;padding:10px 14px;background:rgba(244,169,106,.07);border-left:2px solid #f4a96a;border-radius:0 8px 8px 0;font-size:.72rem;color:#8b85a8;line-height:1.5;display:none;}
+.med-phase.open .med-phase-note{display:block;}
+.med-toggle-arrow{color:#8b85a8;font-size:.9rem;transition:transform .2s;flex-shrink:0;margin-top:2px;}
+.med-phase.open .med-toggle-arrow{transform:rotate(180deg);}
+.med-summary-bar{background:#1a1929;border:1px solid #2e2a45;border-radius:16px;padding:16px 20px;margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.med-summary-stat{text-align:center;}
+.med-summary-stat .num{font-family:'DM Serif Display',serif;font-size:1.5rem;color:#b48ef4;line-height:1;}
+.med-summary-stat .lbl{font-size:.65rem;color:#8b85a8;text-transform:uppercase;letter-spacing:.07em;margin-top:2px;font-weight:500;}
+.med-summary-divider{width:1px;height:32px;background:#2e2a45;}
+
+/* ===========================
+   PAGE 2 — DIÁRIO DE DORES
+   =========================== */
+#page-dor{background:#f8f5f0;min-height:100vh;padding-bottom:80px;}
+#page-dor .dor-page{max-width:860px;margin:0 auto;background:#fdfcfa;overflow:hidden;}
+#page-dor .dor-header{background:#1a3a5c;padding:2rem 1.5rem 1.8rem;position:relative;overflow:hidden;}
+#page-dor .dor-header::after{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;border:1px solid rgba(255,255,255,.06);}
+#page-dor .dor-header-top{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;}
+#page-dor .dor-header h1{font-family:'DM Serif Display',serif;font-size:1.5rem;color:white;font-weight:400;line-height:1.2;}
+#page-dor .dor-header h1 span{display:block;font-family:'DM Mono',monospace;font-size:.72rem;font-weight:300;color:rgba(255,255,255,.5);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.4rem;}
+.dor-month-box{display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;}
+.dor-month-box label{font-family:'DM Mono',monospace;font-size:.65rem;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase;}
+.dor-month-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:2px;color:white;font-family:'DM Mono',monospace;font-size:.9rem;padding:.4rem .7rem;width:150px;text-align:center;}
+.dor-month-input:focus{outline:none;border-color:rgba(255,255,255,.4);}
+.dor-header-meta{margin-top:1.2rem;display:flex;gap:1.5rem;flex-wrap:wrap;}
+.dor-meta-item{display:flex;align-items:center;gap:.5rem;}
+.dor-meta-item label{font-family:'DM Mono',monospace;font-size:.65rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;}
+.dor-meta-item input{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:.1rem .3rem;width:140px;}
+.dor-meta-item input:focus{outline:none;border-bottom-color:rgba(255,255,255,.6);}
+.dor-body{padding:1.5rem;}
+.dor-legend{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.4rem;padding:.8rem 1rem;background:#f8f5f0;border:1px solid #ddd8d0;border-radius:2px;}
+.dor-legend-title{font-family:'DM Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:#888;width:100%;margin-bottom:.2rem;}
+.dor-legend-item{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#2c2c2c;}
+.dor-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.dor-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.8rem;margin-bottom:1.5rem;}
+.dor-summary-card{background:#f8f5f0;border:1px solid #ddd8d0;border-radius:2px;padding:.8rem 1rem;}
+.dor-summary-card .val{font-family:'DM Serif Display',serif;font-size:1.8rem;color:#1a3a5c;line-height:1;margin-bottom:.2rem;}
+.dor-summary-card .lbl{font-family:'DM Mono',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:#888;}
+.dor-section-title{font-family:'DM Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid #ddd8d0;}
+.dor-meds-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.5rem;}
+.dor-med-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;border:1px solid #ddd8d0;border-radius:2px;font-size:.82rem;}
+.dor-med-check{width:15px;height:15px;accent-color:#1a3a5c;flex-shrink:0;}
+.dor-table-wrap{overflow-x:auto;margin-bottom:1.5rem;}
+table.dor-table{width:100%;border-collapse:collapse;font-size:.8rem;}
+table.dor-table thead tr{background:#1a3a5c;}
+table.dor-table thead th{font-family:'DM Mono',monospace;font-size:.6rem;font-weight:400;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7);padding:.6rem .6rem;text-align:left;white-space:nowrap;}
+table.dor-table thead th:first-child{width:46px;text-align:center;}
+table.dor-table tbody tr{border-bottom:1px solid #ddd8d0;transition:background .15s;}
+table.dor-table tbody tr:hover{background:#f8f5f0;}
+table.dor-table tbody tr:nth-child(even){background:rgba(0,0,0,.015);}
+table.dor-table tbody td{padding:.5rem .6rem;vertical-align:middle;}
+.dor-day-num{font-family:'DM Mono',monospace;font-size:.82rem;font-weight:500;color:#1a3a5c;text-align:center;}
+table.dor-table td input[type="text"],table.dor-table td select,table.dor-table td textarea{width:100%;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#2c2c2c;padding:.15rem 0;border-bottom:1px solid transparent;transition:border-color .2s;resize:none;}
+table.dor-table td input[type="text"]:focus,table.dor-table td select:focus,table.dor-table td textarea:focus{outline:none;border-bottom-color:#1a3a5c;}
+table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
+.dor-int-wrap{display:flex;gap:3px;align-items:center;flex-wrap:wrap;}
+.dor-int-btn{width:20px;height:20px;border-radius:50%;border:1.5px solid #ddd8d0;background:white;cursor:pointer;font-family:'DM Mono',monospace;font-size:.6rem;font-weight:500;color:#888;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.dor-int-btn.active-1{background:#27ae60;border-color:#27ae60;color:white;}
+.dor-int-btn.active-2{background:#f1c40f;border-color:#f1c40f;color:#333;}
+.dor-int-btn.active-3{background:#e67e22;border-color:#e67e22;color:white;}
+.dor-int-btn.active-4{background:#c0392b;border-color:#c0392b;color:white;}
+.dor-int-btn.active-5{background:#7b0000;border-color:#7b0000;color:white;}
+.dor-notes-area{width:100%;border:1px solid #ddd8d0;border-radius:2px;background:#f8f5f0;font-family:'DM Sans',sans-serif;font-size:.85rem;color:#2c2c2c;padding:.8rem 1rem;resize:vertical;min-height:70px;line-height:1.6;}
+.dor-notes-area:focus{outline:none;border-color:#1a3a5c;}
+.dor-print-btn{display:block;width:100%;padding:.9rem;background:#1a3a5c;color:white;border:none;font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s;margin-top:1.5rem;}
+.dor-print-btn:hover{background:#2a5080;}
+.dor-footer{padding:.8rem 1.5rem;border-top:1px solid #ddd8d0;display:flex;justify-content:space-between;align-items:center;}
+.dor-footer span{font-family:'DM Mono',monospace;font-size:.65rem;color:#888;letter-spacing:.06em;}
+
+/* ===========================
+   PAGE 3 — SKINCARE
+   =========================== */
+#page-skin{background:#faf6f1;min-height:100vh;padding-bottom:80px;}
+#page-skin .skin-inner{max-width:520px;margin:0 auto;padding:24px 16px 0;}
+.skin-tabs{display:flex;gap:8px;justify-content:center;margin-bottom:28px;}
+.skin-tab{padding:10px 28px;border-radius:100px;border:1.5px solid #e8c4b8;background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;color:#8c6e65;cursor:pointer;transition:all .25s;}
+.skin-tab.active{background:#c4826a;border-color:#c4826a;color:white;}
+.skin-panel{display:none;}
+.skin-panel.active{display:block;}
+.skin-section-label{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:#8c6e65;margin-bottom:12px;padding-left:4px;}
+.skin-steps-group{margin-bottom:28px;}
+.skin-step{display:flex;align-items:flex-start;gap:14px;background:white;border-radius:14px;padding:16px 18px;margin-bottom:10px;border:1px solid #ede5df;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.skin-step::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#e8c4b8;border-radius:3px 0 0 3px;transition:background .2s;}
+.skin-step.done{background:#f2e8e3;}
+.skin-step.done::before{background:#c4826a;}
+.skin-step-num{width:26px;height:26px;border-radius:50%;border:1.5px solid #e8c4b8;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:500;color:#8c6e65;flex-shrink:0;transition:all .2s;}
+.skin-step.done .skin-step-num{background:#c4826a;border-color:#c4826a;color:white;}
+.skin-step-content{flex:1;}
+.skin-step-name{font-size:.88rem;font-weight:500;color:#3d2b24;margin-bottom:3px;}
+.skin-step-detail{font-size:.74rem;color:#8c6e65;line-height:1.5;}
+.skin-step-tag{font-size:.65rem;padding:2px 8px;border-radius:100px;background:#e8c4b8;color:#3d2b24;letter-spacing:.06em;margin-top:6px;display:inline-block;}
+.skin-step-tag.manipulado{background:#d4e8d4;color:#2a4a2a;}
+.skin-step-tag.opcional{background:#e8eff8;color:#1a2a4a;}
+.skin-step-tag.serum{background:#e8d4f0;color:#3a1a4a;}
+.skin-night-card{background:#2d1e17;border-radius:20px;padding:20px;margin-bottom:16px;border:1px solid #3d2b24;}
+.skin-night-card .skin-section-label{color:#c9a87c;}
+.skin-night-card .skin-step{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
+.skin-night-card .skin-step.done{background:rgba(196,130,106,.15);}
+.skin-night-card .skin-step::before{background:rgba(201,168,124,.3);}
+.skin-night-card .skin-step.done::before{background:#c9a87c;}
+.skin-night-card .skin-step-name{color:#f5ede8;}
+.skin-night-card .skin-step-detail{color:#8c7a72;}
+.skin-night-card .skin-step-num{border-color:#5a3a2a;color:#c9a87c;}
+.skin-night-card .skin-step.done .skin-step-num{background:#c9a87c;border-color:#c9a87c;color:#1e1410;}
+.skin-progress-bar{height:4px;background:#ede5df;border-radius:4px;margin-bottom:28px;overflow:hidden;}
+.skin-progress-fill{height:100%;background:linear-gradient(90deg,#e8c4b8,#c4826a);border-radius:4px;transition:width .4s ease;width:0%;}
+.skin-night-card .skin-progress-bar{background:#3d2b24;}
+.skin-night-card .skin-progress-fill{background:linear-gradient(90deg,#5a3a2a,#c9a87c);}
+.skin-reset-btn{display:block;margin:16px auto 0;padding:10px 32px;border-radius:100px;border:1.5px solid #e8c4b8;background:transparent;font-family:'DM Sans',sans-serif;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:#8c6e65;cursor:pointer;transition:all .2s;}
+.skin-reset-btn:hover{border-color:#c4826a;color:#c4826a;}
+.skin-obs-box{background:#fff8f0;border:1px solid #e8c4b8;border-radius:12px;padding:14px 16px;font-size:.76rem;color:#8c6e65;line-height:1.6;margin-bottom:16px;}
+.skin-obs-box strong{color:#c4826a;}
+.skin-night-obs{background:rgba(201,168,124,.08);border-color:rgba(201,168,124,.2);color:#8c7a72;}
+.skin-night-obs strong{color:#c9a87c;}
+.skin-sub-note{font-size:.7rem;color:#8c7a72;margin-bottom:14px;line-height:1.5;}
+
+/* ===========================
+   PAGE 4 — PLANTAS (React via inline script)
+   =========================== */
+#page-plantas{background:#f7f5f0;min-height:100vh;padding-bottom:80px;}
+#plantas-root{padding-bottom:80px;}
+
+/* ===========================
+   PAGE 5 — CAPILAR
+   =========================== */
+#page-capilar{background:#faf7f2;min-height:100vh;padding-bottom:80px;}
+#page-capilar .cap-inner{max-width:520px;margin:0 auto;padding:0 16px 0;}
+
+/* capilar styles */
+.cap-badge{display:inline-block;background:#2a2018;color:#faf7f2;font-size:10px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:14px;}
+.cap-header{text-align:center;padding:28px 0 20px;}
+.cap-header h2{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:600;line-height:1.15;color:#2a2018;margin-bottom:6px;}
+.cap-header h2 em{font-style:italic;color:#a8917a;}
+.cap-header p{font-size:13px;color:#6b5744;font-weight:300;letter-spacing:.3px;}
+.cap-legend{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;}
+.cap-legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#6b5744;}
+.cap-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.cap-progress-wrap{background:white;border-radius:18px;padding:18px 20px;box-shadow:0 2px 12px rgba(42,32,24,.07);margin-bottom:18px;}
+.cap-progress-label{display:flex;justify-content:space-between;font-size:12px;color:#6b5744;margin-bottom:10px;}
+.cap-progress-track{height:8px;background:#f0e8dc;border-radius:10px;overflow:hidden;}
+.cap-progress-fill{height:100%;background:linear-gradient(90deg,#7bb8d4,#c9a96e);border-radius:10px;transition:width .4s ease;}
+.cap-month-label{font-family:'Playfair Display',serif;font-size:13px;color:#2a2018;margin-bottom:4px;font-weight:600;}
+.cap-week-block{margin-bottom:18px;background:white;border-radius:18px;overflow:hidden;box-shadow:0 2px 12px rgba(42,32,24,.07);}
+.cap-week-header{padding:13px 20px 11px;border-bottom:1px solid #f0e8dc;display:flex;align-items:center;justify-content:space-between;}
+.cap-week-label{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:#2a2018;}
+.cap-week-dates{font-size:11px;color:#a8917a;}
+.cap-wash-card{display:flex;align-items:center;gap:14px;padding:15px 20px;cursor:pointer;transition:background .2s;border-bottom:1px solid #f0e8dc;user-select:none;-webkit-tap-highlight-color:transparent;}
+.cap-wash-card:last-child{border-bottom:none;}
+.cap-wash-card:hover{background:#f0e8dc;}
+.cap-wash-card.done{opacity:.75;}
+.cap-check-circle{width:32px;height:32px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .25s;font-size:14px;}
+.cap-wash-card.done .cap-check-circle{background:#7aab7a;border-color:#7aab7a;color:white;}
+.cap-wash-info{flex:1;}
+.cap-wash-day{font-size:13px;font-weight:500;color:#2a2018;margin-bottom:2px;}
+.cap-wash-card.done .cap-wash-day{text-decoration:line-through;color:#6b5744;}
+.cap-wash-step{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:2px 9px;border-radius:10px;letter-spacing:.2px;}
+.cap-step-H{background:#e8f4f9;color:#7bb8d4;}
+.cap-step-N{background:#faf3e6;color:#c9a96e;}
+.cap-step-R{background:#f5edf5;color:#b07ab0;}
+.cap-step-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.cap-tip-box{background:#f0e8dc;border-radius:12px;padding:11px 15px;margin:0 20px 14px 68px;font-size:12px;color:#6b5744;line-height:1.6;display:none;}
+.cap-tip-box.visible{display:block;}
+.cap-glossary{background:white;border-radius:18px;padding:18px;box-shadow:0 2px 12px rgba(42,32,24,.07);margin-bottom:18px;}
+.cap-glossary h3{font-family:'Playfair Display',serif;font-size:14px;margin-bottom:12px;color:#2a2018;}
+.cap-glossary-item{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;}
+.cap-glossary-icon{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.cap-glossary-text{font-size:12px;color:#6b5744;line-height:1.55;}
+.cap-glossary-text strong{color:#2a2018;font-size:13px;display:block;margin-bottom:1px;}
+
+/* ===== CARD DIÁRIO ===== */
+.daily-card{
+  background:linear-gradient(135deg,#1e1628 0%,#231e35 100%);
+  border:1px solid #3a3060;
+  border-radius:18px;
+  padding:18px 18px 14px;
+  margin-bottom:20px;
+  position:relative;
+  overflow:hidden;
+}
+.daily-card::before{
+  content:'';
+  position:absolute;
+  top:-30px;right:-30px;
+  width:100px;height:100px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(180,142,244,.12),transparent 70%);
+}
+.daily-card-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:14px;
+}
+.daily-card-title{
+  font-family:'DM Serif Display',serif;
+  font-size:.95rem;
+  color:#e8e4f7;
+  letter-spacing:.01em;
+}
+.daily-card-date{
+  font-size:.65rem;
+  color:#6b6490;
+  font-family:'DM Mono',monospace;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.daily-med-row{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;
+  padding:13px 14px;
+  margin-bottom:8px;
+  cursor:pointer;
+  transition:all .2s;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.daily-med-row:last-child{margin-bottom:0;}
+.daily-med-row:hover{background:rgba(255,255,255,.07);}
+.daily-med-row.taken{
+  background:rgba(76,175,138,.12);
+  border-color:rgba(76,175,138,.3);
+}
+.daily-med-check{
+  width:30px;height:30px;
+  border-radius:50%;
+  border:2px solid #4a4270;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  font-size:14px;
+  transition:all .25s;
+  color:transparent;
+}
+.daily-med-row.taken .daily-med-check{
+  background:#4caf8a;
+  border-color:#4caf8a;
+  color:white;
+}
+.daily-med-info{flex:1;}
+.daily-med-name{
+  font-size:.88rem;
+  font-weight:500;
+  color:#e8e4f7;
+  margin-bottom:2px;
+  transition:color .2s;
+}
+.daily-med-row.taken .daily-med-name{
+  color:#8b85a8;
+  text-decoration:line-through;
+}
+.daily-med-when{
+  font-size:.7rem;
+  color:#6b6490;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.daily-med-dot{
+  width:6px;height:6px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.daily-med-dose{
+  font-size:.68rem;
+  font-weight:600;
+  padding:2px 9px;
+  border-radius:20px;
+  margin-left:auto;
+  flex-shrink:0;
+}
+.daily-reset{
+  display:block;
+  width:100%;
+  margin-top:12px;
+  padding:7px;
+  background:transparent;
+  border:1px solid #2e2a45;
+  border-radius:8px;
+  color:#4a4270;
+  font-family:'DM Sans',sans-serif;
+  font-size:.68rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all .2s;
+}
+.daily-reset:hover{border-color:#b48ef4;color:#b48ef4;}
+.daily-all-done{
+  text-align:center;
+  font-size:.75rem;
+  color:#4caf8a;
+  margin-top:10px;
+  font-weight:500;
+  letter-spacing:.05em;
+  opacity:0;
+  transition:opacity .4s;
+}
+.daily-all-done.visible{opacity:1;}
+
+@media print{
+  .bottom-nav{display:none!important;}
+  body{padding-bottom:0!important;}
+  #page-dor{display:block!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- PAGES -->
+<div id="page-med" class="page active">
+  <div style="padding:0 16px;" class="med-inner">
+    <header>
+      <h1>Controle de <em>Medicamentos</em></h1>
+      <p>Neurologia · Einstein · Mai–Jun 2026</p>
+    </header>
+
+    <!-- CARD DIÁRIO -->
+    <div class="daily-card" id="daily-card">
+      <div class="daily-card-header">
+        <div class="daily-card-title">Medicações de hoje</div>
+        <div class="daily-card-date" id="daily-date"></div>
+      </div>
+
+      <div class="daily-med-row" id="daily-fluox" onclick="dailyToggle('fluox')">
+        <div class="daily-med-check" id="daily-check-fluox"></div>
+        <div class="daily-med-info">
+          <div class="daily-med-name">Fluoxetina</div>
+          <div class="daily-med-when">
+            <div class="daily-med-dot" style="background:#7ed8c8"></div>
+            Após o café da manhã
+          </div>
+        </div>
+        <div class="daily-med-dose" style="background:rgba(126,216,200,.15);color:#7ed8c8">60 mg</div>
+      </div>
+
+      <div class="daily-med-row" id="daily-riva" onclick="dailyToggle('riva')">
+        <div class="daily-med-check" id="daily-check-riva"></div>
+        <div class="daily-med-info">
+          <div class="daily-med-name">Rivaroxabana</div>
+          <div class="daily-med-when">
+            <div class="daily-med-dot" style="background:#f4a96a"></div>
+            Após o almoço · com refeição principal
+          </div>
+        </div>
+        <div class="daily-med-dose" style="background:rgba(244,169,106,.15);color:#f4a96a">20 mg</div>
+      </div>
+
+      <div class="daily-med-row" id="daily-minox" onclick="dailyToggle('minox')">
+        <div class="daily-med-check" id="daily-check-minox"></div>
+        <div class="daily-med-info">
+          <div class="daily-med-name">Minoxidil</div>
+          <div class="daily-med-when">
+            <div class="daily-med-dot" style="background:#b48ef4"></div>
+            Horário indiferente · 1x ao dia
+          </div>
+        </div>
+        <div class="daily-med-dose" style="background:rgba(180,142,244,.15);color:#b48ef4">0,5 mg</div>
+      </div>
+
+      <div class="daily-med-row" id="daily-endofer" onclick="dailyToggle('endofer')">
+        <div class="daily-med-check" id="daily-check-endofer"></div>
+        <div class="daily-med-info">
+          <div class="daily-med-name">Endofer</div>
+          <div class="daily-med-when">
+            <div class="daily-med-dot" style="background:#7ed8c8"></div>
+            Fora das refeições
+          </div>
+        </div>
+        <div class="daily-med-dose" style="background:rgba(126,216,200,.15);color:#7ed8c8">Sulfato ferroso</div>
+      </div>
+
+      <div class="daily-all-done" id="daily-alldone">✓ Todas as medicações de hoje tomadas</div>
+      <button class="daily-reset" onclick="dailyReset()">↺ Reiniciar dia</button>
+    </div>
+
+    <div class="med-legend">
+      <div class="med-legend-item"><div class="med-legend-dot" style="background:#b48ef4"></div>Lamotrigina</div>
+      <div class="med-legend-item"><div class="med-legend-dot" style="background:#7ed8c8"></div>Topiramato</div>
+      <div class="med-legend-item"><div class="med-legend-dot" style="background:#f4a96a"></div>Miosan</div>
+    </div>
+    <div id="med-phases-container"></div>
+    <div class="med-summary-bar" id="med-summary-bar">
+      <div class="med-summary-stat"><div class="num" id="med-stat-total">0</div><div class="lbl">Dias tomados</div></div>
+      <div class="med-summary-divider"></div>
+      <div class="med-summary-stat"><div class="num" id="med-stat-streak">0</div><div class="lbl">Sequência</div></div>
+      <div class="med-summary-divider"></div>
+      <div class="med-summary-stat"><div class="num" id="med-stat-remaining">0</div><div class="lbl">Restantes</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-dor" class="page">
+  <div class="dor-page">
+    <div class="dor-header">
+      <div class="dor-header-top">
+        <h1><span>Registro de Dores</span>Diário de Enxaqueca</h1>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div class="dor-month-box">
+            <label>Mês / Ano</label>
+            <input class="dor-month-input" type="text" placeholder="Maio / 2026" id="dor-month-title">
+          </div>
+          <div id="dor-save-indicator" style="font-size:.65rem;color:#4caf8a;font-family:'DM Mono',monospace;letter-spacing:.08em;opacity:0;transition:opacity .4s;">✓ salvo</div>
+        </div>
+      </div>
+      <div class="dor-header-meta">
+        <div class="dor-meta-item"><label>Paciente</label><input type="text" value="Bruna Costa de Araujo"></div>
+        <div class="dor-meta-item"><label>Médico</label><input type="text" placeholder="Dr.(a)..."></div>
+      </div>
+    </div>
+    <div class="dor-body">
+      <div class="dor-legend">
+        <span class="dor-legend-title">Intensidade da dor</span>
+        <div class="dor-legend-item"><div class="dor-dot" style="background:#27ae60"></div>1–2 Leve</div>
+        <div class="dor-legend-item"><div class="dor-dot" style="background:#f1c40f"></div>3–4 Moderada</div>
+        <div class="dor-legend-item"><div class="dor-dot" style="background:#e67e22"></div>5–6 Forte</div>
+        <div class="dor-legend-item"><div class="dor-dot" style="background:#c0392b"></div>7–8 Intensa</div>
+        <div class="dor-legend-item"><div class="dor-dot" style="background:#7b0000"></div>9–10 Severa</div>
+      </div>
+      <div class="dor-summary">
+        <div class="dor-summary-card"><div class="val" id="dor-total-days">0</div><div class="lbl">Dias com dor</div></div>
+        <div class="dor-summary-card"><div class="val" id="dor-rescue-count">0</div><div class="lbl">Resgates</div></div>
+        <div class="dor-summary-card"><div class="val" id="dor-avg-int">—</div><div class="lbl">Int. média</div></div>
+        <div class="dor-summary-card"><div class="val" id="dor-worst-day">—</div><div class="lbl">Pior dia</div></div>
+      </div>
+      <div style="margin-bottom:1.2rem;">
+        <div class="dor-section-title">Medicações em uso este mês</div>
+        <div class="dor-meds-grid">
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-riva"><span>Rivaroxabana</span></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-topi"><span>Topiramato</span></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-lamo"><span>Lamotrigina</span></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-fluox"><span>Fluoxetina</span></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-outro1"><input type="text" id="dor-med-outro1-txt" placeholder="Outro..."></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-outro2"><input type="text" id="dor-med-outro2-txt" placeholder="Outro..."></div>
+        </div>
+      </div>
+      <div class="dor-table-wrap">
+        <table class="dor-table" id="dor-log-table">
+          <thead><tr>
+            <th>Dia</th><th>Intensidade</th><th>Localização</th><th>Sintomas</th><th>Resgate</th><th>Observações</th>
+          </tr></thead>
+          <tbody id="dor-table-body"></tbody>
+        </table>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div class="dor-section-title">Observações gerais do mês</div>
+        <textarea class="dor-notes-area" id="dor-obs-gerais" placeholder="Padrão percebido, sono, ciclo, estresse..."></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div class="dor-section-title">Perguntas para a próxima consulta</div>
+        <textarea class="dor-notes-area" id="dor-obs-consulta" placeholder="Anote aqui o que quiser discutir com o médico..."></textarea>
+      </div>
+      <button class="dor-print-btn" onclick="window.print()">↓ Imprimir / Salvar PDF</button>
+    </div>
+    <div class="dor-footer">
+      <span>Bruna Costa de Araujo — Registro Neurológico</span>
+      <span id="dor-footer-month"></span>
+    </div>
+  </div>
+</div>
+
+<div id="page-skin" class="page">
+  <div class="skin-inner">
+    <div style="text-align:center;margin-bottom:24px;padding-top:24px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:#3d2b24;letter-spacing:.04em;">Rotina Skincare</div>
+      <div style="font-size:.72rem;color:#8c6e65;margin-top:4px;letter-spacing:.12em;text-transform:uppercase;">Protocolo Dra. Lara Grazziotti</div>
+    </div>
+    <div class="skin-tabs">
+      <button class="skin-tab active" onclick="skinSwitchTab('skin-manha',event)">☀️ Manhã</button>
+      <button class="skin-tab" onclick="skinSwitchTab('skin-noite',event)">🌙 Noite</button>
+    </div>
+    <!-- MANHÃ -->
+    <div id="skin-manha" class="skin-panel active">
+      <div class="skin-progress-bar"><div class="skin-progress-fill" id="skin-prog-manha"></div></div>
+      <div class="skin-steps-group">
+        <div class="skin-section-label">Limpeza</div>
+        <div class="skin-step" onclick="skinToggle(this,'skin-manha')" data-id="m1">
+          <div class="skin-step-num">1</div>
+          <div class="skin-step-content">
+            <div class="skin-step-name">Sabonete Gel Manipulado</div>
+            <div class="skin-step-detail">Eritromicina 2% + Peróxido de Benzoíla 2,5% + Nicotinamida 1,5% + Lavanda + Alantoína 1%</div>
+            <span class="skin-step-tag manipulado">Manipulado · Pharmédica</span>
+          </div>
+        </div>
+      </div>
+      <div class="skin-steps-group">
+        <div class="skin-section-label">Ativo Matinal</div>
+        <div class="skin-step" onclick="skinToggle(this,'skin-manha')" data-id="m2">
+          <div class="skin-step-num">2</div>
+          <div class="skin-step-content">
+            <div class="skin-step-name">Hidratante Matinal Anti-acne</div>
+            <div class="skin-step-detail">Dapsona 7,5% + Adapaleno 0,1% + Azeloglicina 2% + Nano Acnol 2% + Laytenol A 0,2%</div>
+            <span class="skin-step-tag manipulado">Manipulado · Pharmédica</span>
+          </div>
+        </div>
+      </div>
+      <div class="skin-steps-group">
+        <div class="skin-section-label">Proteção Solar</div>
+        <div class="skin-step" onclick="skinToggle(this,'skin-manha')" data-id="m3">
+          <div class="skin-step-num">3</div>
+          <div class="skin-step-content">
+            <div class="skin-step-name">Bioderma Photoderm Antioleosidade FPS 30</div>
+            <div class="skin-step-detail">Aplicar no rosto. Reaplicar na hora do almoço.</div>
+            <span class="skin-step-tag">Sem cor</span>
+          </div>
+        </div>
+        <div class="skin-step" onclick="skinToggle(this,'skin-manha')" data-id="m4">
+          <div class="skin-step-num">4</div>
+          <div class="skin-step-content">
+            <div class="skin-step-name">Bioderma XDefense Ultra-Fluid FPS 50+ Cor 4.0</div>
+            <div class="skin-step-detail">Opcional por cima do FPS 30 ou na reaplicação. Reaplicar a cada 2h.</div>
+            <span class="skin-step-tag">Com cor · Opcional</span>
+          </div>
+        </div>
+      </div>
+      <div class="skin-obs-box">
+        <strong>⚠️ Protetor La Roche-Posay FPS 70 (transição)</strong><br>
+        Pode usar até acabar no lugar do Bioderma FPS 30. Se notar aumento de oleosidade, pause e troque.
+      </div>
+      <button class="skin-reset-btn" onclick="skinReset('skin-manha')">Limpar manhã</button>
+    </div>
+    <!-- NOITE -->
+    <div id="skin-noite" class="skin-panel">
+      <div class="skin-night-card">
+        <div class="skin-section-label">Noite A — Sérum Clareador</div>
+        <div class="skin-sub-note">Alterna com Noite B — uma noite sim, uma não.</div>
+        <div class="skin-progress-bar"><div class="skin-progress-fill" id="skin-prog-noite-a"></div></div>
+        <div class="skin-step" onclick="skinToggle(this,'skin-noite-a')" data-id="a1">
+          <div class="skin-step-num">1</div>
+          <div class="skin-step-content">
+            <div class="skin-step-name">Tônico Nivea Efeito Matte <span style="font-weight:300;font-size:.75rem">(se usou maquiagem)</span></div>
+            <div class="skin-step-detail">Passar com algodão antes do sabonete.</div>
+            <span class="skin-step-tag opcional">Opcional</span>
+          </div>
+        </div>
+        <div class="skin-step" onclick="skinToggle(this,'skin-noite-a')" data-id="a2">
+          <div class="skin-step-num">2</div>
+          <div class="skin-step-content">
+            <div class="skin-step-name">Sabonete Gel Manipulado</div>
+            <div class="skin-step-detail">Lavar o rosto.</div>
+            <span class="skin-step-tag manipulado">Manipulado · Pharmédica</span>
+          </div>
+        </div>
+        <div class="skin-step" onclick="skinToggle(this,'skin-noite-a')" data-id="a3">
+          <div class="skin-step-num">3</div>
+          <div class="skin-step-content">
+            <div class="skin-step-name">Profuse Sérum Clareador Intensivo</div>
+            <div class="skin-step-detail">Aplicar no rosto. Foco em manchas pós-acne.</div>
+            <span class="skin-step-tag serum">Sérum · Noite A</span>
+          </div>
+        </div>
+        <button class="skin-reset-btn" style="border-color:#3d2b24;color:#5a3a2a" onclick="skinReset('skin-noite-a')">Limpar</button>
+      </div>
+      <div class="skin-night-card">
+        <div class="skin-section-label">Noite B — Nutritivo Noturno</div>
+        <div class="skin-sub-note">Alterna com Noite A — uma noite sim, uma não.</div>
+        <div class="skin-progress-bar"><div class="skin-progress-fill" id="skin-prog-noite-b"></div></div>
+        <div class="skin-step" onclick="skinToggle(this,'skin-noite-b')" data-id="b1">
+          <div class="skin-step-num">1</div>
+          <div class="skin-step-content">
+            <div class="skin-step-name">Tônico Nivea Efeito Matte <span style="font-weight:300;font-size:.75rem">(se usou maquiagem)</span></div>
+            <div class="skin-step-detail">Passar com algodão antes do sabonete.</div>
+            <span class="skin-step-tag opcional">Opcional</span>
+          </div>
+        </div>
+        <div class="skin-step" onclick="skinToggle(this,'skin-noite-b')" data-id="b2">
+          <div class="skin-step-num">2</div>
+          <div class="skin-step-content">
+            <div class="skin-step-name">Sabonete Gel Manipulado</div>
+            <div class="skin-step-detail">Lavar o rosto.</div>
+            <span class="skin-step-tag manipulado">Manipulado · Pharmédica</span>
+          </div>
+        </div>
+        <div class="skin-step" onclick="skinToggle(this,'skin-noite-b')" data-id="b3">
+          <div class="skin-step-num">3</div>
+          <div class="skin-step-content">
+            <div class="skin-step-name">Nutritivo Hidratante Noturno</div>
+            <div class="skin-step-detail">Hidroquinona 4% + Madecassoside 0,3% + Aquaporine 1,5% + Calmaline 2% + Pentavitin 2%</div>
+            <span class="skin-step-tag manipulado">Manipulado · Pharmédica · Noite B</span>
+          </div>
+        </div>
+        <button class="skin-reset-btn" style="border-color:#3d2b24;color:#5a3a2a" onclick="skinReset('skin-noite-b')">Limpar</button>
+      </div>
+      <div class="skin-obs-box skin-night-obs">
+        <strong>⚠️ Tônico adstringente</strong><br>
+        Use só quando tiver maquiagem. Se sentir ardência, pause o tônico primeiro.
+      </div>
+      <div class="skin-obs-box skin-night-obs">
+        <strong>💊 Minoxidil 0,5mg oral + Endofer</strong><br>
+        Minoxidil: 1 comprimido/dia. Endofer: conforme Dra. Lara.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-capilar" class="page">
+  <div class="cap-inner">
+    <div class="cap-header">
+      <div class="cap-badge">Cronograma Capilar</div>
+      <h2>Seu cabelo,<br><em>com carinho.</em></h2>
+      <p>Quartas e Domingos · Cacheado 3A/3B · Maio–Junho 2026</p>
+    </div>
+    <div class="cap-progress-wrap">
+      <div class="cap-month-label">Progresso de Maio</div>
+      <div class="cap-progress-label">
+        <span id="cap-prog-text">1 de 9 lavagens concluídas</span>
+        <span id="cap-prog-pct">11%</span>
+      </div>
+      <div class="cap-progress-track"><div class="cap-progress-fill" id="cap-prog-fill" style="width:11%"></div></div>
+    </div>
+    <div class="cap-legend">
+      <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#7bb8d4"></div>Hidratação</div>
+      <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#c9a96e"></div>Nutrição</div>
+      <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#b07ab0"></div>Reconstrução</div>
+      <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#7aab7a"></div>Concluída</div>
+    </div>
+    <div id="cap-schedule"></div>
+    <div class="cap-glossary">
+      <h3>O que fazer em cada etapa</h3>
+      <div class="cap-glossary-item">
+        <div class="cap-glossary-icon H" style="background:#e8f4f9">💧</div>
+        <div class="cap-glossary-text"><strong>🔵 Hidratação — repõe água</strong>Condicionador ou máscara hidratante, 10–15 min. Finalize com leave-in leve. Seda Liso dos Sonhos serve aqui!</div>
+      </div>
+      <div class="cap-glossary-item">
+        <div class="cap-glossary-icon N" style="background:#faf3e6">🌿</div>
+        <div class="cap-glossary-text"><strong>🟡 Nutrição — sela com óleos</strong>Máscara de óleos com touca, 20–30 min. Kolene de óleos africanos é perfeita!</div>
+      </div>
+      <div class="cap-glossary-item">
+        <div class="cap-glossary-icon R" style="background:#f5edf5">✨</div>
+        <div class="cap-glossary-text"><strong>🔴 Reconstrução — repõe proteína</strong>Máscara proteica (Salon Line, Biokin, Elseve), 20–30 min com calor se possível.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-plantas" class="page">
+  <div id="plantas-root"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('page-med',this)">
+    <span class="nav-icon">💊</span>
+    <span class="nav-label">Medicação</span>
+  </button>
+  <button class="nav-btn" onclick="showPage('page-dor',this)">
+    <span class="nav-icon">🧠</span>
+    <span class="nav-label">Dores</span>
+  </button>
+  <button class="nav-btn" onclick="showPage('page-skin',this)">
+    <span class="nav-icon">✨</span>
+    <span class="nav-label">Skincare</span>
+  </button>
+  <button class="nav-btn" onclick="showPage('page-capilar',this)">
+    <span class="nav-icon">💧</span>
+    <span class="nav-label">Capilar</span>
+  </button>
+  <button class="nav-btn" onclick="showPage('page-plantas',this)">
+    <span class="nav-icon">🌿</span>
+    <span class="nav-label">Plantas</span>
+  </button>
+</nav>
+
+<!-- React for Plantas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+
+<script>
+/* ===== NAV ===== */
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='page-plantas' && !window._plantasRendered){
+    renderPlantas();
+    window._plantasRendered=true;
+  }
+}
+
+/* ===== CARD DIÁRIO ===== */
+(function(){
+  const DAILY_KEY = 'daily_meds_v1';
+  const WEEKDAYS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+  function todayKey(){
+    const d=new Date();
+    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  }
+  function loadDaily(){
+    try{const r=JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+      if(r.date!==todayKey())return{date:todayKey(),fluox:false,riva:false,minox:false,endofer:false};
+      return r;
+    }catch{return{date:todayKey(),fluox:false,riva:false,minox:false,endofer:false};}
+  }
+  function saveDaily(s){localStorage.setItem(DAILY_KEY,JSON.stringify(s));}
+
+  let dailyState=loadDaily();
+
+  // Set date label
+  const now=new Date();
+  document.getElementById('daily-date').textContent=
+    `${WEEKDAYS[now.getDay()]}, ${now.getDate()} de ${MONTHS[now.getMonth()]}`;
+
+  function dailyRenderState(){
+    ['fluox','riva','minox','endofer'].forEach(id=>{
+      const row=document.getElementById(`daily-${id}`);
+      const check=document.getElementById(`daily-check-${id}`);
+      if(dailyState[id]){row.classList.add('taken');check.textContent='✓';}
+      else{row.classList.remove('taken');check.textContent='';}
+    });
+    const allDone=dailyState.fluox&&dailyState.riva&&dailyState.minox&&dailyState.endofer;
+    document.getElementById('daily-alldone').classList.toggle('visible',allDone);
+  }
+
+  window.dailyToggle=function(id){
+    dailyState[id]=!dailyState[id];
+    saveDaily(dailyState);
+    dailyRenderState();
+  };
+  window.dailyReset=function(){
+    dailyState={date:todayKey(),fluox:false,riva:false,minox:false,endofer:false};
+    saveDaily(dailyState);
+    dailyRenderState();
+  };
+
+  dailyRenderState();
+})();
+
+/* ===== MEDICAMENTOS ===== */
+const MED_TODAY = new Date(2026,4,14);
+const MED_WEEKDAYS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+function medDateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function medFormatDate(d){return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;}
+function medIsToday(d){return medDateKey(d)===medDateKey(MED_TODAY);}
+function medIsPast(d){return d<MED_TODAY && !medIsToday(d);}
+
+const MED_PHASES=[
+  {id:'semana1',tag:'Semana 1',title:'Início suave',start:new Date(2026,4,12),end:new Date(2026,4,18),
+    meds:[{name:'Lamotrigina',dose:'25mg noite',color:'#b48ef4',key:'lamo'},{name:'Topiramato',dose:'25mg noite',color:'#7ed8c8',key:'topi'},{name:'Miosan',dose:'10mg noite',color:'#f4a96a',key:'mios'}],
+    note:'⚠️ Tomar os três juntos à noite. Miosan pode dar sonolência — ótimo para o sono.'},
+  {id:'semana2',tag:'Semana 2',title:'Lamotrigina sobe',start:new Date(2026,4,19),end:new Date(2026,4,25),
+    meds:[{name:'Lamotrigina',dose:'25mg manhã + 25mg noite',color:'#b48ef4',key:'lamo'},{name:'Topiramato',dose:'25mg noite',color:'#7ed8c8',key:'topi'},{name:'Miosan',dose:'10mg noite',color:'#f4a96a',key:'mios'}],
+    note:'📌 Lamotrigina agora em duas tomadas: manhã e noite.'},
+  {id:'semana3',tag:'Semana 3',title:'Quase na dose final',start:new Date(2026,4,26),end:new Date(2026,5,1),
+    meds:[{name:'Lamotrigina',dose:'25mg manhã + 50mg noite',color:'#b48ef4',key:'lamo'},{name:'Topiramato',dose:'25mg noite',color:'#7ed8c8',key:'topi'},{name:'Miosan',dose:'10mg noite',color:'#f4a96a',key:'mios'}],
+    note:'📌 Última semana do Topiramato e Miosan. Lamotrigina 75mg/dia.'},
+  {id:'manutencao',tag:'Manutenção',title:'Dose plena — contínuo',start:new Date(2026,5,2),end:new Date(2026,5,30),
+    meds:[{name:'Lamotrigina',dose:'50mg manhã + 50mg noite',color:'#b48ef4',key:'lamo'}],
+    note:'✅ Topiramato e Miosan encerrados. Lamotrigina 100mg/dia contínuo.'},
+];
+
+function medLoadState(){try{return JSON.parse(localStorage.getItem('med_control_v2')||'{}');}catch{return{};}}
+function medSaveState(s){localStorage.setItem('med_control_v2',JSON.stringify(s));}
+let medState=medLoadState();
+
+function medBuildPhase(phase,idx){
+  const days=[];let cur=new Date(phase.start);
+  while(cur<=phase.end){days.push(new Date(cur));cur.setDate(cur.getDate()+1);}
+  const totalDays=days.length;
+  const checkedDays=days.filter(d=>medState[medDateKey(d)]).length;
+  const isActive=days.some(d=>medIsToday(d));
+  const isOpen=isActive||idx===0;
+  const div=document.createElement('div');
+  div.className=`med-phase${isActive?' active':''}${isOpen?' open':''}`;
+  div.dataset.phaseId=phase.id;
+  const circumference=2*Math.PI*17;
+  const offset=circumference-(checkedDays/totalDays)*circumference;
+  const allDone=checkedDays===totalDays;
+  const pillsHtml=phase.meds.map(m=>`<span class="med-pill ${m.key}" title="${m.dose}">${m.name} · ${m.dose}</span>`).join('');
+  const startWd=phase.start.getDay();
+  let gridHtml='<div class="med-days-grid-inner">';
+  for(let i=0;i<startWd;i++)gridHtml+='<div></div>';
+  days.forEach(d=>{
+    const key=medDateKey(d);
+    const checked=!!medState[key];
+    const todayCls=medIsToday(d)?' today':'';
+    const pastCls=medIsPast(d)?' past':'';
+    const checkedCls=checked?' checked':'';
+    const dots=phase.meds.map(m=>`<div class="med-dose-dot" style="background:${m.color}"></div>`).join('');
+    gridHtml+=`<div class="med-day-cell${todayCls}${pastCls}${checkedCls}" data-date="${key}" onclick="medToggleDay('${key}')">
+      <div class="med-day-weekday">${MED_WEEKDAYS[d.getDay()]}</div>
+      <div class="med-day-num">${d.getDate()}/${d.getMonth()+1}</div>
+      ${checked?'<div class="med-day-check">✓</div>':`<div class="med-dose-dots">${dots}</div>`}
+    </div>`;
+  });
+  gridHtml+='</div>';
+  div.innerHTML=`
+    <div class="med-phase-header" onclick="medTogglePhase('${phase.id}')">
+      <div class="med-phase-header-left">
+        <div class="med-phase-tag">${phase.tag} · ${medFormatDate(phase.start)} – ${medFormatDate(phase.end)}</div>
+        <div class="med-phase-title">${phase.title}</div>
+      </div>
+      <div class="med-phase-progress">
+        <div class="med-progress-circle">
+          <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="17"/><circle class="fill${allDone?' done':''}" cx="22" cy="22" r="17" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/></svg>
+          <div class="med-progress-text">${checkedDays}/${totalDays}</div>
+        </div>
+      </div>
+      <div class="med-toggle-arrow">▼</div>
+    </div>
+    <div class="med-meds-summary">${pillsHtml}</div>
+    <div class="med-days-grid">${gridHtml}</div>
+    <div class="med-phase-note">${phase.note}</div>`;
+  return div;
+}
+function medTogglePhase(id){const el=document.querySelector(`[data-phase-id="${id}"]`);if(el)el.classList.toggle('open');}
+function medToggleDay(dateStr){medState[dateStr]=!medState[dateStr];medSaveState(medState);medRender();}
+function medRender(){
+  const c=document.getElementById('med-phases-container');c.innerHTML='';
+  MED_PHASES.forEach((p,i)=>c.appendChild(medBuildPhase(p,i)));
+  medUpdateStats();
+}
+function medUpdateStats(){
+  let allDays=[];
+  MED_PHASES.forEach(phase=>{let cur=new Date(phase.start);while(cur<=phase.end){allDays.push(new Date(cur));cur.setDate(cur.getDate()+1);}});
+  const total=Object.values(medState).filter(Boolean).length;
+  let streak=0,check=new Date(MED_TODAY);
+  while(medState[medDateKey(check)]){streak++;check.setDate(check.getDate()-1);}
+  const remaining=allDays.filter(d=>!medState[medDateKey(d)]&&(medIsToday(d)||!medIsPast(d))).length;
+  document.getElementById('med-stat-total').textContent=total;
+  document.getElementById('med-stat-streak').textContent=streak;
+  document.getElementById('med-stat-remaining').textContent=remaining;
+}
+medRender();
+
+/* ===== DIÁRIO DE DORES ===== */
+// Dados salvos via localStorage — funciona perfeitamente no GitHub Pages.
+const DOR_STORE_KEY = 'dor_store_v3';
+const dorLocations=['Frontal','Temporal E','Temporal D','Occipital','Hemicraniana E','Hemicraniana D','Difusa','Outra'];
+const dorSymptoms=['Náusea','Vômito','Fotofobia','Fonofobia','Aura','Formigamento','Outro'];
+
+function dorLoadStore(){
+  try{ return JSON.parse(localStorage.getItem(DOR_STORE_KEY)||'{}'); }catch{ return{}; }
+}
+function dorPersist(){
+  const store = { rows: dorState, meta: dorCollectMeta() };
+  try{ localStorage.setItem(DOR_STORE_KEY, JSON.stringify(store)); }catch(e){ console.error(e); }
+  const ind=document.getElementById('dor-save-indicator');
+  if(ind){ind.style.opacity='1';setTimeout(()=>ind.style.opacity='0',1800);}
+}
+
+const _dorStore = dorLoadStore();
+let dorState = _dorStore.rows || {};
+
+// ── coleta e restaura os campos meta ─────────────────────────────
+function dorCollectMeta(){
+  return {
+    month:   document.getElementById('dor-month-title').value,
+    paciente:document.querySelector('#page-dor .dor-meta-item:nth-child(1) input').value,
+    medico:  document.querySelector('#page-dor .dor-meta-item:nth-child(2) input').value,
+    medRiva: document.getElementById('dor-med-riva').checked,
+    medTopi: document.getElementById('dor-med-topi').checked,
+    medLamo: document.getElementById('dor-med-lamo').checked,
+    medFluox:document.getElementById('dor-med-fluox').checked,
+    medOutro1Check:document.getElementById('dor-med-outro1').checked,
+    medOutro1Txt:  document.getElementById('dor-med-outro1-txt').value,
+    medOutro2Check:document.getElementById('dor-med-outro2').checked,
+    medOutro2Txt:  document.getElementById('dor-med-outro2-txt').value,
+    obsGerais:  document.getElementById('dor-obs-gerais').value,
+    obsConsulta:document.getElementById('dor-obs-consulta').value,
+  };
+}
+function dorRestoreMeta(){
+  const meta = _dorStore.meta || {};
+  if(!Object.keys(meta).length) return;
+  if(meta.month){
+    document.getElementById('dor-month-title').value=meta.month;
+    document.getElementById('dor-footer-month').textContent=meta.month;
+  }
+  if(meta.paciente) document.querySelector('#page-dor .dor-meta-item:nth-child(1) input').value=meta.paciente;
+  if(meta.medico)   document.querySelector('#page-dor .dor-meta-item:nth-child(2) input').value=meta.medico;
+  document.getElementById('dor-med-riva').checked        = !!meta.medRiva;
+  document.getElementById('dor-med-topi').checked        = !!meta.medTopi;
+  document.getElementById('dor-med-lamo').checked        = !!meta.medLamo;
+  document.getElementById('dor-med-fluox').checked       = !!meta.medFluox;
+  document.getElementById('dor-med-outro1').checked      = !!meta.medOutro1Check;
+  document.getElementById('dor-med-outro1-txt').value    = meta.medOutro1Txt||'';
+  document.getElementById('dor-med-outro2').checked      = !!meta.medOutro2Check;
+  document.getElementById('dor-med-outro2-txt').value    = meta.medOutro2Txt||'';
+  document.getElementById('dor-obs-gerais').value        = meta.obsGerais||'';
+  document.getElementById('dor-obs-consulta').value      = meta.obsConsulta||'';
+}
+
+// ── cores de intensidade ──────────────────────────────────────────
+const dorColors={
+  1:'#27ae60',2:'#27ae60',
+  3:'#f1c40f',4:'#f1c40f',
+  5:'#e67e22',6:'#e67e22',
+  7:'#c0392b',8:'#c0392b',
+  9:'#7b0000',10:'#7b0000'
+};
+
+// ── salvar linha ──────────────────────────────────────────────────
+function dorSaveRow(day){
+  const row=document.querySelector(`#dor-table-body tr[data-day="${day}"]`);
+  if(!row) return;
+  const activeBtn=row.querySelector('.dor-int-btn[data-active="1"]');
+  const int=activeBtn?parseInt(activeBtn.dataset.val):0;
+  const loc=row.querySelector('select:nth-of-type(1)').value;
+  const sym=row.querySelector('select:nth-of-type(2)').value;
+  const resc=row.querySelector('input[type="text"]').value;
+  const notes=row.querySelector('textarea').value;
+  if(int||loc||sym||resc||notes){
+    dorState[String(day)]={int,loc,sym,resc,notes};
+  } else {
+    delete dorState[String(day)];
+  }
+  dorPersist();
+  dorUpdateSummary();
+}
+
+// ── montar tabela ─────────────────────────────────────────────────
+function dorBuildTable(){
+  const tbody=document.getElementById('dor-table-body');
+  for(let d=1;d<=31;d++){
+    const tr=document.createElement('tr');tr.dataset.day=d;
+    const saved=dorState[String(d)]||{};
+
+    // Dia
+    const tdDay=document.createElement('td');tdDay.className='dor-day-num';tdDay.textContent=String(d).padStart(2,'0');tr.appendChild(tdDay);
+
+    // Intensidade 1-10
+    const tdInt=document.createElement('td');tdInt.style.minWidth='170px';
+    const wrap=document.createElement('div');wrap.className='dor-int-wrap';wrap.style.flexWrap='wrap';wrap.style.gap='3px';
+    for(let i=1;i<=10;i++){
+      const btn=document.createElement('button');
+      btn.className='dor-int-btn';
+      btn.textContent=i;
+      btn.dataset.val=i;
+      btn.style.fontSize='.6rem';
+      if(parseInt(saved.int)===i){
+        btn.style.background=dorColors[i];
+        btn.style.borderColor=dorColors[i];
+        btn.style.color='white';
+        btn.dataset.active='1';
+      }
+      btn.onclick=function(){
+        const btns=wrap.querySelectorAll('.dor-int-btn');
+        btns.forEach(b=>{b.style.background='';b.style.borderColor='';b.style.color='';delete b.dataset.active;});
+        if(this.dataset.active==='1'){
+          delete this.dataset.active;
+        } else {
+          const val=parseInt(this.dataset.val);
+          this.style.background=dorColors[val];
+          this.style.borderColor=dorColors[val];
+          this.style.color='white';
+          this.dataset.active='1';
+        }
+        dorSaveRow(d);
+      };
+      wrap.appendChild(btn);
+    }
+    tdInt.appendChild(wrap);tr.appendChild(tdInt);
+
+    // Localização
+    const tdLoc=document.createElement('td');tdLoc.style.minWidth='120px';
+    const selLoc=document.createElement('select');
+    selLoc.innerHTML='<option value="">—</option>'+dorLocations.map(l=>`<option${saved.loc===l?' selected':''}>${l}</option>`).join('');
+    selLoc.addEventListener('change',()=>dorSaveRow(d));
+    tdLoc.appendChild(selLoc);tr.appendChild(tdLoc);
+
+    // Sintomas
+    const tdSym=document.createElement('td');tdSym.style.minWidth='100px';
+    const selSym=document.createElement('select');
+    selSym.innerHTML='<option value="">—</option>'+dorSymptoms.map(s=>`<option${saved.sym===s?' selected':''}>${s}</option>`).join('');
+    selSym.addEventListener('change',()=>dorSaveRow(d));
+    tdSym.appendChild(selSym);tr.appendChild(tdSym);
+
+    // Resgate
+    const tdResc=document.createElement('td');tdResc.style.minWidth='100px';
+    const inpResc=document.createElement('input');inpResc.type='text';inpResc.placeholder='qual?';
+    inpResc.value=saved.resc||'';
+    inpResc.addEventListener('input',()=>dorSaveRow(d));
+    tdResc.appendChild(inpResc);tr.appendChild(tdResc);
+
+    // Notas
+    const tdNotes=document.createElement('td');tdNotes.style.minWidth='140px';
+    const inpNotes=document.createElement('textarea');inpNotes.placeholder='gatilho...';
+    inpNotes.value=saved.notes||'';
+    inpNotes.addEventListener('input',()=>dorSaveRow(d));
+    tdNotes.appendChild(inpNotes);tr.appendChild(tdNotes);
+
+    tbody.appendChild(tr);
+  }
+}
+
+// ── resumo (média + pior dia) ─────────────────────────────────────
+function dorGetIntVal(row){
+  const a=row.querySelector('.dor-int-btn[data-active="1"]');
+  return a?parseInt(a.dataset.val):0;
+}
+function dorUpdateSummary(){
+  const rows=document.querySelectorAll('#dor-table-body tr');
+  let daysWithPain=0,totalInt=0,rescueCount=0,worstDay=0,worstInt=0;
+  rows.forEach((row,i)=>{
+    const v=dorGetIntVal(row);
+    const rescue=row.querySelector('input[type="text"]').value.trim();
+    if(v>0){
+      daysWithPain++;
+      totalInt+=v;
+      if(v>worstInt){worstInt=v;worstDay=i+1;}
+    }
+    if(rescue) rescueCount++;
+  });
+  document.getElementById('dor-total-days').textContent = daysWithPain;
+  document.getElementById('dor-rescue-count').textContent = rescueCount;
+  document.getElementById('dor-avg-int').textContent = daysWithPain>0
+    ? (totalInt/daysWithPain).toFixed(1) : '—';
+  // pior dia: mostra número do dia com a intensidade
+  if(worstDay>0){
+    document.getElementById('dor-worst-day').textContent = `Dia ${worstDay}`;
+    document.getElementById('dor-worst-day').title = `Intensidade ${worstInt}`;
+  } else {
+    document.getElementById('dor-worst-day').textContent = '—';
+  }
+}
+
+// ── listeners para campos meta ────────────────────────────────────
+function dorBindMetaListeners(){
+  document.getElementById('dor-month-title').addEventListener('input',function(){
+    document.getElementById('dor-footer-month').textContent=this.value;
+    dorPersist();
+  });
+  // paciente e médico
+  document.querySelectorAll('#page-dor .dor-meta-item input').forEach(inp=>{
+    inp.addEventListener('input', dorPersist);
+  });
+  // checkboxes e inputs de medicações em uso
+  ['dor-med-riva','dor-med-topi','dor-med-lamo','dor-med-fluox','dor-med-outro1','dor-med-outro2'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', dorPersist);
+  });
+  document.getElementById('dor-med-outro1-txt').addEventListener('input', dorPersist);
+  document.getElementById('dor-med-outro2-txt').addEventListener('input', dorPersist);
+  // observações gerais e perguntas
+  document.getElementById('dor-obs-gerais').addEventListener('input', dorPersist);
+  document.getElementById('dor-obs-consulta').addEventListener('input', dorPersist);
+}
+
+dorBuildTable();
+dorRestoreMeta();
+dorBindMetaListeners();
+dorUpdateSummary();
+
+/* ===== SKINCARE ===== */
+const SKIN_KEY='skincare_v1';
+const skinPanels={
+  'skin-manha':{count:4,ids:['m1','m2','m3','m4']},
+  'skin-noite-a':{count:3,ids:['a1','a2','a3']},
+  'skin-noite-b':{count:3,ids:['b1','b2','b3']}
+};
+const skinProgMap={'skin-manha':'skin-prog-manha','skin-noite-a':'skin-prog-noite-a','skin-noite-b':'skin-prog-noite-b'};
+
+function skinLoadState(){try{return JSON.parse(localStorage.getItem(SKIN_KEY)||'{}');}catch{return{};}}
+function skinSaveState(s){try{localStorage.setItem(SKIN_KEY,JSON.stringify(s));}catch{}}
+let skinState=skinLoadState();
+// Garantir estrutura
+if(!skinState['skin-manha'])skinState['skin-manha']={};
+if(!skinState['skin-noite-a'])skinState['skin-noite-a']={};
+if(!skinState['skin-noite-b'])skinState['skin-noite-b']={};
+
+// Aplicar estado salvo ao DOM
+function skinApplyState(){
+  Object.keys(skinPanels).forEach(panel=>{
+    skinPanels[panel].ids.forEach((id,i)=>{
+      const el=document.querySelector(`[data-id="${id}"]`);
+      if(!el)return;
+      const done=!!skinState[panel][id];
+      el.classList.toggle('done',done);
+      el.querySelector('.skin-step-num').textContent=done?'✓':i+1;
+    });
+    skinUpdateProgress(panel);
+  });
+}
+
+function skinToggle(el,panel){
+  const id=el.dataset.id;
+  skinState[panel][id]=!skinState[panel][id];
+  el.classList.toggle('done',skinState[panel][id]);
+  const num=el.querySelector('.skin-step-num');
+  num.textContent=skinState[panel][id]?'✓':skinPanels[panel].ids.indexOf(id)+1;
+  skinUpdateProgress(panel);
+  skinSaveState(skinState);
+}
+function skinUpdateProgress(panel){
+  const done=Object.values(skinState[panel]).filter(Boolean).length;
+  const bar=document.getElementById(skinProgMap[panel]);
+  if(bar)bar.style.width=(done/skinPanels[panel].count*100)+'%';
+}
+function skinReset(panel){
+  skinState[panel]={};
+  skinPanels[panel].ids.forEach((id,i)=>{
+    const el=document.querySelector(`[data-id="${id}"]`);
+    if(el){el.classList.remove('done');el.querySelector('.skin-step-num').textContent=i+1;}
+  });
+  skinUpdateProgress(panel);
+  skinSaveState(skinState);
+}
+function skinSwitchTab(tab,e){
+  document.querySelectorAll('.skin-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.skin-panel').forEach(p=>p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(tab).classList.add('active');
+}
+
+skinApplyState();
+
+/* ===== CAPILAR ===== */
+const CAP_STEPS=['N','H','R','N','H','R','H','N','R'];
+const CAP_STEP_LABELS={H:'Hidratação',N:'Nutrição',R:'Reconstrução'};
+const CAP_STEP_EMOJI={H:'💧',N:'🌿',R:'✨'};
+const CAP_TIPS={H:'Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.',N:'Máscara Kolene de óleos africanos, touca plástica, 20–30 min.',R:'Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.'};
+const CAP_DATES=[
+  {label:'Sáb, 03 de maio',week:1},{label:'Qua, 07 de maio',week:1},{label:'Dom, 11 de maio',week:2},
+  {label:'Qua, 14 de maio',week:2},{label:'Dom, 18 de maio',week:3},{label:'Qua, 21 de maio',week:3},
+  {label:'Dom, 25 de maio',week:4},{label:'Qua, 28 de maio',week:4},{label:'Dom, 01 de junho',week:5},
+];
+const CAP_WEEK_LABELS=['','Semana 1','Semana 2','Semana 3','Semana 4','Início de Junho'];
+const CAP_WEEK_DATES=['','03–07 de maio','11–14 de maio','18–21 de maio','25–28 de maio','01 de junho'];
+const CAP_STORAGE_KEY='cronograma_capilar_v1';
+function capLoadDone(){try{const r=JSON.parse(localStorage.getItem(CAP_STORAGE_KEY)||'[true]');while(r.length<CAP_DATES.length)r.push(false);r[0]=true;return r;}catch{return[true,...Array(CAP_DATES.length-1).fill(false)];}}
+function capSaveDone(arr){try{localStorage.setItem(CAP_STORAGE_KEY,JSON.stringify(arr));}catch{}}
+let capDone=capLoadDone();
+function capCountDone(){return capDone.filter(Boolean).length;}
+function capUpdateProgress(){
+  const total=CAP_DATES.length,c=capCountDone(),pct=Math.round(c/total*100);
+  document.getElementById('cap-prog-text').textContent=`${c} de ${total} lavagens concluídas`;
+  document.getElementById('cap-prog-pct').textContent=`${pct}%`;
+  document.getElementById('cap-prog-fill').style.width=pct+'%';
+}
+function capRender(){
+  const container=document.getElementById('cap-schedule');container.innerHTML='';
+  let currentWeek=0,weekBlock=null;
+  CAP_DATES.forEach((d,i)=>{
+    if(d.week!==currentWeek){
+      weekBlock=document.createElement('div');weekBlock.className='cap-week-block';
+      const wh=document.createElement('div');wh.className='cap-week-header';
+      wh.innerHTML=`<span class="cap-week-label">${CAP_WEEK_LABELS[d.week]}</span><span class="cap-week-dates">${CAP_WEEK_DATES[d.week]}</span>`;
+      weekBlock.appendChild(wh);container.appendChild(weekBlock);currentWeek=d.week;
+    }
+    const step=CAP_STEPS[i];const isDone=capDone[i];
+    const colorVar=step==='H'?'#7bb8d4':step==='N'?'#c9a96e':'#b07ab0';
+    const card=document.createElement('div');
+    card.className='cap-wash-card'+(isDone?' done':'');
+    card.innerHTML=`<div class="cap-check-circle" style="color:${isDone?'#7aab7a':colorVar}">${isDone?'✓':''}</div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">${d.label}${i===0?' <span style="font-size:10px;color:#7aab7a;font-weight:500">• Concluída</span>':''}</div>
+        <span class="cap-wash-step cap-step-${step}"><span class="cap-step-dot"></span>${CAP_STEP_EMOJI[step]} ${CAP_STEP_LABELS[step]}</span>
+      </div>`;
+    if(i>0){card.addEventListener('click',()=>{capDone[i]=!capDone[i];capSaveDone(capDone);capRender();capUpdateProgress();});}
+    weekBlock.appendChild(card);
+    if(!isDone&&i>0){
+      const tipBox=document.createElement('div');tipBox.className='cap-tip-box';tipBox.textContent=CAP_TIPS[step];
+      weekBlock.appendChild(tipBox);
+      card.addEventListener('mouseenter',()=>tipBox.classList.add('visible'));
+      card.addEventListener('mouseleave',()=>tipBox.classList.remove('visible'));
+    }
+  });
+  capUpdateProgress();
+}
+capRender();
+</script>
+
+<!-- PLANTAS via React (lazy render) -->
+<script>
+const { useState, useEffect } = React;
+
+const plantsData = [
+  {id:1,name:"Jibóia na água",group:"skip",note:"Fertilizante líquido hidropônico mensal",extras:[{type:"hidro",label:"Fertilizante hidropônico",dose:"1 gota/500ml água",interval:30,note:"Trocar a água junto."}]},
+  {id:2,name:"Orquídea Olho de Boneca",group:"skip",note:"Fertilizante específico para orquídeas",extras:[{type:"orquidea",label:"Forth Orquídeas",dose:"Diluído + foliar",interval:15,note:"Quinzenal."}]},
+  {id:3,name:"Phalaenopsis Aphrodite",group:"skip",note:"",extras:[{type:"orquidea",label:"Forth Orquídeas",dose:"Diluído + foliar",interval:15,note:"Quinzenal."}]},
+  {id:4,name:"Rosa do Deserto",group:"skip",note:"Fertilizante específico próprio"},
+  {id:35,name:"ZZ Raven",group:"skip",note:"Em propagação — aguardar enraizamento"},
+  {id:36,name:"Cordyline",group:"skip",note:"Em propagação"},
+  {id:37,name:"Selaginella",group:"skip",note:"Em propagação"},
+  {id:5,name:"Babosa",group:"monthly",dose:"½ col. chá",intervalDays:28},
+  {id:6,name:"Planta Jade",group:"monthly",dose:"½ col. chá",intervalDays:28},
+  {id:7,name:"Jade Anã",group:"monthly",dose:"½ col. chá",intervalDays:28},
+  {id:8,name:"Zamioculca",group:"monthly",dose:"½ col. chá",intervalDays:28},
+  {id:9,name:"Espada de São Jorge",group:"monthly",dose:"½ col. chá",intervalDays:28},
+  {id:10,name:"Crassula Fogueira",group:"monthly",dose:"½ col. chá",intervalDays:28},
+  {id:11,name:"Sedum-burrito",group:"monthly",dose:"½ col. chá",intervalDays:28},
+  {id:12,name:"Kalanchoe Fantasma",group:"monthly",dose:"½ col. chá",intervalDays:28,extras:[{type:"forthflores",label:"Forth Flores",dose:"Diluído",interval:14,note:"Alternar com bokashi."},{type:"calcio",label:"Forth Cálcio",dose:"Diluído",interval:30,note:"Mensal."}]},
+  {id:13,name:"Flor da Fortuna",group:"monthly",dose:"½ col. chá",intervalDays:28,extras:[{type:"forthflores",label:"Forth Flores",dose:"Diluído",interval:14,note:"Alternar."},{type:"calcio",label:"Forth Cálcio",dose:"Diluído",interval:30,note:"Mensal."}]},
+  {id:14,name:"Dedo-de-dama",group:"monthly",dose:"½ col. chá",intervalDays:28},
+  {id:15,name:"Palma-Brava",group:"monthly",dose:"½ col. chá",intervalDays:28},
+  {id:38,name:"Dracaena",group:"monthly",dose:"½ col. chá",intervalDays:28,note:"Tolerante"},
+  {id:16,name:"Antúrio",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:17,name:"Imbé Burle Marx",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:18,name:"Dinheiro-em-penca",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:19,name:"Clorofito",group:"biweekly",dose:"½ col. chá",intervalDays:14,note:"Em recuperação"},
+  {id:20,name:"Singônio",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:21,name:"Peperomia",group:"biweekly",dose:"½ col. chá",intervalDays:14},
+  {id:22,name:"Peperomia Filodendro",group:"biweekly",dose:"½ col. chá",intervalDays:14},
+  {id:23,name:"Trapoeraba Roxa",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:24,name:"Lambari",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:25,name:"Coléus",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:26,name:"Ninho de Pássaro Dourado",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:27,name:"Abacaxi-roxo",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:28,name:"Dólar",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:29,name:"Poinsétia",group:"biweekly",dose:"1 col. chá",intervalDays:14,note:"Suspender bokashi na floração",extras:[{type:"forthflores",label:"Forth Flores",dose:"Diluído",interval:14,note:"Só Forth Flores na floração."},{type:"calcio",label:"Forth Cálcio",dose:"Diluído",interval:30,note:"Mensal."}]},
+  {id:39,name:"Ixora",group:"biweekly",dose:"1 col. chá",intervalDays:14,note:"Forth Flores na floração",extras:[{type:"forthflores",label:"Forth Flores",dose:"Diluído",interval:14,note:"Na floração."}]},
+  {id:40,name:"Samambaia Rumohra",group:"biweekly",dose:"1 col. chá",intervalDays:14},
+  {id:41,name:"Begônia Rex",group:"biweekly",dose:"½ col. chá",intervalDays:14,note:"Sensível"},
+  {id:30,name:"Tomate Cereja",group:"boost",dose:"1½ col. chá",intervalDays:14,note:"Aumentar na frutificação",extras:[{type:"forthflores",label:"Forth Flores",dose:"Diluído",interval:14,note:"Alternar."},{type:"calcio",label:"Forth Cálcio",dose:"Diluído",interval:14,note:"Quinzenal na frutificação."}]},
+  {id:31,name:"Boldo Chileno/Gambá",group:"boost",dose:"1 col. chá",intervalDays:14},
+  {id:32,name:"Cebolinha",group:"boost",dose:"1 col. chá",intervalDays:14,note:"Renovar após colheita"},
+  {id:33,name:"Ora Pro Nobis",group:"boost",dose:"1 col. chá",intervalDays:14,extras:[{type:"calcio",label:"Forth Cálcio",dose:"Diluído",interval:30,note:"Mensal."}]},
+  {id:34,name:"Camuciba de Fruta Rosa",group:"boost",dose:"1½ col. chá",intervalDays:14,extras:[{type:"forthflores",label:"Forth Flores",dose:"Diluído",interval:14,note:"Na floração."},{type:"calcio",label:"Forth Cálcio",dose:"Diluído",interval:30,note:"Mensal."}]},
+];
+
+const groupConfig={skip:{label:"Sem bokashi",color:"#c0392b",icon:"🚫"},monthly:{label:"A cada 4 semanas",color:"#7b6fa0",icon:"🌵"},biweekly:{label:"A cada 2 semanas",color:"#2e8b57",icon:"🌿"},boost:{label:"A cada 2 semanas — dose reforçada",color:"#c07800",icon:"🌱"}};
+const extraColors={forthflores:{color:"#b03060",bg:"#fdf0f4",icon:"🌸"},hidro:{color:"#1a7ab5",bg:"#eaf4fb",icon:"💧"},calcio:{color:"#d4670a",bg:"#fef4ec",icon:"🧡"},orquidea:{color:"#7b3fa0",bg:"#f5f0fb",icon:"🪷"}};
+const BOKASHI_KEY="bk_v5_bokashi",EXTRA_KEY="bk_v5_extra";
+function daysAgo(d){if(!d)return null;return Math.floor((Date.now()-new Date(d).getTime())/86400000);}
+function getStatus(intervalDays,dateStr){const d=daysAgo(dateStr);if(d===null)return"pending";if(d>=intervalDays)return"due";if(d>=intervalDays-3)return"soon";return"ok";}
+const statusStyle={pending:{label:"Nunca aplicado",color:"#999"},due:{label:"Hora de aplicar!",color:"#c0392b"},soon:{label:"Em breve",color:"#c07800"},ok:{label:"Em dia ✓",color:"#2e8b57"}};
+
+function PlantasApp(){
+  const [bkDates,setBkDates]=useState({});
+  const [exDates,setExDates]=useState({});
+  const [filter,setFilter]=useState("all");
+  const [search,setSearch]=useState("");
+  const [flashBk,setFlashBk]=useState({});
+  const [flashEx,setFlashEx]=useState({});
+
+  useEffect(()=>{
+    try{
+      const r1=localStorage.getItem(BOKASHI_KEY);
+      if(r1)setBkDates(JSON.parse(r1));
+      const r2=localStorage.getItem(EXTRA_KEY);
+      if(r2)setExDates(JSON.parse(r2));
+    }catch{}
+  },[]);
+
+  const flash=(setter,key)=>{setter(p=>({...p,[key]:true}));setTimeout(()=>setter(p=>{const n={...p};delete n[key];return n;}),1800);};
+
+  function applyBokashi(id){const u={...bkDates,[id]:new Date().toISOString()};setBkDates(u);flash(setFlashBk,id);try{localStorage.setItem(BOKASHI_KEY,JSON.stringify(u));}catch{}}
+  function resetBokashi(id){const u={...bkDates};delete u[id];setBkDates(u);try{localStorage.setItem(BOKASHI_KEY,JSON.stringify(u));}catch{}}
+  function applyExtra(id,type){const key=`${id}_${type}`;const u={...exDates,[key]:new Date().toISOString()};setExDates(u);flash(setFlashEx,key);try{localStorage.setItem(EXTRA_KEY,JSON.stringify(u));}catch{}}
+  function resetExtra(id,type){const key=`${id}_${type}`;const u={...exDates};delete u[key];setExDates(u);try{localStorage.setItem(EXTRA_KEY,JSON.stringify(u));}catch{}}
+
+  const plantIsDue=p=>{
+    const bk=p.group!=="skip"?getStatus(p.intervalDays,bkDates[p.id]):null;
+    if(bk==="due"||bk==="pending")return true;
+    return(p.extras||[]).some(e=>{const s=getStatus(e.interval,exDates[`${p.id}_${e.type}`]);return s==="due"||s==="pending";});
+  };
+  const dueCount=plantsData.filter(plantIsDue).length;
+  const visible=plantsData.filter(p=>{
+    if(!p.name.toLowerCase().includes(search.toLowerCase()))return false;
+    if(filter==="all")return true;
+    if(filter==="due")return plantIsDue(p);
+    if(filter==="extras")return !!(p.extras?.length);
+    if(filter==="prop")return p.group==="skip"&&!p.extras?.length;
+    return p.group===filter;
+  });
+  const groups=["skip","monthly","biweekly","boost"];
+
+  return React.createElement('div',{style:{fontFamily:"'Georgia',serif",background:"#f7f5f0",minHeight:"100vh",paddingBottom:80}},
+    React.createElement('div',{style:{background:"#2e5c3a",padding:"24px 16px 18px",textAlign:"center"}},
+      React.createElement('div',{style:{fontSize:26,marginBottom:4}},"🌿"),
+      React.createElement('h1',{style:{color:"#e8f5ec",margin:0,fontSize:19,fontWeight:"bold",letterSpacing:1}},"Rotina de Adubação"),
+      React.createElement('p',{style:{color:"#a8d5b5",margin:"5px 0 0",fontSize:13}},`${plantsData.length} plantas · ${dueCount>0?`${dueCount} aguardando`:"todas em dia ✓"}`)
+    ),
+    React.createElement('div',{style:{display:"flex",gap:12,padding:"10px 14px 0",flexWrap:"wrap"}},
+      [{color:"#2e5c3a",label:"Bokashi"},{color:"#b03060",label:"Forth Flores"},{color:"#d4670a",label:"Forth Cálcio"},{color:"#7b3fa0",label:"Forth Orquídeas"},{color:"#1a7ab5",label:"Hidropônico"}]
+        .map(l=>React.createElement('div',{key:l.label,style:{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"#666"}},
+          React.createElement('span',{style:{width:10,height:10,borderRadius:3,background:l.color,display:"inline-block"}}),l.label))
+    ),
+    React.createElement('div',{style:{padding:"10px 14px 0"}},
+      React.createElement('input',{value:search,onChange:e=>setSearch(e.target.value),placeholder:"🔍  Buscar planta...",style:{width:"100%",boxSizing:"border-box",padding:"9px 13px",borderRadius:10,border:"1px solid #d4cfc5",background:"#fff",fontSize:14,fontFamily:"inherit",outline:"none"}})
+    ),
+    React.createElement('div',{style:{display:"flex",gap:7,padding:"10px 14px",overflowX:"auto"}},
+      [{key:"all",label:"Todas"},{key:"due",label:"🔔 Pendentes"},{key:"extras",label:"✨ Com reforço"},{key:"biweekly",label:"🌿 Quinzenais"},{key:"monthly",label:"🌵 Mensais"},{key:"boost",label:"🌱 Reforçadas"},{key:"prop",label:"🪴 Propagação"},{key:"skip",label:"🚫 Sem bokashi"}]
+        .map(f=>React.createElement('button',{key:f.key,onClick:()=>setFilter(f.key),style:{whiteSpace:"nowrap",padding:"5px 12px",borderRadius:20,border:"none",cursor:"pointer",fontSize:12,background:filter===f.key?"#2e5c3a":"#e8e4dd",color:filter===f.key?"#fff":"#555",fontFamily:"inherit",fontWeight:filter===f.key?"bold":"normal"}},f.label))
+    ),
+    ...groups.map(g=>{
+      const gPlants=visible.filter(p=>p.group===g);
+      if(!gPlants.length)return null;
+      const cfg=groupConfig[g];
+      return React.createElement('div',{key:g,style:{padding:"0 14px",marginTop:16}},
+        React.createElement('div',{style:{display:"flex",alignItems:"center",gap:8,marginBottom:8}},
+          React.createElement('span',{style:{fontSize:16}},cfg.icon),
+          React.createElement('span',{style:{fontSize:11,fontWeight:"bold",color:cfg.color,textTransform:"uppercase",letterSpacing:.9}},cfg.label)
+        ),
+        React.createElement('div',{style:{display:"flex",flexDirection:"column",gap:9}},
+          gPlants.map(plant=>{
+            const bkStatus=plant.group!=="skip"?getStatus(plant.intervalDays,bkDates[plant.id]):null;
+            const bkDa=daysAgo(bkDates[plant.id]);
+            const bkS=bkStatus?statusStyle[bkStatus]:null;
+            return React.createElement('div',{key:plant.id,style:{background:"#fff",borderRadius:13,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,.07)",borderLeft:`4px solid ${cfg.color}`}},
+              React.createElement('div',{style:{padding:"11px 14px 5px",fontWeight:"bold",fontSize:14,color:"#2a2a2a"}},plant.name),
+              plant.group!=="skip"&&React.createElement('div',{style:{margin:"0 10px 5px",background:"#f2f7f4",borderRadius:9,padding:"9px 11px",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}},
+                React.createElement('div',{style:{flex:1}},
+                  React.createElement('div',{style:{fontSize:11,fontWeight:"bold",color:"#2e5c3a"}},`🟢 Bokashi · ${plant.dose}`),
+                  plant.note&&React.createElement('div',{style:{fontSize:10,color:"#999",fontStyle:"italic",marginTop:2}},`⚠️ ${plant.note}`),
+                  bkS&&React.createElement('div',{style:{display:"flex",alignItems:"center",gap:5,marginTop:4}},
+                    React.createElement('span',{style:{fontSize:10,fontWeight:"bold",color:bkS.color,background:bkS.color+"18",padding:"2px 8px",borderRadius:20}},bkS.label),
+                    bkDa!==null&&React.createElement('span',{style:{fontSize:10,color:"#bbb"}},`há ${bkDa} dia${bkDa!==1?"s":""}`)
+                  )
+                ),
+                React.createElement('div',{style:{display:"flex",flexDirection:"column",gap:4,marginLeft:8}},
+                  React.createElement('button',{onClick:()=>applyBokashi(plant.id),style:{background:flashBk[plant.id]?"#5a9e6f":cfg.color,color:"#fff",border:"none",borderRadius:7,padding:"6px 11px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:"bold",minWidth:75}},flashBk[plant.id]?"✓ Feito!":"Aplicar"),
+                  bkDates[plant.id]&&React.createElement('button',{onClick:()=>resetBokashi(plant.id),style:{background:"transparent",color:"#ccc",border:"1px solid #e5e0d8",borderRadius:7,padding:"2px 7px",cursor:"pointer",fontSize:10,fontFamily:"inherit"}},"Resetar")
+                )
+              ),
+              ...(plant.extras||[]).map((ex,ei)=>{
+                const ecfg=extraColors[ex.type];
+                const exKey=`${plant.id}_${ex.type}`;
+                const exSt=statusStyle[getStatus(ex.interval,exDates[exKey])];
+                const exDa=daysAgo(exDates[exKey]);
+                const isLast=ei===(plant.extras.length-1);
+                return React.createElement('div',{key:ex.type,style:{margin:`0 10px ${isLast?9:5}px`,background:ecfg.bg,borderRadius:9,padding:"9px 11px",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}},
+                  React.createElement('div',{style:{flex:1}},
+                    React.createElement('div',{style:{fontSize:11,fontWeight:"bold",color:ecfg.color}},`${ecfg.icon} ${ex.label} · ${ex.dose}`),
+                    React.createElement('div',{style:{fontSize:10,color:"#999",fontStyle:"italic",marginTop:2}},ex.note),
+                    React.createElement('div',{style:{display:"flex",alignItems:"center",gap:5,marginTop:4}},
+                      React.createElement('span',{style:{fontSize:10,fontWeight:"bold",color:exSt.color,background:exSt.color+"18",padding:"2px 8px",borderRadius:20}},exSt.label),
+                      exDa!==null&&React.createElement('span',{style:{fontSize:10,color:"#bbb"}},`há ${exDa} dia${exDa!==1?"s":""}`)
+                    )
+                  ),
+                  React.createElement('div',{style:{display:"flex",flexDirection:"column",gap:4,marginLeft:8}},
+                    React.createElement('button',{onClick:()=>applyExtra(plant.id,ex.type),style:{background:flashEx[exKey]?"#5a9e6f":ecfg.color,color:"#fff",border:"none",borderRadius:7,padding:"6px 11px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:"bold",minWidth:75}},flashEx[exKey]?"✓ Feito!":"Aplicar"),
+                    exDates[exKey]&&React.createElement('button',{onClick:()=>resetExtra(plant.id,ex.type),style:{background:"transparent",color:"#ccc",border:"1px solid #e5e0d8",borderRadius:7,padding:"2px 7px",cursor:"pointer",fontSize:10,fontFamily:"inherit"}},"Resetar")
+                  )
+                );
+              }),
+              plant.group==="skip"&&!(plant.extras?.length)&&React.createElement('div',{style:{padding:"0 14px 11px",fontSize:11,color:"#aaa",fontStyle:"italic"}},plant.note)
+            );
+          })
+        )
+      );
+    }).filter(Boolean),
+    visible.length===0&&React.createElement('div',{style:{textAlign:"center",color:"#aaa",marginTop:50,fontSize:14}},"Nenhuma planta encontrada."),
+    React.createElement('div',{style:{textAlign:"center",color:"#ccc",fontSize:11,marginTop:36,paddingBottom:20}},"Dados salvos localmente 🌱")
+  );
+}
+
+function renderPlantas(){
+  const root=ReactDOM.createRoot(document.getElementById('plantas-root'));
+  root.render(React.createElement(PlantasApp));
+}
+</script>
+
+<style>
+.fab-download{
+  position:fixed;
+  bottom:90px;
+  right:16px;
+  width:48px;height:48px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#c9a87c,#a07040);
+  border:none;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(0,0,0,0.35);
+  z-index:200;
+  transition:transform .2s,box-shadow .2s;
+  color:white;
+  font-size:20px;
+}
+.fab-download:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(0,0,0,0.4);}
+.fab-download:active{transform:scale(0.95);}
+.fab-toast{
+  position:fixed;
+  bottom:148px;
+  right:16px;
+  background:#1a1410;
+  color:#c9a87c;
+  font-family:'DM Sans',sans-serif;
+  font-size:.72rem;
+  letter-spacing:.06em;
+  padding:7px 13px;
+  border-radius:20px;
+  border:1px solid #3a2e1e;
+  pointer-events:none;
+  opacity:0;
+  transform:translateY(6px);
+  transition:opacity .3s,transform .3s;
+  white-space:nowrap;
+  z-index:201;
+}
+.fab-toast.show{opacity:1;transform:translateY(0);}
+</style>
+
+<button class="fab-download" onclick="downloadPainel()" title="Salvar painel no dispositivo">⬇</button>
+<div class="fab-toast" id="fab-toast">Arquivo salvo!</div>
+
+<script>
+function downloadPainel(){
+  const html = document.documentElement.outerHTML;
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'painel_bruna.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  const toast = document.getElementById('fab-toast');
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
