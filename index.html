@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
+<html lang="pt-BR"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Painel Bruna</title>
@@ -42,19 +41,42 @@
   link.href = url;
   document.currentScript.parentNode.appendChild(link);
 })();
-</script>
+</script><link rel="manifest" href="blob:null/a84a21ea-5eec-48f0-a283-dbd6c3f7db5b">
 
-<!-- Service Worker: apenas desregistra versões antigas, não faz cache -->
+<!-- Service Worker para funcionar offline -->
 <script>
 if('serviceWorker' in navigator){
-  // Desregistrar qualquer service worker antigo que possa estar interferindo
-  navigator.serviceWorker.getRegistrations().then(function(registrations){
-    for(let reg of registrations){ reg.unregister(); }
+  window.addEventListener('load', function(){
+    const swCode = `
+      const CACHE = 'painel-bruna-v1';
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./'])));
+        self.skipWaiting();
+      });
+      self.addEventListener('activate', e => {
+        e.waitUntil(caches.keys().then(keys =>
+          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        ));
+        self.clients.claim();
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(
+          caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone));
+            return res;
+          }).catch(() => cached))
+        );
+      });
+    `;
+    const blob = new Blob([swCode], {type:'application/javascript'});
+    const url = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url).catch(()=>{});
   });
 }
 </script>
 
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&amp;family=DM+Sans:wght@300;400;500&amp;family=DM+Serif+Display:ital@0;1&amp;family=DM+Mono:wght@300;400;500&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet">
 <style>
 /* ===== RESET & BASE ===== */
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -240,8 +262,8 @@ table.dor-table tbody td{padding:.5rem .6rem;vertical-align:middle;}
 table.dor-table td input[type="text"],table.dor-table td select,table.dor-table td textarea{width:100%;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#2c2c2c;padding:.15rem 0;border-bottom:1px solid transparent;transition:border-color .2s;resize:none;}
 table.dor-table td input[type="text"]:focus,table.dor-table td select:focus,table.dor-table td textarea:focus{outline:none;border-bottom-color:#1a3a5c;}
 table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
-.dor-int-wrap{display:flex;gap:3px;align-items:center;flex-wrap:wrap;}
-.dor-int-btn{width:20px;height:20px;border-radius:50%;border:1.5px solid #ddd8d0;background:white;cursor:pointer;font-family:'DM Mono',monospace;font-size:.6rem;font-weight:500;color:#888;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.dor-int-wrap{display:flex;gap:3px;align-items:center;}
+.dor-int-btn{width:22px;height:22px;border-radius:50%;border:1.5px solid #ddd8d0;background:white;cursor:pointer;font-family:'DM Mono',monospace;font-size:.65rem;font-weight:500;color:#888;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
 .dor-int-btn.active-1{background:#27ae60;border-color:#27ae60;color:white;}
 .dor-int-btn.active-2{background:#f1c40f;border-color:#f1c40f;color:#333;}
 .dor-int-btn.active-3{background:#e67e22;border-color:#e67e22;color:white;}
@@ -508,7 +530,19 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
     <div class="daily-card" id="daily-card">
       <div class="daily-card-header">
         <div class="daily-card-title">Medicações de hoje</div>
-        <div class="daily-card-date" id="daily-date"></div>
+        <div class="daily-card-date" id="daily-date">Ter, 19 de mai</div>
+      </div>
+
+      <div class="daily-med-row" id="daily-desven" onclick="dailyToggle('desven')" style="display:none">
+        <div class="daily-med-check" id="daily-check-desven"></div>
+        <div class="daily-med-info">
+          <div class="daily-med-name">Desvenlafaxina</div>
+          <div class="daily-med-when">
+            <div class="daily-med-dot" style="background:#f4a96a"></div>
+            <span id="daily-desven-when">Após o café da manhã</span>
+          </div>
+        </div>
+        <div class="daily-med-dose" id="daily-desven-dose" style="background:rgba(244,169,106,.15);color:#f4a96a">25 mg</div>
       </div>
 
       <div class="daily-med-row" id="daily-fluox" onclick="dailyToggle('fluox')">
@@ -517,10 +551,10 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
           <div class="daily-med-name">Fluoxetina</div>
           <div class="daily-med-when">
             <div class="daily-med-dot" style="background:#7ed8c8"></div>
-            Após o café da manhã
+            <span id="daily-fluox-when">Após o café da manhã</span>
           </div>
         </div>
-        <div class="daily-med-dose" style="background:rgba(126,216,200,.15);color:#7ed8c8">60 mg</div>
+        <div class="daily-med-dose" id="daily-fluox-dose" style="background:rgba(126,216,200,.15);color:#7ed8c8">60 mg</div>
       </div>
 
       <div class="daily-med-row" id="daily-riva" onclick="dailyToggle('riva')">
@@ -568,13 +602,326 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
       <div class="med-legend-item"><div class="med-legend-dot" style="background:#7ed8c8"></div>Topiramato</div>
       <div class="med-legend-item"><div class="med-legend-dot" style="background:#f4a96a"></div>Miosan</div>
     </div>
-    <div id="med-phases-container"></div>
+
+    <!-- ESQUEMA DESVENLAFAXINA -->
+    <div style="margin-bottom:28px;">
+      <div style="font-family:'DM Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:#c9a87c;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid #e8e0d4;">
+        Esquema · Desvenlafaxina
+      </div>
+
+      <!-- Fase 1: Transição 01–04/06 -->
+      <div style="background:#fffaf5;border-radius:14px;border:1px solid #f0e6d6;padding:16px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div>
+            <div style="font-size:.65rem;font-family:'DM Mono',monospace;color:#c9a87c;letter-spacing:.1em;text-transform:uppercase;">01–04 de junho · Transição</div>
+            <div style="font-size:.92rem;font-weight:600;color:#3a2e1e;margin-top:2px;">Redução da Fluoxetina</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:.82rem;color:#5a4a3a;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:#7ed8c8;flex-shrink:0;"></div>
+            <span><strong>Fluoxetina 20 mg</strong> — 1 comprimido, manhã após o café</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:#f4a96a;flex-shrink:0;"></div>
+            <span><strong>Desvenlafaxina 25 mg</strong> — ½ comprimido, manhã após o café</span>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding:8px 10px;background:#fff3e0;border-radius:8px;font-size:.75rem;color:#a06030;">
+          ⚠ Tomar os dois juntos durante 4 dias, depois passar para a fase 2
+        </div>
+        <!-- Mini calendário 01–04/06 -->
+        <div style="display:flex;gap:8px;margin-top:12px;" id="desven-fase1-grid"></div>
+      </div>
+
+      <!-- Fase 2: Manutenção 05/06+ -->
+      <div style="background:#fffaf5;border-radius:14px;border:1px solid #f0e6d6;padding:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div>
+            <div style="font-size:.65rem;font-family:'DM Mono',monospace;color:#c9a87c;letter-spacing:.1em;text-transform:uppercase;">05/06 em diante · Manutenção</div>
+            <div style="font-size:.92rem;font-weight:600;color:#3a2e1e;margin-top:2px;">Desvenlafaxina plena</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:.82rem;color:#5a4a3a;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#f4a96a;flex-shrink:0;"></div>
+          <span><strong>Desvenlafaxina 50 mg</strong> — 1 comprimido, toda manhã após comer</span>
+        </div>
+        <!-- Mini calendário 05–30/06 -->
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;" id="desven-fase2-grid"></div>
+      </div>
+    </div>
+
+    <div id="med-phases-container"><div class="med-phase active open" data-phase-id="semana1">
+    <div class="med-phase-header" onclick="medTogglePhase('semana1')">
+      <div class="med-phase-header-left">
+        <div class="med-phase-tag">Semana 1 · 12/05 – 18/05</div>
+        <div class="med-phase-title">Início suave</div>
+      </div>
+      <div class="med-phase-progress">
+        <div class="med-progress-circle">
+          <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="17"></circle><circle class="fill" cx="22" cy="22" r="17" stroke-dasharray="106.81415022205297" stroke-dashoffset="106.81415022205297"></circle></svg>
+          <div class="med-progress-text">0/7</div>
+        </div>
+      </div>
+      <div class="med-toggle-arrow">▼</div>
+    </div>
+    <div class="med-meds-summary"><span class="med-pill lamo" title="25mg noite">Lamotrigina · 25mg noite</span><span class="med-pill topi" title="25mg noite">Topiramato · 25mg noite</span><span class="med-pill mios" title="10mg noite">Miosan · 10mg noite</span></div>
+    <div class="med-days-grid"><div class="med-days-grid-inner"><div></div><div></div><div class="med-day-cell past" data-date="2026-05-12" onclick="medToggleDay('2026-05-12')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">12/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell past" data-date="2026-05-13" onclick="medToggleDay('2026-05-13')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">13/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell today" data-date="2026-05-14" onclick="medToggleDay('2026-05-14')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">14/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-15" onclick="medToggleDay('2026-05-15')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">15/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-16" onclick="medToggleDay('2026-05-16')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">16/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-17" onclick="medToggleDay('2026-05-17')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">17/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-18" onclick="medToggleDay('2026-05-18')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">18/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div></div></div>
+    <div class="med-phase-note">⚠️ Tomar os três juntos à noite. Miosan pode dar sonolência — ótimo para o sono.</div></div><div class="med-phase" data-phase-id="semana2">
+    <div class="med-phase-header" onclick="medTogglePhase('semana2')">
+      <div class="med-phase-header-left">
+        <div class="med-phase-tag">Semana 2 · 19/05 – 25/05</div>
+        <div class="med-phase-title">Lamotrigina sobe</div>
+      </div>
+      <div class="med-phase-progress">
+        <div class="med-progress-circle">
+          <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="17"></circle><circle class="fill" cx="22" cy="22" r="17" stroke-dasharray="106.81415022205297" stroke-dashoffset="106.81415022205297"></circle></svg>
+          <div class="med-progress-text">0/7</div>
+        </div>
+      </div>
+      <div class="med-toggle-arrow">▼</div>
+    </div>
+    <div class="med-meds-summary"><span class="med-pill lamo" title="25mg manhã + 25mg noite">Lamotrigina · 25mg manhã + 25mg noite</span><span class="med-pill topi" title="25mg noite">Topiramato · 25mg noite</span><span class="med-pill mios" title="10mg noite">Miosan · 10mg noite</span></div>
+    <div class="med-days-grid"><div class="med-days-grid-inner"><div></div><div></div><div class="med-day-cell" data-date="2026-05-19" onclick="medToggleDay('2026-05-19')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">19/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-20" onclick="medToggleDay('2026-05-20')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">20/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-21" onclick="medToggleDay('2026-05-21')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">21/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-22" onclick="medToggleDay('2026-05-22')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">22/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-23" onclick="medToggleDay('2026-05-23')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">23/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-24" onclick="medToggleDay('2026-05-24')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">24/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-25" onclick="medToggleDay('2026-05-25')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">25/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div></div></div>
+    <div class="med-phase-note">📌 Lamotrigina agora em duas tomadas: manhã e noite.</div></div><div class="med-phase" data-phase-id="semana3">
+    <div class="med-phase-header" onclick="medTogglePhase('semana3')">
+      <div class="med-phase-header-left">
+        <div class="med-phase-tag">Semana 3 · 26/05 – 01/06</div>
+        <div class="med-phase-title">Quase na dose final</div>
+      </div>
+      <div class="med-phase-progress">
+        <div class="med-progress-circle">
+          <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="17"></circle><circle class="fill" cx="22" cy="22" r="17" stroke-dasharray="106.81415022205297" stroke-dashoffset="106.81415022205297"></circle></svg>
+          <div class="med-progress-text">0/7</div>
+        </div>
+      </div>
+      <div class="med-toggle-arrow">▼</div>
+    </div>
+    <div class="med-meds-summary"><span class="med-pill lamo" title="25mg manhã + 50mg noite">Lamotrigina · 25mg manhã + 50mg noite</span><span class="med-pill topi" title="25mg noite">Topiramato · 25mg noite</span><span class="med-pill mios" title="10mg noite">Miosan · 10mg noite</span></div>
+    <div class="med-days-grid"><div class="med-days-grid-inner"><div></div><div></div><div class="med-day-cell" data-date="2026-05-26" onclick="medToggleDay('2026-05-26')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">26/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-27" onclick="medToggleDay('2026-05-27')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">27/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-28" onclick="medToggleDay('2026-05-28')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">28/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-29" onclick="medToggleDay('2026-05-29')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">29/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-30" onclick="medToggleDay('2026-05-30')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">30/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-05-31" onclick="medToggleDay('2026-05-31')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">31/5</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-01" onclick="medToggleDay('2026-06-01')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">1/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div><div class="med-dose-dot" style="background:#7ed8c8"></div><div class="med-dose-dot" style="background:#f4a96a"></div></div>
+    </div></div></div>
+    <div class="med-phase-note">📌 Última semana do Topiramato e Miosan. Lamotrigina 75mg/dia.</div></div><div class="med-phase" data-phase-id="manutencao">
+    <div class="med-phase-header" onclick="medTogglePhase('manutencao')">
+      <div class="med-phase-header-left">
+        <div class="med-phase-tag">Manutenção · 02/06 – 30/06</div>
+        <div class="med-phase-title">Dose plena — contínuo</div>
+      </div>
+      <div class="med-phase-progress">
+        <div class="med-progress-circle">
+          <svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="17"></circle><circle class="fill" cx="22" cy="22" r="17" stroke-dasharray="106.81415022205297" stroke-dashoffset="106.81415022205297"></circle></svg>
+          <div class="med-progress-text">0/29</div>
+        </div>
+      </div>
+      <div class="med-toggle-arrow">▼</div>
+    </div>
+    <div class="med-meds-summary"><span class="med-pill lamo" title="50mg manhã + 50mg noite">Lamotrigina · 50mg manhã + 50mg noite</span></div>
+    <div class="med-days-grid"><div class="med-days-grid-inner"><div></div><div></div><div class="med-day-cell" data-date="2026-06-02" onclick="medToggleDay('2026-06-02')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">2/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-03" onclick="medToggleDay('2026-06-03')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">3/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-04" onclick="medToggleDay('2026-06-04')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">4/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-05" onclick="medToggleDay('2026-06-05')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">5/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-06" onclick="medToggleDay('2026-06-06')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">6/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-07" onclick="medToggleDay('2026-06-07')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">7/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-08" onclick="medToggleDay('2026-06-08')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">8/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-09" onclick="medToggleDay('2026-06-09')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">9/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-10" onclick="medToggleDay('2026-06-10')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">10/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-11" onclick="medToggleDay('2026-06-11')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">11/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-12" onclick="medToggleDay('2026-06-12')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">12/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-13" onclick="medToggleDay('2026-06-13')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">13/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-14" onclick="medToggleDay('2026-06-14')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">14/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-15" onclick="medToggleDay('2026-06-15')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">15/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-16" onclick="medToggleDay('2026-06-16')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">16/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-17" onclick="medToggleDay('2026-06-17')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">17/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-18" onclick="medToggleDay('2026-06-18')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">18/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-19" onclick="medToggleDay('2026-06-19')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">19/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-20" onclick="medToggleDay('2026-06-20')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">20/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-21" onclick="medToggleDay('2026-06-21')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">21/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-22" onclick="medToggleDay('2026-06-22')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">22/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-23" onclick="medToggleDay('2026-06-23')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">23/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-24" onclick="medToggleDay('2026-06-24')">
+      <div class="med-day-weekday">Qua</div>
+      <div class="med-day-num">24/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-25" onclick="medToggleDay('2026-06-25')">
+      <div class="med-day-weekday">Qui</div>
+      <div class="med-day-num">25/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-26" onclick="medToggleDay('2026-06-26')">
+      <div class="med-day-weekday">Sex</div>
+      <div class="med-day-num">26/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-27" onclick="medToggleDay('2026-06-27')">
+      <div class="med-day-weekday">Sáb</div>
+      <div class="med-day-num">27/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-28" onclick="medToggleDay('2026-06-28')">
+      <div class="med-day-weekday">Dom</div>
+      <div class="med-day-num">28/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-29" onclick="medToggleDay('2026-06-29')">
+      <div class="med-day-weekday">Seg</div>
+      <div class="med-day-num">29/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div><div class="med-day-cell" data-date="2026-06-30" onclick="medToggleDay('2026-06-30')">
+      <div class="med-day-weekday">Ter</div>
+      <div class="med-day-num">30/6</div>
+      <div class="med-dose-dots"><div class="med-dose-dot" style="background:#b48ef4"></div></div>
+    </div></div></div>
+    <div class="med-phase-note">✅ Topiramato e Miosan encerrados. Lamotrigina 100mg/dia contínuo.</div></div></div>
     <div class="med-summary-bar" id="med-summary-bar">
       <div class="med-summary-stat"><div class="num" id="med-stat-total">0</div><div class="lbl">Dias tomados</div></div>
       <div class="med-summary-divider"></div>
       <div class="med-summary-stat"><div class="num" id="med-stat-streak">0</div><div class="lbl">Sequência</div></div>
       <div class="med-summary-divider"></div>
-      <div class="med-summary-stat"><div class="num" id="med-stat-remaining">0</div><div class="lbl">Restantes</div></div>
+      <div class="med-summary-stat"><div class="num" id="med-stat-remaining">48</div><div class="lbl">Restantes</div></div>
     </div>
   </div>
 </div>
@@ -584,12 +931,9 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
     <div class="dor-header">
       <div class="dor-header-top">
         <h1><span>Registro de Dores</span>Diário de Enxaqueca</h1>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-          <div class="dor-month-box">
-            <label>Mês / Ano</label>
-            <input class="dor-month-input" type="text" placeholder="Maio / 2026" id="dor-month-title">
-          </div>
-          <div id="dor-save-indicator" style="font-size:.65rem;color:#4caf8a;font-family:'DM Mono',monospace;letter-spacing:.08em;opacity:0;transition:opacity .4s;">✓ salvo</div>
+        <div class="dor-month-box">
+          <label>Mês / Ano</label>
+          <input class="dor-month-input" type="text" placeholder="Maio / 2026" id="dor-month-title">
         </div>
       </div>
       <div class="dor-header-meta">
@@ -615,12 +959,12 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
       <div style="margin-bottom:1.2rem;">
         <div class="dor-section-title">Medicações em uso este mês</div>
         <div class="dor-meds-grid">
-          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-riva"><span>Rivaroxabana</span></div>
-          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-topi"><span>Topiramato</span></div>
-          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-lamo"><span>Lamotrigina</span></div>
-          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-fluox"><span>Fluoxetina</span></div>
-          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-outro1"><input type="text" id="dor-med-outro1-txt" placeholder="Outro..."></div>
-          <div class="dor-med-item"><input type="checkbox" class="dor-med-check" id="dor-med-outro2"><input type="text" id="dor-med-outro2-txt" placeholder="Outro..."></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><span>Rivaroxabana</span></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><span>Topiramato</span></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><span>Lamotrigina</span></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><span>Fluoxetina</span></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><input type="text" placeholder="Outro..."></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><input type="text" placeholder="Outro..."></div>
         </div>
       </div>
       <div class="dor-table-wrap">
@@ -628,16 +972,16 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
           <thead><tr>
             <th>Dia</th><th>Intensidade</th><th>Localização</th><th>Sintomas</th><th>Resgate</th><th>Observações</th>
           </tr></thead>
-          <tbody id="dor-table-body"></tbody>
+          <tbody id="dor-table-body"><tr data-day="1"><td class="dor-day-num">01</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="2"><td class="dor-day-num">02</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="3"><td class="dor-day-num">03</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="4"><td class="dor-day-num">04</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="5"><td class="dor-day-num">05</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="6"><td class="dor-day-num">06</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="7"><td class="dor-day-num">07</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="8"><td class="dor-day-num">08</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="9"><td class="dor-day-num">09</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="10"><td class="dor-day-num">10</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="11"><td class="dor-day-num">11</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="12"><td class="dor-day-num">12</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="13"><td class="dor-day-num">13</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="14"><td class="dor-day-num">14</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="15"><td class="dor-day-num">15</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="16"><td class="dor-day-num">16</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="17"><td class="dor-day-num">17</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="18"><td class="dor-day-num">18</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="19"><td class="dor-day-num">19</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="20"><td class="dor-day-num">20</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="21"><td class="dor-day-num">21</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="22"><td class="dor-day-num">22</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="23"><td class="dor-day-num">23</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="24"><td class="dor-day-num">24</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="25"><td class="dor-day-num">25</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="26"><td class="dor-day-num">26</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="27"><td class="dor-day-num">27</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="28"><td class="dor-day-num">28</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="29"><td class="dor-day-num">29</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="30"><td class="dor-day-num">30</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr><tr data-day="31"><td class="dor-day-num">31</td><td style="min-width: 120px;"><div class="dor-int-wrap"><button class="dor-int-btn" data-val="1">1</button><button class="dor-int-btn" data-val="2">2</button><button class="dor-int-btn" data-val="3">3</button><button class="dor-int-btn" data-val="4">4</button><button class="dor-int-btn" data-val="5">5</button></div></td><td style="min-width: 120px;"><select><option value="">—</option><option>Frontal</option><option>Temporal E</option><option>Temporal D</option><option>Occipital</option><option>Hemicraniana E</option><option>Hemicraniana D</option><option>Difusa</option><option>Outra</option></select></td><td style="min-width: 100px;"><select><option value="">—</option><option>Náusea</option><option>Vômito</option><option>Fotofobia</option><option>Fonofobia</option><option>Aura</option><option>Formigamento</option><option>Outro</option></select></td><td style="min-width: 100px;"><input type="text" placeholder="qual?"></td><td style="min-width: 140px;"><textarea placeholder="gatilho..."></textarea></td></tr></tbody>
         </table>
       </div>
       <div style="margin-bottom:1rem;">
         <div class="dor-section-title">Observações gerais do mês</div>
-        <textarea class="dor-notes-area" id="dor-obs-gerais" placeholder="Padrão percebido, sono, ciclo, estresse..."></textarea>
+        <textarea class="dor-notes-area" placeholder="Padrão percebido, sono, ciclo, estresse..."></textarea>
       </div>
       <div style="margin-bottom:1rem;">
         <div class="dor-section-title">Perguntas para a próxima consulta</div>
-        <textarea class="dor-notes-area" id="dor-obs-consulta" placeholder="Anote aqui o que quiser discutir com o médico..."></textarea>
+        <textarea class="dor-notes-area" placeholder="Anote aqui o que quiser discutir com o médico..."></textarea>
       </div>
       <button class="dor-print-btn" onclick="window.print()">↓ Imprimir / Salvar PDF</button>
     </div>
@@ -803,7 +1147,43 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
       <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#b07ab0"></div>Reconstrução</div>
       <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#7aab7a"></div>Concluída</div>
     </div>
-    <div id="cap-schedule"></div>
+    <div id="cap-schedule"><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 1</span><span class="cap-week-dates">03–07 de maio</span></div><div class="cap-wash-card done"><div class="cap-check-circle" style="color:#7aab7a">✓</div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Sáb, 03 de maio <span style="font-size:10px;color:#7aab7a;font-weight:500">• Concluída</span></div>
+        <span class="cap-wash-step cap-step-N"><span class="cap-step-dot"></span>🌿 Nutrição</span>
+      </div></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#7bb8d4"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Qua, 07 de maio</div>
+        <span class="cap-wash-step cap-step-H"><span class="cap-step-dot"></span>💧 Hidratação</span>
+      </div></div><div class="cap-tip-box">Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 2</span><span class="cap-week-dates">11–14 de maio</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#b07ab0"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Dom, 11 de maio</div>
+        <span class="cap-wash-step cap-step-R"><span class="cap-step-dot"></span>✨ Reconstrução</span>
+      </div></div><div class="cap-tip-box">Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.</div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#c9a96e"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Qua, 14 de maio</div>
+        <span class="cap-wash-step cap-step-N"><span class="cap-step-dot"></span>🌿 Nutrição</span>
+      </div></div><div class="cap-tip-box">Máscara Kolene de óleos africanos, touca plástica, 20–30 min.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 3</span><span class="cap-week-dates">18–21 de maio</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#7bb8d4"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Dom, 18 de maio</div>
+        <span class="cap-wash-step cap-step-H"><span class="cap-step-dot"></span>💧 Hidratação</span>
+      </div></div><div class="cap-tip-box">Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.</div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#b07ab0"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Qua, 21 de maio</div>
+        <span class="cap-wash-step cap-step-R"><span class="cap-step-dot"></span>✨ Reconstrução</span>
+      </div></div><div class="cap-tip-box">Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 4</span><span class="cap-week-dates">25–28 de maio</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#7bb8d4"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Dom, 25 de maio</div>
+        <span class="cap-wash-step cap-step-H"><span class="cap-step-dot"></span>💧 Hidratação</span>
+      </div></div><div class="cap-tip-box">Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.</div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#c9a96e"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Qua, 28 de maio</div>
+        <span class="cap-wash-step cap-step-N"><span class="cap-step-dot"></span>🌿 Nutrição</span>
+      </div></div><div class="cap-tip-box">Máscara Kolene de óleos africanos, touca plástica, 20–30 min.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Início de Junho</span><span class="cap-week-dates">01 de junho</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#b07ab0"></div>
+      <div class="cap-wash-info">
+        <div class="cap-wash-day">Dom, 01 de junho</div>
+        <span class="cap-wash-step cap-step-R"><span class="cap-step-dot"></span>✨ Reconstrução</span>
+      </div></div><div class="cap-tip-box">Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.</div></div></div>
     <div class="cap-glossary">
       <h3>O que fazer em cada etapa</h3>
       <div class="cap-glossary-item">
@@ -878,11 +1258,30 @@ function showPage(id, btn) {
     const d=new Date();
     return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   }
+
+  // Desvenlafaxina: fase 1 = 01–04/06, fase 2 = 05/06+
+  function desvenPhase(){
+    const now=new Date();
+    const y=now.getFullYear(), m=now.getMonth(), d=now.getDate();
+    if(y===2026 && m===5 && d>=1 && d<=4) return 1;
+    if((y===2026 && m===5 && d>=5) || (y===2026 && m>5) || y>2026) return 2;
+    return 0; // antes de junho
+  }
+
+  // Fluoxetina: 60mg até 31/05, 20mg em 01–04/06, para após 04/06
+  function fluoxPhase(){
+    const now=new Date();
+    const y=now.getFullYear(), m=now.getMonth(), d=now.getDate();
+    if(y===2026 && m===5 && d>=1 && d<=4) return 'reducao'; // 20mg
+    if((y===2026 && m===5 && d>=5) || (y===2026 && m>5) || y>2026) return 'parou';
+    return 'normal'; // 60mg
+  }
+
   function loadDaily(){
     try{const r=JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
-      if(r.date!==todayKey())return{date:todayKey(),fluox:false,riva:false,minox:false,endofer:false};
+      if(r.date!==todayKey())return{date:todayKey(),fluox:false,riva:false,minox:false,endofer:false,desven:false};
       return r;
-    }catch{return{date:todayKey(),fluox:false,riva:false,minox:false,endofer:false};}
+    }catch{return{date:todayKey(),fluox:false,riva:false,minox:false,endofer:false,desven:false};}
   }
   function saveDaily(s){localStorage.setItem(DAILY_KEY,JSON.stringify(s));}
 
@@ -893,14 +1292,36 @@ function showPage(id, btn) {
   document.getElementById('daily-date').textContent=
     `${WEEKDAYS[now.getDay()]}, ${now.getDate()} de ${MONTHS[now.getMonth()]}`;
 
+  // Ajusta card diário conforme fase
+  (function applyDailyPhases(){
+    const fp=fluoxPhase(), dp=desvenPhase();
+    const fluoxRow=document.getElementById('daily-fluox');
+    const fluoxDose=document.getElementById('daily-fluox-dose');
+    const fluoxWhen=document.getElementById('daily-fluox-when');
+    const desvenRow=document.getElementById('daily-desven');
+    const desvenDose=document.getElementById('daily-desven-dose');
+    const desvenWhen=document.getElementById('daily-desven-when');
+
+    if(fp==='reducao'){fluoxDose.textContent='20 mg';fluoxWhen.textContent='Após o café · fase de transição';}
+    else if(fp==='parou'){fluoxRow.style.display='none';}
+
+    if(dp===1){desvenRow.style.display='';desvenDose.textContent='25 mg';desvenWhen.textContent='Após o café · ½ comprimido';}
+    else if(dp===2){desvenRow.style.display='';desvenDose.textContent='50 mg';desvenWhen.textContent='Após o café da manhã';}
+  })();
+
   function dailyRenderState(){
-    ['fluox','riva','minox','endofer'].forEach(id=>{
+    const ids=['fluox','riva','minox','endofer','desven'];
+    ids.forEach(id=>{
       const row=document.getElementById(`daily-${id}`);
       const check=document.getElementById(`daily-check-${id}`);
+      if(!row||row.style.display==='none')return;
       if(dailyState[id]){row.classList.add('taken');check.textContent='✓';}
       else{row.classList.remove('taken');check.textContent='';}
     });
-    const allDone=dailyState.fluox&&dailyState.riva&&dailyState.minox&&dailyState.endofer;
+    const fp=fluoxPhase(), dp=desvenPhase();
+    const needFluox=fp!=='parou';
+    const needDesven=dp>0;
+    const allDone=(!needFluox||dailyState.fluox)&&(!needDesven||dailyState.desven)&&dailyState.riva&&dailyState.minox&&dailyState.endofer;
     document.getElementById('daily-alldone').classList.toggle('visible',allDone);
   }
 
@@ -910,12 +1331,59 @@ function showPage(id, btn) {
     dailyRenderState();
   };
   window.dailyReset=function(){
-    dailyState={date:todayKey(),fluox:false,riva:false,minox:false,endofer:false};
+    dailyState={date:todayKey(),fluox:false,riva:false,minox:false,endofer:false,desven:false};
     saveDaily(dailyState);
     dailyRenderState();
   };
 
   dailyRenderState();
+
+  // Mini calendários Desvenlafaxina
+  (function buildDesvenCalendars(){
+    const DESVEN_KEY='desven_days_v1';
+    function loadDesven(){try{return JSON.parse(localStorage.getItem(DESVEN_KEY)||'{}')}catch{return{};}}
+    function saveDesven(s){try{localStorage.setItem(DESVEN_KEY,JSON.stringify(s));}catch{}}
+    let desvenDays=loadDesven();
+
+    const today=new Date();today.setHours(0,0,0,0);
+    function dateKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+    const WD=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+    function makeCell(date, label){
+      const key=dateKey(date);
+      const d=new Date(date);d.setHours(0,0,0,0);
+      const isPast=d<today;
+      const isToday=d.getTime()===today.getTime();
+      if(isPast&&!desvenDays[key])desvenDays[key]=true;
+      const done=desvenDays[key];
+      const cell=document.createElement('div');
+      cell.style.cssText=`flex:1;min-width:48px;border-radius:10px;padding:8px 4px;text-align:center;cursor:${isPast?'default':'pointer'};
+        background:${done?'#f4a96a':'#f5f0ea'};border:${isToday?'2px solid #f4a96a':'1px solid #e8ddd0'};transition:all .2s;`;
+      cell.innerHTML=`<div style="font-size:.6rem;color:${done?'#fff':'#a08060'};letter-spacing:.05em">${WD[date.getDay()]}</div>
+        <div style="font-size:.88rem;font-weight:600;color:${done?'#fff':'#5a4a3a'};margin:2px 0">${String(date.getDate()).padStart(2,'0')}</div>
+        <div style="font-size:.7rem;color:${done?'#fff':'#c9a87c'}">${done?'✓':label}</div>`;
+      if(!isPast){
+        cell.onclick=function(){
+          desvenDays[key]=!desvenDays[key];
+          saveDesven(desvenDays);
+          buildDesvenCalendars();
+        };
+      }
+      return cell;
+    }
+
+    // Fase 1: 01–04/06
+    const g1=document.getElementById('desven-fase1-grid');
+    if(g1){g1.innerHTML='';
+      for(let i=0;i<4;i++){const d=new Date(2026,5,1+i);g1.appendChild(makeCell(d,'25mg'));}
+    }
+    // Fase 2: 05–30/06
+    const g2=document.getElementById('desven-fase2-grid');
+    if(g2){g2.innerHTML='';
+      for(let i=0;i<26;i++){const d=new Date(2026,5,5+i);g2.appendChild(makeCell(d,'50mg'));}
+    }
+    saveDesven(desvenDays);
+  })();
 })();
 
 /* ===== MEDICAMENTOS ===== */
@@ -1015,254 +1483,229 @@ function medUpdateStats(){
 }
 medRender();
 
-/* ===== DIÁRIO DE DORES ===== */
-// Dados salvos via localStorage — funciona perfeitamente no GitHub Pages.
-const DOR_STORE_KEY = 'dor_store_v3';
+/* ===== DIÁRIO DE DORES — localStorage ===== */
 const dorLocations=['Frontal','Temporal E','Temporal D','Occipital','Hemicraniana E','Hemicraniana D','Difusa','Outra'];
 const dorSymptoms=['Náusea','Vômito','Fotofobia','Fonofobia','Aura','Formigamento','Outro'];
 
-function dorLoadStore(){
-  try{ return JSON.parse(localStorage.getItem(DOR_STORE_KEY)||'{}'); }catch{ return{}; }
-}
-function dorPersist(){
-  const store = { rows: dorState, meta: dorCollectMeta() };
-  try{ localStorage.setItem(DOR_STORE_KEY, JSON.stringify(store)); }catch(e){ console.error(e); }
-  const ind=document.getElementById('dor-save-indicator');
-  if(ind){ind.style.opacity='1';setTimeout(()=>ind.style.opacity='0',1800);}
+let dorSaveTimer=null;
+
+function dorShowStatus(msg,color){
+  let el=document.getElementById('dor-sync-status');
+  if(!el){el=document.createElement('div');el.id='dor-sync-status';
+    Object.assign(el.style,{position:'fixed',bottom:'90px',left:'16px',background:'#1a3a5c',color:'white',
+      fontFamily:"'DM Mono',monospace",fontSize:'.68rem',letterSpacing:'.06em',padding:'6px 12px',
+      borderRadius:'20px',zIndex:'300',transition:'opacity .4s',pointerEvents:'none'});
+    document.body.appendChild(el);}
+  el.textContent=msg;el.style.color=color||'white';el.style.opacity='1';
+  clearTimeout(el._t);el._t=setTimeout(()=>el.style.opacity='0',3000);
 }
 
-const _dorStore = dorLoadStore();
-let dorState = _dorStore.rows || {};
+const DOR_LOCAL_KEY='painel_dores_local_v1';
+function dorSaveLocal(data){try{localStorage.setItem(DOR_LOCAL_KEY,JSON.stringify(data));dorShowStatus('✓ Salvo','#4caf8a');}catch{dorShowStatus('⚠ Erro ao salvar','#f4a96a');}}
+function dorLoadLocal(){try{const s=localStorage.getItem(DOR_LOCAL_KEY);return s?JSON.parse(s):null;}catch{return null;}}
 
-// ── coleta e restaura os campos meta ─────────────────────────────
-function dorCollectMeta(){
-  return {
-    month:   document.getElementById('dor-month-title').value,
-    paciente:document.querySelector('#page-dor .dor-meta-item:nth-child(1) input').value,
-    medico:  document.querySelector('#page-dor .dor-meta-item:nth-child(2) input').value,
-    medRiva: document.getElementById('dor-med-riva').checked,
-    medTopi: document.getElementById('dor-med-topi').checked,
-    medLamo: document.getElementById('dor-med-lamo').checked,
-    medFluox:document.getElementById('dor-med-fluox').checked,
-    medOutro1Check:document.getElementById('dor-med-outro1').checked,
-    medOutro1Txt:  document.getElementById('dor-med-outro1-txt').value,
-    medOutro2Check:document.getElementById('dor-med-outro2').checked,
-    medOutro2Txt:  document.getElementById('dor-med-outro2-txt').value,
-    obsGerais:  document.getElementById('dor-obs-gerais').value,
-    obsConsulta:document.getElementById('dor-obs-consulta').value,
+function dorPushData(data){
+  dorSaveLocal(data);
+}
+
+function dorCollectData(){
+  const rows=document.querySelectorAll('#dor-table-body tr');
+  const data={
+    month:document.getElementById('dor-month-title').value,
+    meds:Array.from(document.querySelectorAll('.dor-med-check')).map(c=>c.checked),
+    medOther:Array.from(document.querySelectorAll('.dor-med-item input[type="text"]')).map(i=>i.value),
+    obs:Array.from(document.querySelectorAll('.dor-notes-area')).map(t=>t.value),
+    days:{}
   };
-}
-function dorRestoreMeta(){
-  const meta = _dorStore.meta || {};
-  if(!Object.keys(meta).length) return;
-  if(meta.month){
-    document.getElementById('dor-month-title').value=meta.month;
-    document.getElementById('dor-footer-month').textContent=meta.month;
-  }
-  if(meta.paciente) document.querySelector('#page-dor .dor-meta-item:nth-child(1) input').value=meta.paciente;
-  if(meta.medico)   document.querySelector('#page-dor .dor-meta-item:nth-child(2) input').value=meta.medico;
-  document.getElementById('dor-med-riva').checked        = !!meta.medRiva;
-  document.getElementById('dor-med-topi').checked        = !!meta.medTopi;
-  document.getElementById('dor-med-lamo').checked        = !!meta.medLamo;
-  document.getElementById('dor-med-fluox').checked       = !!meta.medFluox;
-  document.getElementById('dor-med-outro1').checked      = !!meta.medOutro1Check;
-  document.getElementById('dor-med-outro1-txt').value    = meta.medOutro1Txt||'';
-  document.getElementById('dor-med-outro2').checked      = !!meta.medOutro2Check;
-  document.getElementById('dor-med-outro2-txt').value    = meta.medOutro2Txt||'';
-  document.getElementById('dor-obs-gerais').value        = meta.obsGerais||'';
-  document.getElementById('dor-obs-consulta').value      = meta.obsConsulta||'';
+  rows.forEach(row=>{
+    const d=row.dataset.day;
+    const intBtn=row.querySelector('.dor-int-btn[data-active="1"]');
+    const sels=row.querySelectorAll('select');
+    const inp=row.querySelector('input[type="text"]');
+    const ta=row.querySelector('textarea');
+    const rd={
+      int:intBtn?parseInt(intBtn.dataset.val):0,
+      loc:(sels[0]&&sels[0].value)||'',
+      sym:(sels[1]&&sels[1].value)||'',
+      resc:(inp&&inp.value)||'',
+      notes:(ta&&ta.value)||''
+    };
+    if(rd.int||rd.loc||rd.sym||rd.resc||rd.notes)data.days[d]=rd;
+  });
+  return data;
 }
 
-// ── cores de intensidade ──────────────────────────────────────────
-const dorColors={
-  1:'#27ae60',2:'#27ae60',
-  3:'#f1c40f',4:'#f1c40f',
-  5:'#e67e22',6:'#e67e22',
-  7:'#c0392b',8:'#c0392b',
-  9:'#7b0000',10:'#7b0000'
-};
+function dorSaveAll(){
+  clearTimeout(dorSaveTimer);
+  dorSaveTimer=setTimeout(()=>{
+    const data=dorCollectData();
+    dorPushData(data);
+  },300);
+}
 
-// ── salvar linha ──────────────────────────────────────────────────
-function dorSaveRow(day){
-  const row=document.querySelector(`#dor-table-body tr[data-day="${day}"]`);
-  if(!row) return;
-  const activeBtn=row.querySelector('.dor-int-btn[data-active="1"]');
-  const int=activeBtn?parseInt(activeBtn.dataset.val):0;
-  const loc=row.querySelector('select:nth-of-type(1)').value;
-  const sym=row.querySelector('select:nth-of-type(2)').value;
-  const resc=row.querySelector('input[type="text"]').value;
-  const notes=row.querySelector('textarea').value;
-  if(int||loc||sym||resc||notes){
-    dorState[String(day)]={int,loc,sym,resc,notes};
-  } else {
-    delete dorState[String(day)];
+function dorApplyData(saved){
+  if(!saved)return;
+  const tbody=document.getElementById('dor-table-body');
+  tbody.querySelectorAll('tr').forEach(row=>{
+    const d=row.dataset.day;
+    const sd=saved.days&&saved.days[d]?saved.days[d]:{};
+    if(sd.int){
+      const wrap=row.querySelector('.dor-int-wrap');
+      const btns=wrap.querySelectorAll('.dor-int-btn');
+      btns.forEach(b=>{b.className='dor-int-btn';delete b.dataset.active;});
+      const target=wrap.querySelector(`[data-val="${sd.int}"]`);
+      if(target){target.className=`dor-int-btn active-${sd.int}`;target.dataset.active='1';}
+    }
+    const sels=row.querySelectorAll('select');
+    if(sd.loc&&sels[0])sels[0].value=sd.loc;
+    if(sd.sym&&sels[1])sels[1].value=sd.sym;
+    const inp=row.querySelector('input[type="text"]');
+    if(sd.resc&&inp)inp.value=sd.resc;
+    const ta=row.querySelector('textarea');
+    if(sd.notes&&ta)ta.value=sd.notes;
+  });
+  if(saved.month){
+    document.getElementById('dor-month-title').value=saved.month;
+    document.getElementById('dor-footer-month').textContent=saved.month;
   }
-  dorPersist();
+  if(saved.meds){
+    const checks=document.querySelectorAll('.dor-med-check');
+    saved.meds.forEach((v,i)=>{if(checks[i])checks[i].checked=v;});
+  }
+  if(saved.medOther){
+    const others=document.querySelectorAll('.dor-med-item input[type="text"]');
+    saved.medOther.forEach((v,i)=>{if(others[i])others[i].value=v;});
+  }
+  if(saved.obs){
+    const areas=document.querySelectorAll('.dor-notes-area');
+    saved.obs.forEach((v,i)=>{if(areas[i])areas[i].value=v;});
+  }
   dorUpdateSummary();
 }
 
-// ── montar tabela ─────────────────────────────────────────────────
 function dorBuildTable(){
   const tbody=document.getElementById('dor-table-body');
   for(let d=1;d<=31;d++){
     const tr=document.createElement('tr');tr.dataset.day=d;
-    const saved=dorState[String(d)]||{};
-
-    // Dia
     const tdDay=document.createElement('td');tdDay.className='dor-day-num';tdDay.textContent=String(d).padStart(2,'0');tr.appendChild(tdDay);
-
-    // Intensidade 1-10
-    const tdInt=document.createElement('td');tdInt.style.minWidth='170px';
-    const wrap=document.createElement('div');wrap.className='dor-int-wrap';wrap.style.flexWrap='wrap';wrap.style.gap='3px';
-    for(let i=1;i<=10;i++){
+    const tdInt=document.createElement('td');tdInt.style.minWidth='120px';
+    const wrap=document.createElement('div');wrap.className='dor-int-wrap';
+    for(let i=1;i<=5;i++){
       const btn=document.createElement('button');
       btn.className='dor-int-btn';
       btn.textContent=i;
-      btn.dataset.val=i;
-      btn.style.fontSize='.6rem';
-      if(parseInt(saved.int)===i){
-        btn.style.background=dorColors[i];
-        btn.style.borderColor=dorColors[i];
-        btn.style.color='white';
-        btn.dataset.active='1';
-      }
-      btn.onclick=function(){
-        const btns=wrap.querySelectorAll('.dor-int-btn');
-        btns.forEach(b=>{b.style.background='';b.style.borderColor='';b.style.color='';delete b.dataset.active;});
-        if(this.dataset.active==='1'){
-          delete this.dataset.active;
-        } else {
-          const val=parseInt(this.dataset.val);
-          this.style.background=dorColors[val];
-          this.style.borderColor=dorColors[val];
-          this.style.color='white';
-          this.dataset.active='1';
-        }
-        dorSaveRow(d);
-      };
+      btn.dataset.val=String(i);
+      btn.setAttribute('onclick','dorIntClick(this,'+i+')');
       wrap.appendChild(btn);
     }
     tdInt.appendChild(wrap);tr.appendChild(tdInt);
-
-    // Localização
     const tdLoc=document.createElement('td');tdLoc.style.minWidth='120px';
-    const selLoc=document.createElement('select');
-    selLoc.innerHTML='<option value="">—</option>'+dorLocations.map(l=>`<option${saved.loc===l?' selected':''}>${l}</option>`).join('');
-    selLoc.addEventListener('change',()=>dorSaveRow(d));
+    const selLoc=document.createElement('select');selLoc.innerHTML='<option value="">—</option>'+dorLocations.map(l=>`<option>${l}</option>`).join('');
+    selLoc.addEventListener('change',()=>{dorUpdateSummary();dorSaveAll();});
     tdLoc.appendChild(selLoc);tr.appendChild(tdLoc);
-
-    // Sintomas
     const tdSym=document.createElement('td');tdSym.style.minWidth='100px';
-    const selSym=document.createElement('select');
-    selSym.innerHTML='<option value="">—</option>'+dorSymptoms.map(s=>`<option${saved.sym===s?' selected':''}>${s}</option>`).join('');
-    selSym.addEventListener('change',()=>dorSaveRow(d));
+    const selSym=document.createElement('select');selSym.innerHTML='<option value="">—</option>'+dorSymptoms.map(s=>`<option>${s}</option>`).join('');
+    selSym.addEventListener('change',()=>{dorUpdateSummary();dorSaveAll();});
     tdSym.appendChild(selSym);tr.appendChild(tdSym);
-
-    // Resgate
     const tdResc=document.createElement('td');tdResc.style.minWidth='100px';
     const inpResc=document.createElement('input');inpResc.type='text';inpResc.placeholder='qual?';
-    inpResc.value=saved.resc||'';
-    inpResc.addEventListener('input',()=>dorSaveRow(d));
+    inpResc.addEventListener('input',()=>{dorUpdateSummary();dorSaveAll();});
     tdResc.appendChild(inpResc);tr.appendChild(tdResc);
-
-    // Notas
     const tdNotes=document.createElement('td');tdNotes.style.minWidth='140px';
     const inpNotes=document.createElement('textarea');inpNotes.placeholder='gatilho...';
-    inpNotes.value=saved.notes||'';
-    inpNotes.addEventListener('input',()=>dorSaveRow(d));
+    inpNotes.addEventListener('input',dorSaveAll);
     tdNotes.appendChild(inpNotes);tr.appendChild(tdNotes);
-
     tbody.appendChild(tr);
   }
 }
 
-// ── resumo (média + pior dia) ─────────────────────────────────────
-function dorGetIntVal(row){
-  const a=row.querySelector('.dor-int-btn[data-active="1"]');
-  return a?parseInt(a.dataset.val):0;
-}
+function dorGetIntVal(row){const a=row.querySelector('.dor-int-btn[data-active="1"]');if(!a)return 0;return[0,1.5,3.5,5.5,7.5,9.5][parseInt(a.dataset.val)];}
 function dorUpdateSummary(){
   const rows=document.querySelectorAll('#dor-table-body tr');
   let daysWithPain=0,totalInt=0,rescueCount=0,worstDay=0,worstInt=0;
   rows.forEach((row,i)=>{
-    const v=dorGetIntVal(row);
-    const rescue=row.querySelector('input[type="text"]').value.trim();
-    if(v>0){
-      daysWithPain++;
-      totalInt+=v;
-      if(v>worstInt){worstInt=v;worstDay=i+1;}
-    }
-    if(rescue) rescueCount++;
+    const v=dorGetIntVal(row);const rescue=row.querySelector('input[type="text"]').value.trim();
+    if(v>0){daysWithPain++;totalInt+=v;if(v>worstInt){worstInt=v;worstDay=i+1;}}
+    if(rescue)rescueCount++;
   });
-  document.getElementById('dor-total-days').textContent = daysWithPain;
-  document.getElementById('dor-rescue-count').textContent = rescueCount;
-  document.getElementById('dor-avg-int').textContent = daysWithPain>0
-    ? (totalInt/daysWithPain).toFixed(1) : '—';
-  // pior dia: mostra número do dia com a intensidade
-  if(worstDay>0){
-    document.getElementById('dor-worst-day').textContent = `Dia ${worstDay}`;
-    document.getElementById('dor-worst-day').title = `Intensidade ${worstInt}`;
-  } else {
-    document.getElementById('dor-worst-day').textContent = '—';
+  document.getElementById('dor-total-days').textContent=daysWithPain;
+  document.getElementById('dor-rescue-count').textContent=rescueCount;
+  document.getElementById('dor-avg-int').textContent=daysWithPain>0?(totalInt/daysWithPain).toFixed(1):'—';
+  document.getElementById('dor-worst-day').textContent=worstDay>0?`Dia ${worstDay}`:'—';
+}
+document.getElementById('dor-month-title').addEventListener('input',function(){
+  document.getElementById('dor-footer-month').textContent=this.value;dorSaveAll();
+});
+document.querySelectorAll('.dor-med-check').forEach(c=>c.addEventListener('change',dorSaveAll));
+document.querySelectorAll('.dor-med-item input[type="text"]').forEach(i=>i.addEventListener('input',dorSaveAll));
+document.querySelectorAll('.dor-notes-area').forEach(t=>t.addEventListener('input',dorSaveAll));
+
+// Função global para botões de intensidade — chamada via onclick inline
+window.dorIntClick = function(btn, val) {
+  var wrap = btn.parentNode;
+  var btns = wrap.querySelectorAll('.dor-int-btn');
+  var wasActive = btn.dataset.active === '1';
+  for(var i=0; i<btns.length; i++){
+    btns[i].className = 'dor-int-btn';
+    delete btns[i].dataset.active;
   }
-}
+  if(!wasActive){
+    btn.className = 'dor-int-btn active-' + val;
+    btn.dataset.active = '1';
+  }
+  dorUpdateSummary();
+  dorSaveAll();
+};
 
-// ── listeners para campos meta ────────────────────────────────────
-function dorBindMetaListeners(){
-  document.getElementById('dor-month-title').addEventListener('input',function(){
-    document.getElementById('dor-footer-month').textContent=this.value;
-    dorPersist();
-  });
-  // paciente e médico
-  document.querySelectorAll('#page-dor .dor-meta-item input').forEach(inp=>{
-    inp.addEventListener('input', dorPersist);
-  });
-  // checkboxes e inputs de medicações em uso
-  ['dor-med-riva','dor-med-topi','dor-med-lamo','dor-med-fluox','dor-med-outro1','dor-med-outro2'].forEach(id=>{
-    document.getElementById(id).addEventListener('change', dorPersist);
-  });
-  document.getElementById('dor-med-outro1-txt').addEventListener('input', dorPersist);
-  document.getElementById('dor-med-outro2-txt').addEventListener('input', dorPersist);
-  // observações gerais e perguntas
-  document.getElementById('dor-obs-gerais').addEventListener('input', dorPersist);
-  document.getElementById('dor-obs-consulta').addEventListener('input', dorPersist);
-}
-
+document.getElementById('dor-table-body').innerHTML='';
 dorBuildTable();
-dorRestoreMeta();
-dorBindMetaListeners();
-dorUpdateSummary();
+
+// Testa se localStorage funciona
+try {
+  localStorage.setItem('_dor_test','1');
+  localStorage.removeItem('_dor_test');
+} catch(e) {
+  dorShowStatus('⚠ Armazenamento bloqueado pelo navegador','#f4a96a');
+}
+
+const localData=dorLoadLocal();
+if(localData){dorApplyData(localData);dorShowStatus('✓ Dados carregados','#4caf8a');}
+
 
 /* ===== SKINCARE ===== */
-const SKIN_KEY='skincare_v1';
 const skinPanels={
   'skin-manha':{count:4,ids:['m1','m2','m3','m4']},
   'skin-noite-a':{count:3,ids:['a1','a2','a3']},
   'skin-noite-b':{count:3,ids:['b1','b2','b3']}
 };
+const SKIN_STORAGE_KEY='painel_skincare_v1';
+function skinTodayKey(){const d=new Date();return`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
+function skinLoadState(){
+  try{
+    const s=JSON.parse(localStorage.getItem(SKIN_STORAGE_KEY)||'{}');
+    // Auto-reset if it's a new day
+    if(s.date!==skinTodayKey())return{'skin-manha':{},'skin-noite-a':{},'skin-noite-b':{}};
+    return s.panels||{'skin-manha':{},'skin-noite-a':{},'skin-noite-b':{}};
+  }catch{return{'skin-manha':{},'skin-noite-a':{},'skin-noite-b':{}};}
+}
+function skinSaveState(){
+  try{localStorage.setItem(SKIN_STORAGE_KEY,JSON.stringify({date:skinTodayKey(),panels:skinState}));}catch{}
+}
+const skinState=skinLoadState();
 const skinProgMap={'skin-manha':'skin-prog-manha','skin-noite-a':'skin-prog-noite-a','skin-noite-b':'skin-prog-noite-b'};
 
-function skinLoadState(){try{return JSON.parse(localStorage.getItem(SKIN_KEY)||'{}');}catch{return{};}}
-function skinSaveState(s){try{localStorage.setItem(SKIN_KEY,JSON.stringify(s));}catch{}}
-let skinState=skinLoadState();
-// Garantir estrutura
-if(!skinState['skin-manha'])skinState['skin-manha']={};
-if(!skinState['skin-noite-a'])skinState['skin-noite-a']={};
-if(!skinState['skin-noite-b'])skinState['skin-noite-b']={};
-
-// Aplicar estado salvo ao DOM
-function skinApplyState(){
-  Object.keys(skinPanels).forEach(panel=>{
+// Apply saved state to DOM on load
+(function skinApplyLoaded(){
+  Object.keys(skinState).forEach(panel=>{
     skinPanels[panel].ids.forEach((id,i)=>{
-      const el=document.querySelector(`[data-id="${id}"]`);
-      if(!el)return;
-      const done=!!skinState[panel][id];
-      el.classList.toggle('done',done);
-      el.querySelector('.skin-step-num').textContent=done?'✓':i+1;
+      if(skinState[panel][id]){
+        const el=document.querySelector(`[data-id="${id}"]`);
+        if(el){el.classList.add('done');el.querySelector('.skin-step-num').textContent='✓';}
+      }
     });
     skinUpdateProgress(panel);
   });
-}
+})();
 
 function skinToggle(el,panel){
   const id=el.dataset.id;
@@ -1271,7 +1714,7 @@ function skinToggle(el,panel){
   const num=el.querySelector('.skin-step-num');
   num.textContent=skinState[panel][id]?'✓':skinPanels[panel].ids.indexOf(id)+1;
   skinUpdateProgress(panel);
-  skinSaveState(skinState);
+  skinSaveState();
 }
 function skinUpdateProgress(panel){
   const done=Object.values(skinState[panel]).filter(Boolean).length;
@@ -1285,7 +1728,7 @@ function skinReset(panel){
     if(el){el.classList.remove('done');el.querySelector('.skin-step-num').textContent=i+1;}
   });
   skinUpdateProgress(panel);
-  skinSaveState(skinState);
+  skinSaveState();
 }
 function skinSwitchTab(tab,e){
   document.querySelectorAll('.skin-tab').forEach(t=>t.classList.remove('active'));
@@ -1294,23 +1737,53 @@ function skinSwitchTab(tab,e){
   document.getElementById(tab).classList.add('active');
 }
 
-skinApplyState();
-
 /* ===== CAPILAR ===== */
 const CAP_STEPS=['N','H','R','N','H','R','H','N','R'];
 const CAP_STEP_LABELS={H:'Hidratação',N:'Nutrição',R:'Reconstrução'};
 const CAP_STEP_EMOJI={H:'💧',N:'🌿',R:'✨'};
 const CAP_TIPS={H:'Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.',N:'Máscara Kolene de óleos africanos, touca plástica, 20–30 min.',R:'Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.'};
+// Each entry has an ISO date string for auto-advance comparison
 const CAP_DATES=[
-  {label:'Sáb, 03 de maio',week:1},{label:'Qua, 07 de maio',week:1},{label:'Dom, 11 de maio',week:2},
-  {label:'Qua, 14 de maio',week:2},{label:'Dom, 18 de maio',week:3},{label:'Qua, 21 de maio',week:3},
-  {label:'Dom, 25 de maio',week:4},{label:'Qua, 28 de maio',week:4},{label:'Dom, 01 de junho',week:5},
+  {label:'Sáb, 03 de maio',week:1,date:'2026-05-03'},
+  {label:'Qua, 07 de maio',week:1,date:'2026-05-07'},
+  {label:'Dom, 11 de maio',week:2,date:'2026-05-11'},
+  {label:'Qua, 14 de maio',week:2,date:'2026-05-14'},
+  {label:'Dom, 18 de maio',week:3,date:'2026-05-18'},
+  {label:'Qua, 21 de maio',week:3,date:'2026-05-21'},
+  {label:'Dom, 25 de maio',week:4,date:'2026-05-25'},
+  {label:'Qua, 28 de maio',week:4,date:'2026-05-28'},
+  {label:'Dom, 01 de junho',week:5,date:'2026-06-01'},
 ];
 const CAP_WEEK_LABELS=['','Semana 1','Semana 2','Semana 3','Semana 4','Início de Junho'];
 const CAP_WEEK_DATES=['','03–07 de maio','11–14 de maio','18–21 de maio','25–28 de maio','01 de junho'];
 const CAP_STORAGE_KEY='cronograma_capilar_v1';
-function capLoadDone(){try{const r=JSON.parse(localStorage.getItem(CAP_STORAGE_KEY)||'[true]');while(r.length<CAP_DATES.length)r.push(false);r[0]=true;return r;}catch{return[true,...Array(CAP_DATES.length-1).fill(false)];}}
-function capSaveDone(arr){try{localStorage.setItem(CAP_STORAGE_KEY,JSON.stringify(arr));}catch{}}
+
+function capTodayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+function capLoadDone(){
+  try{
+    const r=JSON.parse(localStorage.getItem(CAP_STORAGE_KEY)||'[true]');
+    while(r.length<CAP_DATES.length)r.push(false);
+    r[0]=true;
+    // Auto-advance: mark past dates as done if not already marked
+    const today=capTodayStr();
+    CAP_DATES.forEach((d,i)=>{if(d.date<today)r[i]=true;});
+    return r;
+  }catch{
+    // If no saved state, auto-mark all past dates
+    const today=capTodayStr();
+    return CAP_DATES.map(d=>d.date<=today?true:false).map((v,i)=>i===0?true:v);
+  }
+}
+function capSaveDone(arr){
+  try{
+    // Re-apply auto-advance before saving so past dates stay marked
+    const today=capTodayStr();
+    CAP_DATES.forEach((d,i)=>{if(d.date<today)arr[i]=true;});
+    arr[0]=true;
+    localStorage.setItem(CAP_STORAGE_KEY,JSON.stringify(arr));
+  }catch{}
+}
 let capDone=capLoadDone();
 function capCountDone(){return capDone.filter(Boolean).length;}
 function capUpdateProgress(){
@@ -1322,6 +1795,7 @@ function capUpdateProgress(){
 function capRender(){
   const container=document.getElementById('cap-schedule');container.innerHTML='';
   let currentWeek=0,weekBlock=null;
+  const today=capTodayStr();
   CAP_DATES.forEach((d,i)=>{
     if(d.week!==currentWeek){
       weekBlock=document.createElement('div');weekBlock.className='cap-week-block';
@@ -1330,15 +1804,24 @@ function capRender(){
       weekBlock.appendChild(wh);container.appendChild(weekBlock);currentWeek=d.week;
     }
     const step=CAP_STEPS[i];const isDone=capDone[i];
+    const isToday=d.date===today;
+    const isPast=d.date<today;
     const colorVar=step==='H'?'#7bb8d4':step==='N'?'#c9a96e':'#b07ab0';
     const card=document.createElement('div');
     card.className='cap-wash-card'+(isDone?' done':'');
+    if(isToday)card.style.cssText='border-left:3px solid '+colorVar+';background:#fffaf5;';
+    const todayBadge=isToday?` <span style="font-size:10px;color:${colorVar};font-weight:600">• Hoje!</span>`:'';
+    const doneBadge=isDone&&!isToday?' <span style="font-size:10px;color:#7aab7a;font-weight:500">• Concluída</span>':'';
     card.innerHTML=`<div class="cap-check-circle" style="color:${isDone?'#7aab7a':colorVar}">${isDone?'✓':''}</div>
       <div class="cap-wash-info">
-        <div class="cap-wash-day">${d.label}${i===0?' <span style="font-size:10px;color:#7aab7a;font-weight:500">• Concluída</span>':''}</div>
+        <div class="cap-wash-day">${d.label}${todayBadge}${doneBadge}</div>
         <span class="cap-wash-step cap-step-${step}"><span class="cap-step-dot"></span>${CAP_STEP_EMOJI[step]} ${CAP_STEP_LABELS[step]}</span>
       </div>`;
-    if(i>0){card.addEventListener('click',()=>{capDone[i]=!capDone[i];capSaveDone(capDone);capRender();capUpdateProgress();});}
+    // Allow toggling future and today dates; past are auto-done but can still be untoggled
+    card.addEventListener('click',()=>{
+      if(isPast&&!isToday){return;}// past dates are auto — don't toggle
+      capDone[i]=!capDone[i];capSaveDone(capDone);capRender();capUpdateProgress();
+    });
     weekBlock.appendChild(card);
     if(!isDone&&i>0){
       const tipBox=document.createElement('div');tipBox.className='cap-tip-box';tipBox.textContent=CAP_TIPS[step];
@@ -1350,7 +1833,7 @@ function capRender(){
   capUpdateProgress();
 }
 capRender();
-</script>
+</script><div id="dor-sync-status" style="position: fixed; bottom: 90px; left: 16px; background: rgb(26, 58, 92); color: rgb(76, 175, 138); font-family: &quot;DM Mono&quot;, monospace; font-size: 0.68rem; letter-spacing: 0.06em; padding: 6px 12px; border-radius: 20px; z-index: 300; transition: opacity 0.4s; pointer-events: none; opacity: 0;">✓ Registro criado — baixe o arquivo para guardar o ID</div>
 
 <!-- PLANTAS via React (lazy render) -->
 <script>
@@ -1416,20 +1899,23 @@ function PlantasApp(){
   const [flashEx,setFlashEx]=useState({});
 
   useEffect(()=>{
-    try{
-      const r1=localStorage.getItem(BOKASHI_KEY);
-      if(r1)setBkDates(JSON.parse(r1));
-      const r2=localStorage.getItem(EXTRA_KEY);
-      if(r2)setExDates(JSON.parse(r2));
-    }catch{}
+    (async()=>{
+      try{
+        const r1=await window.storage.get(BOKASHI_KEY);
+        if(r1)setBkDates(JSON.parse(r1.value));
+        const r2=await window.storage.get(EXTRA_KEY);
+        const ex=r2?JSON.parse(r2.value):{};
+        setExDates(ex);
+      }catch{}
+    })();
   },[]);
 
   const flash=(setter,key)=>{setter(p=>({...p,[key]:true}));setTimeout(()=>setter(p=>{const n={...p};delete n[key];return n;}),1800);};
 
-  function applyBokashi(id){const u={...bkDates,[id]:new Date().toISOString()};setBkDates(u);flash(setFlashBk,id);try{localStorage.setItem(BOKASHI_KEY,JSON.stringify(u));}catch{}}
-  function resetBokashi(id){const u={...bkDates};delete u[id];setBkDates(u);try{localStorage.setItem(BOKASHI_KEY,JSON.stringify(u));}catch{}}
-  function applyExtra(id,type){const key=`${id}_${type}`;const u={...exDates,[key]:new Date().toISOString()};setExDates(u);flash(setFlashEx,key);try{localStorage.setItem(EXTRA_KEY,JSON.stringify(u));}catch{}}
-  function resetExtra(id,type){const key=`${id}_${type}`;const u={...exDates};delete u[key];setExDates(u);try{localStorage.setItem(EXTRA_KEY,JSON.stringify(u));}catch{}}
+  async function applyBokashi(id){const u={...bkDates,[id]:new Date().toISOString()};setBkDates(u);flash(setFlashBk,id);try{await window.storage.set(BOKASHI_KEY,JSON.stringify(u));}catch{}}
+  async function resetBokashi(id){const u={...bkDates};delete u[id];setBkDates(u);try{await window.storage.set(BOKASHI_KEY,JSON.stringify(u));}catch{}}
+  async function applyExtra(id,type){const key=`${id}_${type}`;const u={...exDates,[key]:new Date().toISOString()};setExDates(u);flash(setFlashEx,key);try{await window.storage.set(EXTRA_KEY,JSON.stringify(u));}catch{}}
+  async function resetExtra(id,type){const key=`${id}_${type}`;const u={...exDates};delete u[key];setExDates(u);try{await window.storage.set(EXTRA_KEY,JSON.stringify(u));}catch{}}
 
   const plantIsDue=p=>{
     const bk=p.group!=="skip"?getStatus(p.intervalDays,bkDates[p.id]):null;
@@ -1574,6 +2060,8 @@ function renderPlantas(){
 .fab-toast.show{opacity:1;transform:translateY(0);}
 </style>
 
+<script id="dor-bin-id" type="application/json">6a0cd58d6877513b279cd2e4</script>
+<script id="dor-data" type="application/json">{}</script>
 <button class="fab-download" onclick="downloadPainel()" title="Salvar painel no dispositivo">⬇</button>
 <div class="fab-toast" id="fab-toast">Arquivo salvo!</div>
 
@@ -1592,5 +2080,6 @@ function downloadPainel(){
   setTimeout(()=>toast.classList.remove('show'), 2200);
 }
 </script>
-</body>
-</html>
+
+
+</body></html>
