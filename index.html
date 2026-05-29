@@ -1624,7 +1624,7 @@ function dorBuildTable(){
   }
 }
 
-function dorGetIntVal(row){const a=row.querySelector('.dor-int-btn[data-active="1"]');if(!a)return 0;return[0,1.5,3.5,5.5,7.5,9.5][parseInt(a.dataset.val)];}
+function dorGetIntVal(row){const a=row.querySelector('.dor-int-btn[data-active="1"]');if(!a)return 0;return parseInt(a.dataset.val);}
 function dorUpdateSummary(){
   const rows=document.querySelectorAll('#dor-table-body tr');
   let daysWithPain=0,totalInt=0,rescueCount=0,worstDay=0,worstInt=0;
