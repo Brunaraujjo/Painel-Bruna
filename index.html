@@ -992,7 +992,10 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
         <div class="dor-section-title">Perguntas para a próxima consulta</div>
         <textarea class="dor-notes-area" placeholder="Anote aqui o que quiser discutir com o médico..."></textarea>
       </div>
-      <button class="dor-print-btn" onclick="window.print()">↓ Imprimir / Salvar PDF</button>
+      <div style="display:flex;gap:10px;">
+        <button class="dor-print-btn" onclick="window.print()" style="flex:1;margin-top:0;">↓ Imprimir / Salvar PDF</button>
+        <button class="dor-print-btn" onclick="dorClearMonth()" style="flex:none;background:#8b2020;width:auto;padding:.9rem 1.2rem;margin-top:0;" title="Apagar todos os dados deste mês">🗑 Limpar mês</button>
+      </div>
     </div>
     <div class="dor-footer">
       <span>Bruna Costa de Araujo — Registro Neurológico</span>
@@ -1530,8 +1533,6 @@ function dorSaveLocal(data){
   try{
     const key=dorMonthKey(dorViewYear,dorViewMonth);
     localStorage.setItem(key,JSON.stringify(data));
-    // Também salva na chave legada para compatibilidade
-    localStorage.setItem(DOR_LOCAL_KEY,JSON.stringify(data));
     dorShowStatus('✓ Salvo','#4caf8a');
   }catch{dorShowStatus('⚠ Erro ao salvar','#f4a96a');}
 }
@@ -1540,14 +1541,30 @@ function dorLoadLocal(){
     const key=dorMonthKey(dorViewYear,dorViewMonth);
     const s=localStorage.getItem(key);
     if(s)return JSON.parse(s);
-    // Fallback para chave legada se for o mês atual
-    const n=new Date();
-    if(dorViewYear===n.getFullYear()&&dorViewMonth===n.getMonth()){
-      const leg=localStorage.getItem(DOR_LOCAL_KEY);
-      if(leg)return JSON.parse(leg);
-    }
     return null;
   }catch{return null;}
+}
+// Retorna todos os meses com dados salvos
+function dorAllMonthKeys(){
+  const keys=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.startsWith('painel_dores_20'))keys.push(k);
+  }
+  return keys.sort();
+}
+// Carrega dados de uma chave específica
+function dorLoadByKey(key){
+  try{const s=localStorage.getItem(key);return s?JSON.parse(s):null;}catch{return null;}
+}
+// Limpa dados do mês atual com confirmação
+function dorClearMonth(){
+  const label=dorMonthLabel(dorViewYear,dorViewMonth);
+  if(!confirm(`Apagar todos os registros de "${label}"?\n\nEsta ação não pode ser desfeita.`))return;
+  const key=dorMonthKey(dorViewYear,dorViewMonth);
+  localStorage.removeItem(key);
+  dorLoadMonth();
+  dorShowStatus('🗑 Mês limpo','#f4a96a');
 }
 
 function dorPushData(data){
@@ -1680,11 +1697,15 @@ function dorUpdateSummary(){
   document.getElementById('dor-worst-day').textContent=worstDay>0?`Dia ${worstDay}`:'—';
 }
 function dorNavMonth(dir){
+  // Bloqueia navegar para o futuro além do mês atual
+  const n=new Date();
+  const targetMonth=(dorViewMonth+dir+12)%12;
+  const targetYear=dorViewMonth+dir>11?dorViewYear+1:dorViewMonth+dir<0?dorViewYear-1:dorViewYear;
+  if(targetYear>n.getFullYear()||(targetYear===n.getFullYear()&&targetMonth>n.getMonth()))return;
   // Arquiva mês atual antes de sair
   histArchiveCurrentMonth();
-  dorViewMonth+=dir;
-  if(dorViewMonth>11){dorViewMonth=0;dorViewYear++;}
-  if(dorViewMonth<0){dorViewMonth=11;dorViewYear--;}
+  dorViewMonth=targetMonth;
+  dorViewYear=targetYear;
   dorLoadMonth();
 }
 
@@ -2269,18 +2290,17 @@ function histArchiveCurrentMonth(){
 }
 
 function histRender(){
-  const hist=histLoad();
-  // Também inclui mês atual se tiver dados
-  const data=dorLoadLocal();
-  let rows=hist.slice();
-  if(data&&data.days&&Object.keys(data.days).length>0){
-    const cur=histCalcSummary(data);
-    if(cur&&cur.daysWithPain>0){
-      const exists=rows.findIndex(h=>h.month===cur.month);
-      if(exists>=0)rows[exists]=cur;
-      else rows.unshift(cur);
-    }
-  }
+  // Lê TODOS os meses salvos no localStorage, independente do mês atual
+  let rows=[];
+  const allKeys=dorAllMonthKeys();
+  allKeys.forEach(k=>{
+    const data=dorLoadByKey(k);
+    if(!data||!data.days||Object.keys(data.days).length===0)return;
+    const summary=histCalcSummary(data);
+    if(summary&&summary.daysWithPain>0)rows.push(summary);
+  });
+  // Ordena do mais recente para o mais antigo usando a chave do mês
+  rows.sort((a,b)=>b.month.localeCompare(a.month));
 
   const table=document.getElementById('hist-table');
   const tbody=document.getElementById('hist-tbody');
