@@ -938,7 +938,11 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
         <h1><span>Registro de Dores</span>Diário de Enxaqueca</h1>
         <div class="dor-month-box">
           <label>Mês / Ano</label>
-          <input class="dor-month-input" type="text" placeholder="Maio / 2026" id="dor-month-title">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button onclick="dorNavMonth(-1)" style="background:rgba(255,255,255,.15);border:none;color:white;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">‹</button>
+            <input class="dor-month-input" type="text" placeholder="Junho / 2026" id="dor-month-title" readonly style="cursor:default;width:120px;">
+            <button onclick="dorNavMonth(1)" id="dor-nav-next" style="background:rgba(255,255,255,.15);border:none;color:white;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">›</button>
+          </div>
         </div>
       </div>
       <div class="dor-header-meta">
@@ -1233,6 +1237,10 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
     <span class="nav-icon">🌿</span>
     <span class="nav-label">Plantas</span>
   </button>
+  <button class="nav-btn" onclick="showPage('page-historico',this);histRender()">
+    <span class="nav-icon">📊</span>
+    <span class="nav-label">Histórico</span>
+  </button>
 </nav>
 
 <!-- React for Plantas -->
@@ -1506,8 +1514,41 @@ function dorShowStatus(msg,color){
 }
 
 const DOR_LOCAL_KEY='painel_dores_local_v1';
-function dorSaveLocal(data){try{localStorage.setItem(DOR_LOCAL_KEY,JSON.stringify(data));dorShowStatus('✓ Salvo','#4caf8a');}catch{dorShowStatus('⚠ Erro ao salvar','#f4a96a');}}
-function dorLoadLocal(){try{const s=localStorage.getItem(DOR_LOCAL_KEY);return s?JSON.parse(s):null;}catch{return null;}}
+
+// Chave dinâmica por mês: painel_dores_2026-06
+function dorMonthKey(year, month){return`painel_dores_${year}-${String(month+1).padStart(2,'0')}`;}
+function dorCurrentKey(){const n=new Date();return dorMonthKey(n.getFullYear(),n.getMonth());}
+function dorMonthLabel(year,month){
+  const names=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  return`${names[month]} / ${year}`;
+}
+
+let dorViewYear=new Date().getFullYear();
+let dorViewMonth=new Date().getMonth();
+
+function dorSaveLocal(data){
+  try{
+    const key=dorMonthKey(dorViewYear,dorViewMonth);
+    localStorage.setItem(key,JSON.stringify(data));
+    // Também salva na chave legada para compatibilidade
+    localStorage.setItem(DOR_LOCAL_KEY,JSON.stringify(data));
+    dorShowStatus('✓ Salvo','#4caf8a');
+  }catch{dorShowStatus('⚠ Erro ao salvar','#f4a96a');}
+}
+function dorLoadLocal(){
+  try{
+    const key=dorMonthKey(dorViewYear,dorViewMonth);
+    const s=localStorage.getItem(key);
+    if(s)return JSON.parse(s);
+    // Fallback para chave legada se for o mês atual
+    const n=new Date();
+    if(dorViewYear===n.getFullYear()&&dorViewMonth===n.getMonth()){
+      const leg=localStorage.getItem(DOR_LOCAL_KEY);
+      if(leg)return JSON.parse(leg);
+    }
+    return null;
+  }catch{return null;}
+}
 
 function dorPushData(data){
   dorSaveLocal(data);
@@ -1638,6 +1679,72 @@ function dorUpdateSummary(){
   document.getElementById('dor-avg-int').textContent=daysWithPain>0?(totalInt/daysWithPain).toFixed(1):'—';
   document.getElementById('dor-worst-day').textContent=worstDay>0?`Dia ${worstDay}`:'—';
 }
+function dorNavMonth(dir){
+  // Arquiva mês atual antes de sair
+  histArchiveCurrentMonth();
+  dorViewMonth+=dir;
+  if(dorViewMonth>11){dorViewMonth=0;dorViewYear++;}
+  if(dorViewMonth<0){dorViewMonth=11;dorViewYear--;}
+  dorLoadMonth();
+}
+
+function dorLoadMonth(){
+  const n=new Date();
+  const isCurrentMonth=(dorViewYear===n.getFullYear()&&dorViewMonth===n.getMonth());
+  // Botão "próximo" só aparece até o mês atual
+  const nextBtn=document.getElementById('dor-nav-next');
+  if(nextBtn)nextBtn.style.opacity=isCurrentMonth?'0.3':'1';
+
+  // Atualiza título
+  const title=document.getElementById('dor-month-title');
+  if(title)title.value=dorMonthLabel(dorViewYear,dorViewMonth);
+  const footer=document.getElementById('dor-footer-month');
+  if(footer)footer.textContent=dorMonthLabel(dorViewYear,dorViewMonth);
+
+  // Recria tabela com dias corretos do mês
+  const daysInMonth=new Date(dorViewYear,dorViewMonth+1,0).getDate();
+  const tbody=document.getElementById('dor-table-body');
+  tbody.innerHTML='';
+  // Rebuild only needed rows
+  const allRows=[];
+  for(let d=1;d<=31;d++){
+    const tr=document.createElement('tr');tr.dataset.day=d;
+    tr.style.display=d<=daysInMonth?'':'none';
+    const tdDay=document.createElement('td');tdDay.className='dor-day-num';tdDay.textContent=String(d).padStart(2,'0');tr.appendChild(tdDay);
+    const tdInt=document.createElement('td');tdInt.style.minWidth='160px';
+    const wrap=document.createElement('div');wrap.className='dor-int-wrap';
+    for(let i=1;i<=10;i++){
+      const btn=document.createElement('button');
+      btn.className='dor-int-btn';btn.textContent=i;btn.dataset.val=String(i);
+      btn.setAttribute('onclick','dorIntClick(this,'+i+')');
+      wrap.appendChild(btn);
+    }
+    tdInt.appendChild(wrap);tr.appendChild(tdInt);
+    const tdLoc=document.createElement('td');tdLoc.style.minWidth='120px';
+    const selLoc=document.createElement('select');selLoc.innerHTML='<option value="">—</option>'+dorLocations.map(l=>`<option>${l}</option>`).join('');
+    selLoc.addEventListener('change',()=>{dorUpdateSummary();dorSaveAll();});
+    tdLoc.appendChild(selLoc);tr.appendChild(tdLoc);
+    const tdSym=document.createElement('td');tdSym.style.minWidth='100px';
+    const selSym=document.createElement('select');selSym.innerHTML='<option value="">—</option>'+dorSymptoms.map(s=>`<option>${s}</option>`).join('');
+    selSym.addEventListener('change',()=>{dorUpdateSummary();dorSaveAll();});
+    tdSym.appendChild(selSym);tr.appendChild(tdSym);
+    const tdResc=document.createElement('td');tdResc.style.minWidth='100px';
+    const inpResc=document.createElement('input');inpResc.type='text';inpResc.placeholder='qual?';
+    inpResc.addEventListener('input',()=>{dorUpdateSummary();dorSaveAll();});
+    tdResc.appendChild(inpResc);tr.appendChild(tdResc);
+    const tdNotes=document.createElement('td');tdNotes.style.minWidth='140px';
+    const inpNotes=document.createElement('textarea');inpNotes.placeholder='gatilho...';
+    inpNotes.addEventListener('input',dorSaveAll);
+    tdNotes.appendChild(inpNotes);tr.appendChild(tdNotes);
+    tbody.appendChild(tr);
+  }
+
+  // Carrega dados do mês
+  const saved=dorLoadLocal();
+  if(saved)dorApplyData(saved);
+  else dorUpdateSummary();
+}
+
 document.getElementById('dor-month-title').addEventListener('input',function(){
   document.getElementById('dor-footer-month').textContent=this.value;dorSaveAll();
 });
@@ -1663,7 +1770,7 @@ window.dorIntClick = function(btn, val) {
 };
 
 document.getElementById('dor-table-body').innerHTML='';
-dorBuildTable();
+dorLoadMonth();
 
 // Testa se localStorage funciona
 try {
@@ -1672,9 +1779,6 @@ try {
 } catch(e) {
   dorShowStatus('⚠ Armazenamento bloqueado pelo navegador','#f4a96a');
 }
-
-const localData=dorLoadLocal();
-if(localData){dorApplyData(localData);dorShowStatus('✓ Dados carregados','#4caf8a');}
 
 
 /* ===== SKINCARE ===== */
@@ -2087,4 +2191,121 @@ function downloadPainel(){
 </script>
 
 
+<!-- PÁGINA HISTÓRICO -->
+<div id="page-historico" class="page" style="background:#f7f5f0;min-height:100vh;padding-bottom:80px;">
+  <header style="background:linear-gradient(135deg,#1a3a5c,#2a5298);color:white;padding:2rem 1.2rem 1.4rem;margin-bottom:0;">
+    <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;opacity:.5;margin-bottom:.3rem;">Resumo</div>
+    <h1 style="font-size:1.4rem;font-weight:700;margin:0 0 .2rem;">Histórico de Dores</h1>
+    <p style="font-size:.78rem;opacity:.6;margin:0;">Consolidado mensal</p>
+  </header>
+  <div style="padding:1.2rem;">
+    <div id="hist-empty" style="display:none;text-align:center;padding:3rem 1rem;color:#a09880;font-size:.85rem;">Nenhum dado salvo ainda.</div>
+    <div style="overflow-x:auto;">
+      <table id="hist-table" style="width:100%;border-collapse:collapse;font-size:.82rem;display:none;">
+        <thead>
+          <tr style="background:#1a3a5c;">
+            <th style="font-family:'DM Mono',monospace;font-size:.58rem;font-weight:400;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7);padding:.7rem .6rem;text-align:left;">Mês</th>
+            <th style="font-family:'DM Mono',monospace;font-size:.58rem;font-weight:400;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7);padding:.7rem .6rem;text-align:center;">Dias c/ dor</th>
+            <th style="font-family:'DM Mono',monospace;font-size:.58rem;font-weight:400;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7);padding:.7rem .6rem;text-align:center;">Resgates</th>
+            <th style="font-family:'DM Mono',monospace;font-size:.58rem;font-weight:400;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7);padding:.7rem .6rem;text-align:center;">Int. média</th>
+            <th style="font-family:'DM Mono',monospace;font-size:.58rem;font-weight:400;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7);padding:.7rem .6rem;text-align:center;">Pior dia</th>
+            <th style="font-family:'DM Mono',monospace;font-size:.58rem;font-weight:400;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7);padding:.7rem .6rem;text-align:center;">Pior int.</th>
+          </tr>
+        </thead>
+        <tbody id="hist-tbody"></tbody>
+      </table>
+    </div>
+    <div id="hist-note" style="display:none;margin-top:1rem;padding:10px 14px;background:#fff8ee;border-radius:10px;font-size:.74rem;color:#a06030;border:1px solid #f0e0c0;">
+      💡 O histórico é preenchido automaticamente ao fechar o mês. Os dados de cada mês ficam salvos aqui.
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== HISTÓRICO DE DORES ===== */
+const HIST_KEY = 'painel_dores_historico_v1';
+
+function histLoad(){
+  try{return JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}catch{return[];}
+}
+function histSave(arr){
+  try{localStorage.setItem(HIST_KEY,JSON.stringify(arr));}catch{}
+}
+
+// Calcula resumo a partir de um objeto de dados de dores
+function histCalcSummary(data){
+  if(!data||!data.days)return null;
+  let daysWithPain=0,totalInt=0,rescueCount=0,worstDay=0,worstInt=0;
+  Object.entries(data.days).forEach(([day,rd])=>{
+    if(rd.int>0){
+      daysWithPain++;totalInt+=rd.int;
+      if(rd.int>worstInt){worstInt=rd.int;worstDay=parseInt(day);}
+    }
+    if(rd.resc&&rd.resc.trim())rescueCount++;
+  });
+  return{
+    month:data.month||'',
+    daysWithPain,
+    rescueCount,
+    avgInt:daysWithPain>0?(totalInt/daysWithPain).toFixed(1):'—',
+    worstDay:worstDay>0?`Dia ${String(worstDay).padStart(2,'0')}`:'—',
+    worstInt:worstInt>0?worstInt:'—'
+  };
+}
+
+// Salva mês atual no histórico se tiver dados
+function histArchiveCurrentMonth(){
+  const data=dorLoadLocal();
+  if(!data||!data.days||Object.keys(data.days).length===0)return;
+  const summary=histCalcSummary(data);
+  if(!summary||summary.daysWithPain===0)return;
+  const hist=histLoad();
+  // Não duplicar o mesmo mês
+  const key=data.month||'sem título';
+  const exists=hist.findIndex(h=>h.month===key);
+  if(exists>=0)hist[exists]=summary;
+  else hist.unshift(summary);
+  histSave(hist);
+}
+
+function histRender(){
+  const hist=histLoad();
+  // Também inclui mês atual se tiver dados
+  const data=dorLoadLocal();
+  let rows=hist.slice();
+  if(data&&data.days&&Object.keys(data.days).length>0){
+    const cur=histCalcSummary(data);
+    if(cur&&cur.daysWithPain>0){
+      const exists=rows.findIndex(h=>h.month===cur.month);
+      if(exists>=0)rows[exists]=cur;
+      else rows.unshift(cur);
+    }
+  }
+
+  const table=document.getElementById('hist-table');
+  const tbody=document.getElementById('hist-tbody');
+  const empty=document.getElementById('hist-empty');
+  const note=document.getElementById('hist-note');
+
+  if(rows.length===0){
+    table.style.display='none';empty.style.display='block';note.style.display='none';
+    return;
+  }
+  empty.style.display='none';table.style.display='table';note.style.display='block';
+  tbody.innerHTML='';
+  rows.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.style.cssText=`border-bottom:1px solid #ddd8d0;${i%2===0?'background:white;':'background:#f8f5f0;'}`;
+    const intColor=r.worstInt>=8?'#c0392b':r.worstInt>=5?'#e67e22':r.worstInt>=3?'#f1c40f':'#27ae60';
+    tr.innerHTML=`
+      <td style="padding:.6rem .6rem;font-weight:600;color:#2c2c2c;">${r.month||'—'}</td>
+      <td style="padding:.6rem .6rem;text-align:center;color:#1a3a5c;font-weight:600;">${r.daysWithPain}</td>
+      <td style="padding:.6rem .6rem;text-align:center;color:#c9a87c;font-weight:600;">${r.rescueCount}</td>
+      <td style="padding:.6rem .6rem;text-align:center;color:#5a4a3a;">${r.avgInt}</td>
+      <td style="padding:.6rem .6rem;text-align:center;color:#5a4a3a;">${r.worstDay}</td>
+      <td style="padding:.6rem .6rem;text-align:center;font-weight:700;color:${intColor};">${r.worstInt}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+</script>
 </body></html>
