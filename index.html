@@ -2193,15 +2193,26 @@ function BokashiApp(){
     return(p.extras||[]).some(e=>{ const s=bkGetStatus(e.interval,exDates[`${p.id}_${e.type}`]); return s==='due'||s==='pending'; });
   };
 
-  const totalActive=bkPlants.filter(p=>p.group!=='skip').length;
-
-  // Conta plantas (não aplicações): em dia = ok ou soon; pendente = due ou pending
+  // Conta todas as plantas que têm algo para adubar (bokashi OU extras)
   let countOk=0, countPending=0;
-  bkPlants.filter(p=>p.group!=='skip').forEach(p=>{
-    const bkSt=bkGetStatus(p.intervalDays,bkDates[p.id]);
-    const allOk=(bkSt==='ok'||bkSt==='soon') &&
-      (p.extras||[]).every(ex=>{ const s=bkGetStatus(ex.interval,exDates[`${p.id}_${ex.type}`]); return s==='ok'||s==='soon'; });
-    if(allOk) countOk++; else countPending++;
+  bkPlants.forEach(p=>{
+    const hasExtras=(p.extras||[]).length>0;
+    const hasBokashi=p.group!=='skip';
+    if(!hasBokashi&&!hasExtras)return; // plantas skip sem extras — ignora
+
+    let allOk=true;
+    if(hasBokashi){
+      const bkSt=bkGetStatus(p.intervalDays,bkDates[p.id]);
+      if(bkSt!=='ok'&&bkSt!=='soon')allOk=false;
+    }
+    if(hasExtras){
+      const extrasOk=(p.extras||[]).every(ex=>{
+        const s=bkGetStatus(ex.interval,exDates[`${p.id}_${ex.type}`]);
+        return s==='ok'||s==='soon';
+      });
+      if(!extrasOk)allOk=false;
+    }
+    if(allOk)countOk++; else countPending++;
   });
   const pendingCount=countPending;
   const doneThisMonth=countOk;
