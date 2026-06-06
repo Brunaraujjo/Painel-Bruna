@@ -992,10 +992,7 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
         <div class="dor-section-title">Perguntas para a próxima consulta</div>
         <textarea class="dor-notes-area" placeholder="Anote aqui o que quiser discutir com o médico..."></textarea>
       </div>
-      <div style="display:flex;gap:10px;">
-        <button class="dor-print-btn" onclick="window.print()" style="flex:1;margin-top:0;">↓ Imprimir / Salvar PDF</button>
-        <button class="dor-print-btn" onclick="dorClearMonth()" style="flex:none;background:#8b2020;width:auto;padding:.9rem 1.2rem;margin-top:0;" title="Apagar todos os dados deste mês">🗑 Limpar mês</button>
-      </div>
+      <button class="dor-print-btn" onclick="window.print()">↓ Imprimir / Salvar PDF</button>
     </div>
     <div class="dor-footer">
       <span>Bruna Costa de Araujo — Registro Neurológico</span>
@@ -1239,6 +1236,10 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
   <button class="nav-btn" onclick="showPage('page-plantas',this)">
     <span class="nav-icon">🌿</span>
     <span class="nav-label">Plantas</span>
+  </button>
+  <button class="nav-btn" onclick="showPage('page-bokashi',this);renderBokashi()">
+    <span class="nav-icon">🪣</span>
+    <span class="nav-label">Bokashi</span>
   </button>
   <button class="nav-btn" onclick="showPage('page-historico',this);histRender()">
     <span class="nav-icon">📊</span>
@@ -1533,6 +1534,8 @@ function dorSaveLocal(data){
   try{
     const key=dorMonthKey(dorViewYear,dorViewMonth);
     localStorage.setItem(key,JSON.stringify(data));
+    // Também salva na chave legada para compatibilidade
+    localStorage.setItem(DOR_LOCAL_KEY,JSON.stringify(data));
     dorShowStatus('✓ Salvo','#4caf8a');
   }catch{dorShowStatus('⚠ Erro ao salvar','#f4a96a');}
 }
@@ -1541,30 +1544,14 @@ function dorLoadLocal(){
     const key=dorMonthKey(dorViewYear,dorViewMonth);
     const s=localStorage.getItem(key);
     if(s)return JSON.parse(s);
+    // Fallback para chave legada se for o mês atual
+    const n=new Date();
+    if(dorViewYear===n.getFullYear()&&dorViewMonth===n.getMonth()){
+      const leg=localStorage.getItem(DOR_LOCAL_KEY);
+      if(leg)return JSON.parse(leg);
+    }
     return null;
   }catch{return null;}
-}
-// Retorna todos os meses com dados salvos
-function dorAllMonthKeys(){
-  const keys=[];
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
-    if(k&&k.startsWith('painel_dores_20'))keys.push(k);
-  }
-  return keys.sort();
-}
-// Carrega dados de uma chave específica
-function dorLoadByKey(key){
-  try{const s=localStorage.getItem(key);return s?JSON.parse(s):null;}catch{return null;}
-}
-// Limpa dados do mês atual com confirmação
-function dorClearMonth(){
-  const label=dorMonthLabel(dorViewYear,dorViewMonth);
-  if(!confirm(`Apagar todos os registros de "${label}"?\n\nEsta ação não pode ser desfeita.`))return;
-  const key=dorMonthKey(dorViewYear,dorViewMonth);
-  localStorage.removeItem(key);
-  dorLoadMonth();
-  dorShowStatus('🗑 Mês limpo','#f4a96a');
 }
 
 function dorPushData(data){
@@ -1697,15 +1684,11 @@ function dorUpdateSummary(){
   document.getElementById('dor-worst-day').textContent=worstDay>0?`Dia ${worstDay}`:'—';
 }
 function dorNavMonth(dir){
-  // Bloqueia navegar para o futuro além do mês atual
-  const n=new Date();
-  const targetMonth=(dorViewMonth+dir+12)%12;
-  const targetYear=dorViewMonth+dir>11?dorViewYear+1:dorViewMonth+dir<0?dorViewYear-1:dorViewYear;
-  if(targetYear>n.getFullYear()||(targetYear===n.getFullYear()&&targetMonth>n.getMonth()))return;
   // Arquiva mês atual antes de sair
   histArchiveCurrentMonth();
-  dorViewMonth=targetMonth;
-  dorViewYear=targetYear;
+  dorViewMonth+=dir;
+  if(dorViewMonth>11){dorViewMonth=0;dorViewYear++;}
+  if(dorViewMonth<0){dorViewMonth=11;dorViewYear--;}
   dorLoadMonth();
 }
 
@@ -2212,7 +2195,329 @@ function downloadPainel(){
 </script>
 
 
-<!-- PÁGINA HISTÓRICO -->
+<!-- PÁGINA BOKASHI -->
+<div id="page-bokashi" class="page" style="background:#f7f5f0;min-height:100vh;padding-bottom:80px;">
+  <div id="bokashi-root"></div>
+</div>
+
+<!-- BOKASHI via React (lazy render) -->
+<script>
+(function(){
+
+const BK_KEY  = 'bokashi_dates_v1';
+const EX_KEY  = 'bokashi_extra_v1';
+const BK_HIST = 'bokashi_hist_v1';
+
+// localStorage helpers
+function bkLoad(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):{}; }catch{ return {}; } }
+function bkSave(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch{} }
+
+// Mês atual como string "2026-06"
+function bkMonthKey(){ const d=new Date(); return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+
+const bkPlants = [
+  // Especiais / sem bokashi
+  { id:1,  name:"Jibóia na água",          group:"skip", note:"Fertilizante líquido hidropônico mensal",
+    extras:[{ type:"hidro", label:"Fertilizante hidropônico", dose:"1 gota / 500ml água", interval:30, note:"Trocar a água junto. Alternativa: Forth Cactus 1 gota em 500ml." }] },
+  { id:2,  name:"Orquídea Olho de Boneca", group:"skip", note:"Fertilizante específico para orquídeas",
+    extras:[{ type:"orquidea", label:"Forth Orquídeas", dose:"Diluído na água + foliar", interval:15, note:"Aplique na água de rega e via foliar. Quinzenal." }] },
+  { id:3,  name:"Phalaenopsis Aphrodite",  group:"skip", note:"Fertilizante específico para orquídeas",
+    extras:[{ type:"orquidea", label:"Forth Orquídeas", dose:"Diluído na água + foliar", interval:15, note:"Aplique na água de rega e via foliar. Quinzenal." }] },
+  { id:4,  name:"Rosa do Deserto",         group:"skip", note:"Fertilizante específico próprio" },
+  { id:35, name:"ZZ Raven",                group:"skip", note:"Em propagação — aguardar enraizamento" },
+  { id:36, name:"Cordyline",               group:"skip", note:"Em propagação — aguardar enraizamento" },
+  { id:37, name:"Selaginella",             group:"skip", note:"Em propagação — aguardar enraizamento" },
+  { id:34, name:"Camuciba de Fruta Rosa",  group:"skip", note:"Em recuperação — aguardar brotação antes de adubar." },
+  { id:42, name:"Coqueiro de Vênus",       group:"skip", note:"Verificar estágio atual antes de iniciar adubação" },
+  // Mensais
+  { id:5,  name:"Babosa",             group:"monthly", dose:"½ col. chá", intervalDays:28 },
+  { id:6,  name:"Planta Jade",        group:"monthly", dose:"½ col. chá", intervalDays:28 },
+  { id:7,  name:"Jade Anã",           group:"monthly", dose:"½ col. chá", intervalDays:28 },
+  { id:8,  name:"Zamioculca",         group:"monthly", dose:"½ col. chá", intervalDays:28 },
+  { id:43, name:"Zamioculca Negra",   group:"monthly", dose:"½ col. chá", intervalDays:28 },
+  { id:9,  name:"Espada de São Jorge",group:"monthly", dose:"½ col. chá", intervalDays:28 },
+  { id:10, name:"Crassula Fogueira",  group:"monthly", dose:"½ col. chá", intervalDays:28 },
+  { id:11, name:"Sedum-burrito",      group:"monthly", dose:"½ col. chá", intervalDays:28 },
+  { id:12, name:"Kalanchoe Fantasma", group:"monthly", dose:"½ col. chá", intervalDays:28,
+    extras:[{ type:"forthflores",label:"Forth Flores",dose:"Diluído conforme embalagem",interval:14,note:"Alternar com bokashi." },
+            { type:"calcio",label:"Forth Cálcio",dose:"Diluído conforme embalagem",interval:30,note:"Mensal, semana diferente do bokashi." }]},
+  { id:13, name:"Flor da Fortuna",    group:"monthly", dose:"½ col. chá", intervalDays:28,
+    extras:[{ type:"forthflores",label:"Forth Flores",dose:"Diluído conforme embalagem",interval:14,note:"Alternar com bokashi." },
+            { type:"calcio",label:"Forth Cálcio",dose:"Diluído conforme embalagem",interval:30,note:"Mensal." }]},
+  { id:14, name:"Dedo-de-dama",       group:"monthly", dose:"½ col. chá", intervalDays:28 },
+  { id:15, name:"Palma-Brava",        group:"monthly", dose:"½ col. chá", intervalDays:28 },
+  { id:44, name:"Bambu da Sorte",     group:"monthly", dose:"½ col. chá", intervalDays:28, note:"Dracaena sanderiana — dose leve" },
+  // Quinzenais
+  { id:16, name:"Antúrio",                  group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:17, name:"Imbé Burle Marx",          group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:18, name:"Dinheiro-em-penca",        group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:20, name:"Singônio",                 group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:21, name:"Peperomia",                group:"biweekly", dose:"½ col. chá", intervalDays:14 },
+  { id:22, name:"Peperomia Filodendro",     group:"biweekly", dose:"½ col. chá", intervalDays:14 },
+  { id:23, name:"Trapoeraba Roxa",          group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:24, name:"Lambari",                  group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:25, name:"Coléus",                   group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:26, name:"Ninho de Pássaro Dourado", group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:27, name:"Abacaxi-roxo",             group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:28, name:"Dólar",                    group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:39, name:"Ixora chinesa",            group:"biweekly", dose:"1 col. chá", intervalDays:14,
+    extras:[{ type:"forthflores",label:"Forth Flores",dose:"Diluído conforme embalagem",interval:14,note:"Usar quando florescer, alternando com bokashi." }]},
+  { id:40, name:"Samambaia Rumohra",        group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:45, name:"Samambaia americana",      group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  { id:46, name:"Lírio da Paz",             group:"biweekly", dose:"1 col. chá", intervalDays:14, note:"Sensível a excesso — observar folhas" },
+  { id:47, name:"Croton",                   group:"biweekly", dose:"1 col. chá", intervalDays:14 },
+  // Reforçadas
+  { id:30, name:"Tomate Cereja",       group:"boost", dose:"1½ col. chá", intervalDays:14, note:"Aumentar dose na frutificação",
+    extras:[{ type:"forthflores",label:"Forth Flores",dose:"Diluído",interval:14,note:"Alternar com bokashi na floração." },
+            { type:"calcio",label:"Forth Cálcio",dose:"Diluído",interval:14,note:"Quinzenal na frutificação." }]},
+  { id:31, name:"Boldo Chileno/Gambá", group:"boost", dose:"1 col. chá", intervalDays:14 },
+  { id:32, name:"Cebolinha",           group:"boost", dose:"1 col. chá", intervalDays:14, note:"Renovar após colheita" },
+  { id:33, name:"Ora Pro Nobis",       group:"boost", dose:"1 col. chá", intervalDays:14,
+    extras:[{ type:"calcio",label:"Forth Cálcio",dose:"Diluído",interval:30,note:"Mensal — estimula crescimento." }]},
+];
+
+const bkGroupConfig = {
+  skip:     { label:"Sem bokashi",                       color:"#c0392b", icon:"🚫" },
+  monthly:  { label:"A cada 4 semanas",                  color:"#7b6fa0", icon:"🌵" },
+  biweekly: { label:"A cada 2 semanas",                  color:"#2e8b57", icon:"🌿" },
+  boost:    { label:"A cada 2 semanas — dose reforçada", color:"#c07800", icon:"🌱" },
+};
+const bkExtraColors = {
+  forthflores:{ color:"#b03060", bg:"#fdf0f4", icon:"🌸" },
+  hidro:      { color:"#1a7ab5", bg:"#eaf4fb", icon:"💧" },
+  calcio:     { color:"#d4670a", bg:"#fef4ec", icon:"🧡" },
+  orquidea:   { color:"#7b3fa0", bg:"#f5f0fb", icon:"🪷" },
+};
+
+function bkDaysAgo(dateStr){ if(!dateStr)return null; return Math.floor((Date.now()-new Date(dateStr).getTime())/86400000); }
+function bkGetStatus(intervalDays,dateStr){
+  const d=bkDaysAgo(dateStr);
+  if(d===null)return"pending";
+  if(d>=intervalDays)return"due";
+  if(d>=intervalDays-3)return"soon";
+  return"ok";
+}
+const bkStatusStyle={
+  pending:{ label:"Nunca aplicado", color:"#999" },
+  due:    { label:"Hora de aplicar!", color:"#c0392b" },
+  soon:   { label:"Em breve",        color:"#c07800" },
+  ok:     { label:"Em dia ✓",        color:"#2e8b57" },
+};
+
+// Calcula plantas que faltam adubar NESTE MÊS
+// "Falta" = nunca aplicado OU vence dentro do mês corrente (intervalDays calculado por mês)
+function bkCountPendingThisMonth(bkDates, exDates){
+  const now=new Date();
+  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const dayOfMonth=now.getDate();
+  const daysLeft=daysInMonth-dayOfMonth;
+
+  let count=0;
+  bkPlants.forEach(p=>{
+    if(p.group==='skip')return;
+    const st=bkGetStatus(p.intervalDays,bkDates[p.id]);
+    if(st==='due'||st==='pending'||st==='soon')count++;
+    (p.extras||[]).forEach(ex=>{
+      const key=`${p.id}_${ex.type}`;
+      const exSt=bkGetStatus(ex.interval,exDates[key]);
+      if(exSt==='due'||exSt==='pending'||exSt==='soon')count++;
+    });
+  });
+  return count;
+}
+
+function BokashiApp(){
+  const [bkDates,setBkDates] = React.useState(()=>bkLoad(BK_KEY));
+  const [exDates,setExDates] = React.useState(()=>{
+    const ex=bkLoad(EX_KEY);
+    // Orquídeas marcadas na primeira abertura se não tiverem data
+    let changed=false;
+    if(!ex['2_orquidea']){ex['2_orquidea']=new Date().toISOString();changed=true;}
+    if(!ex['3_orquidea']){ex['3_orquidea']=new Date().toISOString();changed=true;}
+    if(changed)bkSave(EX_KEY,ex);
+    return ex;
+  });
+  const [filter,setFilter]  = React.useState("all");
+  const [search,setSearch]  = React.useState("");
+  const [flashBk,setFlashBk]= React.useState({});
+  const [flashEx,setFlashEx]= React.useState({});
+
+  // Verifica virada de mês — arquiva se mudou
+  React.useEffect(()=>{
+    const savedMonth=localStorage.getItem('bokashi_current_month');
+    const thisMonth=bkMonthKey();
+    if(savedMonth && savedMonth!==thisMonth){
+      // Arquiva mês anterior
+      const hist=bkLoad(BK_HIST);
+      const pending=bkCountPendingThisMonth(bkLoad(BK_KEY),bkLoad(EX_KEY));
+      hist[savedMonth]={ applied: Object.keys(bkLoad(BK_KEY)).length, pending };
+      bkSave(BK_HIST,hist);
+    }
+    localStorage.setItem('bokashi_current_month',thisMonth);
+  },[]);
+
+  function bkFlash(setter,key){ setter(p=>({...p,[key]:true})); setTimeout(()=>setter(p=>{const n={...p};delete n[key];return n;}),1800); }
+
+  function applyBokashi(id){
+    const u={...bkDates,[id]:new Date().toISOString()};
+    setBkDates(u);bkSave(BK_KEY,u);bkFlash(setFlashBk,id);
+  }
+  function resetBokashi(id){
+    const u={...bkDates};delete u[id];setBkDates(u);bkSave(BK_KEY,u);
+  }
+  function applyExtra(id,type){
+    const key=`${id}_${type}`;
+    const u={...exDates,[key]:new Date().toISOString()};
+    setExDates(u);bkSave(EX_KEY,u);bkFlash(setFlashEx,key);
+  }
+  function resetExtra(id,type){
+    const key=`${id}_${type}`;
+    const u={...exDates};delete u[key];setExDates(u);bkSave(EX_KEY,u);
+  }
+
+  const plantIsDue=p=>{
+    const bk=p.group!=='skip'?bkGetStatus(p.intervalDays,bkDates[p.id]):null;
+    if(bk==='due'||bk==='pending')return true;
+    return(p.extras||[]).some(e=>{ const s=bkGetStatus(e.interval,exDates[`${p.id}_${e.type}`]); return s==='due'||s==='pending'; });
+  };
+
+  const pendingCount=bkCountPendingThisMonth(bkDates,exDates);
+  const totalActive=bkPlants.filter(p=>p.group!=='skip').length;
+  const doneThisMonth=totalActive-bkPlants.filter(p=>p.group!=='skip'&&(bkGetStatus(p.intervalDays,bkDates[p.id])==='due'||bkGetStatus(p.intervalDays,bkDates[p.id])==='pending')).length;
+
+  const visible=bkPlants.filter(p=>{
+    if(!p.name.toLowerCase().includes(search.toLowerCase()))return false;
+    if(filter==='all')return true;
+    if(filter==='due')return plantIsDue(p);
+    if(filter==='extras')return!!(p.extras?.length);
+    if(filter==='prop')return p.group==='skip'&&!p.extras?.length;
+    return p.group===filter;
+  });
+
+  const e=React.createElement;
+  const GROUPS=['skip','monthly','biweekly','boost'];
+
+  // Mês por extenso
+  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const now=new Date();
+  const mesLabel=`${meses[now.getMonth()]} ${now.getFullYear()}`;
+
+  return e('div',{style:{fontFamily:"'DM Sans',sans-serif",minHeight:"100vh",background:"#f7f5f0",paddingBottom:60}},
+
+    // Header
+    e('div',{style:{background:"linear-gradient(135deg,#2e5c3a,#1e3d27)",padding:"28px 20px 20px",textAlign:"center"}},
+      e('div',{style:{fontSize:28,marginBottom:4}},"🪣"),
+      e('h1',{style:{color:"#e8f5ec",margin:0,fontSize:20,fontWeight:700,letterSpacing:1}},"Bokashi · Rotina de Adubação"),
+      e('p',{style:{color:"#a8d5b5",margin:"6px 0 0",fontSize:13}},mesLabel),
+
+      // Contador mensal
+      e('div',{style:{marginTop:14,display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap"}},
+        e('div',{style:{background:"rgba(255,255,255,.12)",borderRadius:12,padding:"8px 16px",textAlign:"center",minWidth:80}},
+          e('div',{style:{fontSize:22,fontWeight:700,color:"#fff"}},(pendingCount>0?'⚠ ':'✅ ')+pendingCount),
+          e('div',{style:{fontSize:11,color:"#a8d5b5",marginTop:2}},pendingCount===1?"aplicação pendente":"aplicações pendentes")
+        ),
+        e('div',{style:{background:"rgba(255,255,255,.12)",borderRadius:12,padding:"8px 16px",textAlign:"center",minWidth:80}},
+          e('div',{style:{fontSize:22,fontWeight:700,color:"#fff"}},"✓ "+doneThisMonth),
+          e('div',{style:{fontSize:11,color:"#a8d5b5",marginTop:2}},"em dia neste mês")
+        )
+      )
+    ),
+
+    // Filtros
+    e('div',{style:{display:"flex",gap:8,padding:"12px 16px 0",overflowX:"auto"}},
+      ...[{key:"all",label:"Todas"},{key:"due",label:"🔔 Pendentes"},{key:"biweekly",label:"🌿 Quinzenais"},{key:"monthly",label:"🌵 Mensais"},{key:"boost",label:"🌱 Reforçadas"},{key:"extras",label:"✨ Com reforço"},{key:"prop",label:"🪴 Aguardando"}].map(f=>
+        e('button',{key:f.key,onClick:()=>setFilter(f.key),style:{whiteSpace:"nowrap",padding:"6px 14px",borderRadius:20,border:"none",cursor:"pointer",fontSize:12,
+          background:filter===f.key?"#2e5c3a":"#e8e4dd",color:filter===f.key?"#fff":"#555",fontFamily:"inherit",fontWeight:filter===f.key?"bold":"normal"}},f.label)
+      )
+    ),
+
+    // Busca
+    e('div',{style:{padding:"10px 16px 0"}},
+      e('input',{value:search,onChange:ev=>setSearch(ev.target.value),placeholder:"🔍  Buscar planta...",
+        style:{width:"100%",boxSizing:"border-box",padding:"10px 14px",borderRadius:10,border:"1px solid #d4cfc5",background:"#fff",fontSize:14,fontFamily:"inherit",outline:"none"}})
+    ),
+
+    // Grupos de plantas
+    ...GROUPS.map(g=>{
+      const gPlants=visible.filter(p=>p.group===g);
+      if(!gPlants.length)return null;
+      const cfg=bkGroupConfig[g];
+      return e('div',{key:g,style:{padding:"0 16px",marginTop:18}},
+        e('div',{style:{display:"flex",alignItems:"center",gap:8,marginBottom:10}},
+          e('span',{style:{fontSize:16}},cfg.icon),
+          e('span',{style:{fontSize:12,fontWeight:"bold",color:cfg.color,textTransform:"uppercase",letterSpacing:.9}},cfg.label)
+        ),
+        e('div',{style:{display:"flex",flexDirection:"column",gap:10}},
+          ...gPlants.map(plant=>{
+            const bkSt=plant.group!=='skip'?bkGetStatus(plant.intervalDays,bkDates[plant.id]):null;
+            const bkDa=bkDaysAgo(bkDates[plant.id]);
+            const stStyle=bkSt?bkStatusStyle[bkSt]:null;
+            return e('div',{key:plant.id,style:{background:"#fff",borderRadius:14,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,.07)",borderLeft:`4px solid ${cfg.color}`}},
+              e('div',{style:{padding:"12px 16px 6px",fontWeight:"bold",fontSize:15,color:"#2a2a2a"}},plant.name),
+
+              // Bokashi row
+              plant.group!=='skip'&&e('div',{style:{margin:"0 12px 6px",background:"#f2f7f4",borderRadius:10,padding:"10px 12px",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}},
+                e('div',{style:{flex:1}},
+                  e('div',{style:{fontSize:12,fontWeight:"bold",color:"#2e5c3a"}},`🟢 Bokashi · ${plant.dose}`),
+                  plant.note&&e('div',{style:{fontSize:11,color:"#999",fontStyle:"italic",marginTop:2}},`⚠️ ${plant.note}`),
+                  e('div',{style:{display:"flex",alignItems:"center",gap:5,marginTop:5}},
+                    e('span',{style:{fontSize:11,fontWeight:"bold",color:stStyle.color,background:stStyle.color+"18",padding:"2px 9px",borderRadius:20}},stStyle.label),
+                    bkDa!==null&&e('span',{style:{fontSize:11,color:"#bbb"}},`há ${bkDa} dia${bkDa!==1?"s":""}`)
+                  )
+                ),
+                e('div',{style:{display:"flex",flexDirection:"column",gap:5,marginLeft:10}},
+                  e('button',{onClick:()=>applyBokashi(plant.id),style:{background:flashBk[plant.id]?"#5a9e6f":cfg.color,color:"#fff",border:"none",borderRadius:8,padding:"7px 13px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:"bold",minWidth:82}},flashBk[plant.id]?"✓ Feito!":"Aplicar"),
+                  bkDates[plant.id]&&e('button',{onClick:()=>resetBokashi(plant.id),style:{background:"transparent",color:"#ccc",border:"1px solid #e5e0d8",borderRadius:8,padding:"3px 8px",cursor:"pointer",fontSize:10,fontFamily:"inherit"}},"Resetar")
+                )
+              ),
+
+              // Extras
+              ...(plant.extras||[]).map((ex,i)=>{
+                const ecfg=bkExtraColors[ex.type];
+                const exKey=`${plant.id}_${ex.type}`;
+                const exSt=bkGetStatus(ex.interval,exDates[exKey]);
+                const exStStyle=bkStatusStyle[exSt];
+                const exDa=bkDaysAgo(exDates[exKey]);
+                const isLast=i===(plant.extras.length-1);
+                return e('div',{key:ex.type,style:{margin:`0 12px ${isLast?10:6}px`,background:ecfg.bg,borderRadius:10,padding:"10px 12px",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}},
+                  e('div',{style:{flex:1}},
+                    e('div',{style:{fontSize:12,fontWeight:"bold",color:ecfg.color}},`${ecfg.icon} ${ex.label} · ${ex.dose}`),
+                    e('div',{style:{fontSize:11,color:"#999",fontStyle:"italic",marginTop:2}},ex.note),
+                    e('div',{style:{display:"flex",alignItems:"center",gap:5,marginTop:5}},
+                      e('span',{style:{fontSize:11,fontWeight:"bold",color:exStStyle.color,background:exStStyle.color+"18",padding:"2px 9px",borderRadius:20}},exStStyle.label),
+                      exDa!==null&&e('span',{style:{fontSize:11,color:"#bbb"}},`há ${exDa} dia${exDa!==1?"s":""}`)
+                    )
+                  ),
+                  e('div',{style:{display:"flex",flexDirection:"column",gap:5,marginLeft:10}},
+                    e('button',{onClick:()=>applyExtra(plant.id,ex.type),style:{background:flashEx[exKey]?"#5a9e6f":ecfg.color,color:"#fff",border:"none",borderRadius:8,padding:"7px 13px",cursor:"pointer",fontSize:12,fontFamily:"inherit",fontWeight:"bold",minWidth:82}},flashEx[exKey]?"✓ Feito!":"Aplicar"),
+                    exDates[exKey]&&e('button',{onClick:()=>resetExtra(plant.id,ex.type),style:{background:"transparent",color:"#ccc",border:"1px solid #e5e0d8",borderRadius:8,padding:"3px 8px",cursor:"pointer",fontSize:10,fontFamily:"inherit"}},"Resetar")
+                  )
+                );
+              }),
+
+              plant.group==='skip'&&!(plant.extras?.length)&&e('div',{style:{padding:"0 16px 12px",fontSize:12,color:"#aaa",fontStyle:"italic"}},plant.note)
+            );
+          })
+        )
+      );
+    }).filter(Boolean),
+
+    visible.length===0&&e('div',{style:{textAlign:"center",color:"#aaa",marginTop:60,fontSize:15}},"Nenhuma planta encontrada."),
+    e('div',{style:{textAlign:"center",color:"#ccc",fontSize:11,marginTop:40,paddingBottom:20}},"Dados salvos localmente no seu dispositivo 🌱")
+  );
+}
+
+window.renderBokashi=function(){
+  if(window._bokashiRendered)return;
+  window._bokashiRendered=true;
+  const root=ReactDOM.createRoot(document.getElementById('bokashi-root'));
+  root.render(React.createElement(BokashiApp));
+};
+
+})();
+</script>
+
+
 <div id="page-historico" class="page" style="background:#f7f5f0;min-height:100vh;padding-bottom:80px;">
   <header style="background:linear-gradient(135deg,#1a3a5c,#2a5298);color:white;padding:2rem 1.2rem 1.4rem;margin-bottom:0;">
     <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;opacity:.5;margin-bottom:.3rem;">Resumo</div>
@@ -2290,17 +2595,18 @@ function histArchiveCurrentMonth(){
 }
 
 function histRender(){
-  // Lê TODOS os meses salvos no localStorage, independente do mês atual
-  let rows=[];
-  const allKeys=dorAllMonthKeys();
-  allKeys.forEach(k=>{
-    const data=dorLoadByKey(k);
-    if(!data||!data.days||Object.keys(data.days).length===0)return;
-    const summary=histCalcSummary(data);
-    if(summary&&summary.daysWithPain>0)rows.push(summary);
-  });
-  // Ordena do mais recente para o mais antigo usando a chave do mês
-  rows.sort((a,b)=>b.month.localeCompare(a.month));
+  const hist=histLoad();
+  // Também inclui mês atual se tiver dados
+  const data=dorLoadLocal();
+  let rows=hist.slice();
+  if(data&&data.days&&Object.keys(data.days).length>0){
+    const cur=histCalcSummary(data);
+    if(cur&&cur.daysWithPain>0){
+      const exists=rows.findIndex(h=>h.month===cur.month);
+      if(exists>=0)rows[exists]=cur;
+      else rows.unshift(cur);
+    }
+  }
 
   const table=document.getElementById('hist-table');
   const tbody=document.getElementById('hist-tbody');
