@@ -331,8 +331,7 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
 /* ===========================
    PAGE 4 — PLANTAS (React via inline script)
    =========================== */
-#page-plantas{background:#f7f5f0;min-height:100vh;padding-bottom:80px;}
-#plantas-root{padding-bottom:80px;}
+
 
 /* ===========================
    PAGE 5 — CAPILAR
@@ -1211,9 +1210,7 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
   </div>
 </div>
 
-<div id="page-plantas" class="page">
-  <div id="plantas-root"></div>
-</div>
+
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
@@ -1233,13 +1230,9 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
     <span class="nav-icon">💧</span>
     <span class="nav-label">Capilar</span>
   </button>
-  <button class="nav-btn" onclick="showPage('page-plantas',this)">
-    <span class="nav-icon">🌿</span>
-    <span class="nav-label">Plantas</span>
-  </button>
   <button class="nav-btn" onclick="showPage('page-bokashi',this);renderBokashi()">
-    <span class="nav-icon">🪣</span>
-    <span class="nav-label">Bokashi</span>
+    <span class="nav-icon">🪴</span>
+    <span class="nav-label">Plantas</span>
   </button>
   <button class="nav-btn" onclick="showPage('page-historico',this);histRender()">
     <span class="nav-icon">📊</span>
@@ -1259,10 +1252,7 @@ function showPage(id, btn) {
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
   window.scrollTo(0,0);
-  if(id==='page-plantas' && !window._plantasRendered){
-    renderPlantas();
-    window._plantasRendered=true;
-  }
+
 }
 
 /* ===== CARD DIÁRIO ===== */
@@ -1948,9 +1938,8 @@ function capRender(){
 capRender();
 </script><div id="dor-sync-status" style="position: fixed; bottom: 90px; left: 16px; background: rgb(26, 58, 92); color: rgb(76, 175, 138); font-family: &quot;DM Mono&quot;, monospace; font-size: 0.68rem; letter-spacing: 0.06em; padding: 6px 12px; border-radius: 20px; z-index: 300; transition: opacity 0.4s; pointer-events: none; opacity: 0;">✓ Registro criado — baixe o arquivo para guardar o ID</div>
 
-<!-- PLANTAS via React (lazy render) -->
-<script>
-const { useState, useEffect } = React;
+
+
 
 const plantsData = [
   {id:1,name:"Jibóia na água",group:"skip",note:"Fertilizante líquido hidropônico mensal",extras:[{type:"hidro",label:"Fertilizante hidropônico",dose:"1 gota/500ml água",interval:30,note:"Trocar a água junto."}]},
@@ -2126,11 +2115,6 @@ function PlantasApp(){
   );
 }
 
-function renderPlantas(){
-  const root=ReactDOM.createRoot(document.getElementById('plantas-root'));
-  root.render(React.createElement(PlantasApp));
-}
-</script>
 
 <style>
 .fab-download{
@@ -2223,7 +2207,8 @@ const bkPlants = [
     extras:[{ type:"orquidea", label:"Forth Orquídeas", dose:"Diluído na água + foliar", interval:15, note:"Aplique na água de rega e via foliar. Quinzenal." }] },
   { id:3,  name:"Phalaenopsis Aphrodite",  group:"skip", note:"Fertilizante específico para orquídeas",
     extras:[{ type:"orquidea", label:"Forth Orquídeas", dose:"Diluído na água + foliar", interval:15, note:"Aplique na água de rega e via foliar. Quinzenal." }] },
-  { id:4,  name:"Rosa do Deserto",         group:"skip", note:"Fertilizante específico próprio" },
+  { id:4,  name:"Rosa do Deserto", group:"biweekly", dose:"1 col. sobremesa", intervalDays:15, note:"Forth Rosa do Deserto — aplicar no substrato e regar bem, ou diluir 1 col. em 1L de água",
+    extras:[{ type:"calcio", label:"Forth Cálcio", dose:"Diluído conforme embalagem", interval:30, note:"Mensal — reforça floração. Aplicar em semana diferente do fertilizante principal." }] },
   { id:35, name:"ZZ Raven",                group:"skip", note:"Em propagação — aguardar enraizamento" },
   { id:36, name:"Cordyline",               group:"skip", note:"Em propagação — aguardar enraizamento" },
   { id:37, name:"Selaginella",             group:"skip", note:"Em propagação — aguardar enraizamento" },
@@ -2381,9 +2366,18 @@ function BokashiApp(){
     return(p.extras||[]).some(e=>{ const s=bkGetStatus(e.interval,exDates[`${p.id}_${e.type}`]); return s==='due'||s==='pending'; });
   };
 
-  const pendingCount=bkCountPendingThisMonth(bkDates,exDates);
   const totalActive=bkPlants.filter(p=>p.group!=='skip').length;
-  const doneThisMonth=totalActive-bkPlants.filter(p=>p.group!=='skip'&&(bkGetStatus(p.intervalDays,bkDates[p.id])==='due'||bkGetStatus(p.intervalDays,bkDates[p.id])==='pending')).length;
+
+  // Conta plantas (não aplicações): em dia = ok ou soon; pendente = due ou pending
+  let countOk=0, countPending=0;
+  bkPlants.filter(p=>p.group!=='skip').forEach(p=>{
+    const bkSt=bkGetStatus(p.intervalDays,bkDates[p.id]);
+    const allOk=(bkSt==='ok'||bkSt==='soon') &&
+      (p.extras||[]).every(ex=>{ const s=bkGetStatus(ex.interval,exDates[`${p.id}_${ex.type}`]); return s==='ok'||s==='soon'; });
+    if(allOk) countOk++; else countPending++;
+  });
+  const pendingCount=countPending;
+  const doneThisMonth=countOk;
 
   const visible=bkPlants.filter(p=>{
     if(!p.name.toLowerCase().includes(search.toLowerCase()))return false;
@@ -2406,8 +2400,8 @@ function BokashiApp(){
 
     // Header
     e('div',{style:{background:"linear-gradient(135deg,#2e5c3a,#1e3d27)",padding:"28px 20px 20px",textAlign:"center"}},
-      e('div',{style:{fontSize:28,marginBottom:4}},"🪣"),
-      e('h1',{style:{color:"#e8f5ec",margin:0,fontSize:20,fontWeight:700,letterSpacing:1}},"Bokashi · Rotina de Adubação"),
+      e('div',{style:{fontSize:28,marginBottom:4}},"🪴"),
+      e('h1',{style:{color:"#e8f5ec",margin:0,fontSize:20,fontWeight:700,letterSpacing:1}},"Plantas · Rotina de Adubação"),
       e('p',{style:{color:"#a8d5b5",margin:"6px 0 0",fontSize:13}},mesLabel),
 
       // Contador mensal
