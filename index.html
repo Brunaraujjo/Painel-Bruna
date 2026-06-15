@@ -1166,7 +1166,7 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
       <p>Quartas e Domingos · Cacheado 3A/3B · Maio–Junho 2026</p>
     </div>
     <div class="cap-progress-wrap">
-      <div class="cap-month-label">Progresso de Maio</div>
+      <div class="cap-month-label" id="cap-month-label">Progresso de Maio</div>
       <div class="cap-progress-label">
         <span id="cap-prog-text">1 de 9 lavagens concluídas</span>
         <span id="cap-prog-pct">11%</span>
@@ -1869,7 +1869,7 @@ const CAP_STEPS=['N','H','R','N','H','R','H','N','R'];
 const CAP_STEP_LABELS={H:'Hidratação',N:'Nutrição',R:'Reconstrução'};
 const CAP_STEP_EMOJI={H:'💧',N:'🌿',R:'✨'};
 const CAP_TIPS={H:'Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.',N:'Máscara Kolene de óleos africanos, touca plástica, 20–30 min.',R:'Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.'};
-// Each entry has an ISO date string for auto-advance comparison
+// Each entry estática tem uma data ISO para comparação de auto-avanço
 const CAP_DATES=[
   {label:'Sáb, 03 de maio',week:1,date:'2026-05-03'},
   {label:'Qua, 07 de maio',week:1,date:'2026-05-07'},
@@ -1883,54 +1883,119 @@ const CAP_DATES=[
 ];
 const CAP_WEEK_LABELS=['','Semana 1','Semana 2','Semana 3','Semana 4','Início de Junho'];
 const CAP_WEEK_DATES=['','03–07 de maio','11–14 de maio','18–21 de maio','25–28 de maio','01 de junho'];
-const CAP_STORAGE_KEY='cronograma_capilar_v1';
+const CAP_STORAGE_KEY='cronograma_capilar_v2';
+const CAP_STORAGE_KEY_OLD='cronograma_capilar_v1';
+const CAP_MONTHS_PT=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const CAP_WEEKDAYS_PT=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
 function capTodayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function capParseISO(iso){const[y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d);}
+function capToISO(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function capFormatLabel(d){return`${CAP_WEEKDAYS_PT[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} de ${CAP_MONTHS_PT[d.getMonth()]}`;}
+function capFormatShort(d){return`${String(d.getDate()).padStart(2,'0')} de ${CAP_MONTHS_PT[d.getMonth()]}`;}
+function capCap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 
-function capLoadDone(){
-  try{
-    const r=JSON.parse(localStorage.getItem(CAP_STORAGE_KEY)||'[true]');
-    while(r.length<CAP_DATES.length)r.push(false);
-    r[0]=true;
-    // Auto-advance: mark past dates as done if not already marked
-    const today=capTodayStr();
-    CAP_DATES.forEach((d,i)=>{if(d.date<today)r[i]=true;});
-    return r;
-  }catch{
-    // If no saved state, auto-mark all past dates
-    const today=capTodayStr();
-    return CAP_DATES.map(d=>d.date<=today?true:false).map((v,i)=>i===0?true:v);
+// Monta o cronograma completo: datas fixas (maio–início de junho) + continuação
+// automática (quartas e domingos, seguindo o ciclo Hidratação/Nutrição/Reconstrução
+// a partir da última etapa cadastrada), sempre cobrindo alguns meses para frente.
+function capGenerateSchedule(){
+  const entries=CAP_DATES.map((d,i)=>({label:d.label,date:d.date,step:CAP_STEPS[i],week:d.week,weekLabel:CAP_WEEK_LABELS[d.week],weekDates:CAP_WEEK_DATES[d.week]}));
+
+  const lastDate=capParseISO(CAP_DATES[CAP_DATES.length-1].date);
+  const today=new Date();today.setHours(0,0,0,0);
+  const horizon=new Date(today);horizon.setDate(horizon.getDate()+60); // mantém ~2 meses de cronograma futuro visível
+
+  const future=[];
+  let cur=new Date(lastDate);
+  let stepIdx=CAP_STEPS.length; // continua o ciclo a partir da última etapa cadastrada
+  while(cur<horizon){
+    cur=new Date(cur);cur.setDate(cur.getDate()+1);
+    const wd=cur.getDay();
+    if(wd===0||wd===3){ // Domingo ou Quarta — quartas e domingos
+      future.push({label:capFormatLabel(cur),date:capToISO(cur),step:CAP_STEPS[stepIdx%CAP_STEPS.length]});
+      stepIdx++;
+    }
   }
+
+  // Agrupa as lavagens futuras em "semanas" (pares de lavagens), continuando a numeração
+  let weekNum=CAP_WEEK_LABELS.length; // próxima semana após "Início de Junho"
+  for(let i=0;i<future.length;i+=2){
+    const pair=future.slice(i,i+2);
+    const first=capParseISO(pair[0].date);
+    const last=capParseISO(pair[pair.length-1].date);
+    const wLabel=`Semana ${weekNum}`;
+    let wDates;
+    if(pair.length===1||first.getTime()===last.getTime()){
+      wDates=capFormatShort(first);
+    }else if(first.getMonth()===last.getMonth()){
+      wDates=`${String(first.getDate()).padStart(2,'0')}–${String(last.getDate()).padStart(2,'0')} de ${CAP_MONTHS_PT[first.getMonth()]}`;
+    }else{
+      wDates=`${capFormatShort(first)} – ${capFormatShort(last)}`;
+    }
+    pair.forEach(e=>{e.week=weekNum;e.weekLabel=wLabel;e.weekDates=wDates;});
+    entries.push(...pair);
+    weekNum++;
+  }
+  return entries;
 }
-function capSaveDone(arr){
+
+// Estado de conclusão das lavagens, salvo por data (chave ISO) — assim o cronograma
+// pode crescer indefinidamente sem perder o progresso já marcado.
+function capLoadDoneMap(schedule){
+  let map=null;
   try{
-    // Re-apply auto-advance before saving so past dates stay marked
+    const raw=localStorage.getItem(CAP_STORAGE_KEY);
+    if(raw)map=JSON.parse(raw);
+  }catch{map=null;}
+  if(!map){
+    // Migra formato antigo (array indexado pelas 9 datas fixas), se existir
+    try{
+      const old=JSON.parse(localStorage.getItem(CAP_STORAGE_KEY_OLD)||'null');
+      map={};
+      if(Array.isArray(old)) CAP_DATES.forEach((d,i)=>{if(old[i])map[d.date]=true;});
+    }catch{map={};}
+  }
+  if(typeof map!=='object'||!map)map={};
+  map[CAP_DATES[0].date]=true; // primeira lavagem sempre concluída
+  // Auto-avanço: qualquer data passada conta como concluída
+  const today=capTodayStr();
+  schedule.forEach(e=>{if(e.date<today)map[e.date]=true;});
+  return map;
+}
+function capSaveDoneMap(map,schedule){
+  try{
     const today=capTodayStr();
-    CAP_DATES.forEach((d,i)=>{if(d.date<today)arr[i]=true;});
-    arr[0]=true;
-    localStorage.setItem(CAP_STORAGE_KEY,JSON.stringify(arr));
+    schedule.forEach(e=>{if(e.date<today)map[e.date]=true;});
+    map[CAP_DATES[0].date]=true;
+    localStorage.setItem(CAP_STORAGE_KEY,JSON.stringify(map));
   }catch{}
 }
-let capDone=capLoadDone();
-function capCountDone(){return capDone.filter(Boolean).length;}
-function capUpdateProgress(){
-  const total=CAP_DATES.length,c=capCountDone(),pct=Math.round(c/total*100);
+function capUpdateProgress(schedule,doneMap){
+  const now=new Date();
+  const monthEntries=schedule.filter(e=>{const d=capParseISO(e.date);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();});
+  const total=monthEntries.length||1;
+  const c=monthEntries.filter(e=>doneMap[e.date]).length;
+  const pct=Math.round(c/total*100);
   document.getElementById('cap-prog-text').textContent=`${c} de ${total} lavagens concluídas`;
   document.getElementById('cap-prog-pct').textContent=`${pct}%`;
   document.getElementById('cap-prog-fill').style.width=pct+'%';
+  const monthLabelEl=document.getElementById('cap-month-label');
+  if(monthLabelEl)monthLabelEl.textContent=`Progresso de ${capCap(CAP_MONTHS_PT[now.getMonth()])}`;
 }
 function capRender(){
+  const schedule=capGenerateSchedule();
+  const capDone=capLoadDoneMap(schedule);
   const container=document.getElementById('cap-schedule');container.innerHTML='';
-  let currentWeek=0,weekBlock=null;
+  let currentWeek=null,weekBlock=null;
   const today=capTodayStr();
-  CAP_DATES.forEach((d,i)=>{
+  schedule.forEach((d,i)=>{
     if(d.week!==currentWeek){
       weekBlock=document.createElement('div');weekBlock.className='cap-week-block';
       const wh=document.createElement('div');wh.className='cap-week-header';
-      wh.innerHTML=`<span class="cap-week-label">${CAP_WEEK_LABELS[d.week]}</span><span class="cap-week-dates">${CAP_WEEK_DATES[d.week]}</span>`;
+      wh.innerHTML=`<span class="cap-week-label">${d.weekLabel}</span><span class="cap-week-dates">${d.weekDates}</span>`;
       weekBlock.appendChild(wh);container.appendChild(weekBlock);currentWeek=d.week;
     }
-    const step=CAP_STEPS[i];const isDone=capDone[i];
+    const step=d.step;const isDone=!!capDone[d.date];
     const isToday=d.date===today;
     const isPast=d.date<today;
     const colorVar=step==='H'?'#7bb8d4':step==='N'?'#c9a96e':'#b07ab0';
@@ -1944,10 +2009,10 @@ function capRender(){
         <div class="cap-wash-day">${d.label}${todayBadge}${doneBadge}</div>
         <span class="cap-wash-step cap-step-${step}"><span class="cap-step-dot"></span>${CAP_STEP_EMOJI[step]} ${CAP_STEP_LABELS[step]}</span>
       </div>`;
-    // Allow toggling future and today dates; past are auto-done but can still be untoggled
+    // Permite marcar/desmarcar datas de hoje e futuras; passadas ficam auto-concluídas
     card.addEventListener('click',()=>{
-      if(isPast&&!isToday){return;}// past dates are auto — don't toggle
-      capDone[i]=!capDone[i];capSaveDone(capDone);capRender();capUpdateProgress();
+      if(isPast&&!isToday){return;}
+      capDone[d.date]=!capDone[d.date];capSaveDoneMap(capDone,schedule);capRender();
     });
     weekBlock.appendChild(card);
     if(!isDone&&i>0){
@@ -1957,10 +2022,11 @@ function capRender(){
       card.addEventListener('mouseleave',()=>tipBox.classList.remove('visible'));
     }
   });
-  capUpdateProgress();
+  capUpdateProgress(schedule,capDone);
 }
 capRender();
 </script>
+
 
 
 
@@ -2058,10 +2124,16 @@ const bkPlants = [
     extras:[{ type:"orquidea", label:"Forth Orquídeas", dose:"Diluído na água + foliar", interval:15, note:"Aplique na água de rega e via foliar. Quinzenal." }] },
   { id:3,  name:"Phalaenopsis Aphrodite",  group:"skip", note:"Fertilizante específico para orquídeas",
     extras:[{ type:"orquidea", label:"Forth Orquídeas", dose:"Diluído na água + foliar", interval:15, note:"Aplique na água de rega e via foliar. Quinzenal." }] },
+  { id:52, name:"Phalaenopsis (flor remanescente)", group:"skip", note:"6 folhas, 1 haste já secando e 1 haste com a última flor ainda aberta. Raízes verdes e saudáveis.",
+    extras:[{ type:"orquidea", label:"Forth Orquídeas", dose:"Diluído na água + foliar", interval:15, note:"Aplique na água de rega e via foliar. Quinzenal." }] },
+  { id:53, name:"Phalaenopsis (hastes verdes)", group:"skip", note:"Sem flores no momento, mas com as duas hastes ainda verdes (podem rebrotar). Raízes verdes e saudáveis.",
+    extras:[{ type:"orquidea", label:"Forth Orquídeas", dose:"Diluído na água + foliar", interval:15, note:"Aplique na água de rega e via foliar. Quinzenal." }] },
   { id:4,  name:"Rosa do Deserto", group:"biweekly", dose:"1 col. sobremesa", intervalDays:15, note:"Forth Rosa do Deserto — aplicar no substrato e regar bem, ou diluir 1 col. em 1L de água",
-    extras:[{ type:"calcio", label:"Forth Cálcio", dose:"Diluído conforme embalagem", interval:30, note:"Mensal — reforça floração. Aplicar em semana diferente do fertilizante principal." }] },
-  { id:35, name:"ZZ Raven",                group:"skip", note:"Em propagação — aguardar enraizamento" },
-  { id:34, name:"Camuciba de Fruta Rosa",  group:"skip", note:"Em recuperação — aguardar brotação antes de adubar." },
+    extras:[{ type:"calcio", label:"Forth Cálcio", dose:"Diluído conforme embalagem", interval:30, note:"Mensal — reforça floração. Aplicar em semana diferente do fertilizante principal." },
+            { type:"rosadeserto", label:"Forth Rosa do Deserto Tecnutri", dose:"½–1 col. chá no substrato + regar bem", interval:15, note:"Espalhar sobre a terra e regar até escorrer pelos furos. A cada 15 dias — alternar semana com o Forth Cálcio." }] },
+  { id:35, name:"ZZ Raven",                group:"monthly", dose:"½ col. chá", intervalDays:28, note:"Mesma adubação da Zamioculca (Zamioculca zamiifolia 'Raven') — enraizamento concluído" },
+  { id:34, name:"Camuciba de Fruta Rosa",  group:"monthly", dose:"½ col. chá", intervalDays:28, note:"Cambuí frutífero — adubação orgânica regular favorece floração e frutificação",
+    extras:[{ type:"calcio", label:"Forth Cálcio", dose:"Diluído conforme embalagem", interval:30, note:"Mensal — reforça frutificação. Aplicar em semana diferente do bokashi." }] },
   { id:42, name:"Coqueiro de Vênus",       group:"skip", note:"Verificar estágio atual antes de iniciar adubação" },
   { id:48, name:"Poá / Confete",           group:"skip", note:"🌱 Muda nova — aguardar enraizamento (~30 dias) antes de adubar. Luz indireta intensa. Solo levemente úmido, sem encharcar. Borrifar folhas em clima seco. Futura adubação: quinzenal com bokashi ½ col. chá.",
     extras:[] },
@@ -2107,6 +2179,8 @@ const bkPlants = [
   { id:40, name:"Samambaia Rumohra",        group:"biweekly", dose:"1 col. chá", intervalDays:14 },
   { id:45, name:"Samambaia americana",      group:"biweekly", dose:"1 col. chá", intervalDays:14 },
   { id:46, name:"Lírio da Paz",             group:"biweekly", dose:"1 col. chá", intervalDays:14, note:"Sensível a excesso — observar folhas" },
+  { id:54, name:"Lírio da Paz (planta formada)", group:"biweekly", dose:"1 col. chá", intervalDays:14, note:"Planta já formada — sensível a excesso de adubo, observar folhas",
+    extras:[{ type:"rega", label:"Rega", dose:"Regar até escorrer pelos furos do vaso", interval:7, note:"Regar quando a superfície do substrato secar — em média 1x por semana. Folhas caídas/murchas indicam sede." }] },
   { id:47, name:"Croton",                   group:"biweekly", dose:"1 col. chá", intervalDays:14 },
   // Reforçadas
   { id:30, name:"Tomate Cereja",       group:"boost", dose:"1½ col. chá", intervalDays:14, note:"Aumentar dose na frutificação",
@@ -2129,6 +2203,8 @@ const bkExtraColors = {
   hidro:      { color:"#1a7ab5", bg:"#eaf4fb", icon:"💧" },
   calcio:     { color:"#d4670a", bg:"#fef4ec", icon:"🧡" },
   orquidea:   { color:"#7b3fa0", bg:"#f5f0fb", icon:"🪷" },
+  rosadeserto:{ color:"#c2185b", bg:"#fdeef3", icon:"🌷" },
+  rega:       { color:"#2a8fc1", bg:"#eaf6fc", icon:"💦" },
 };
 
 function bkDaysAgo(dateStr){ if(!dateStr)return null; return Math.floor((Date.now()-new Date(dateStr).getTime())/86400000); }
@@ -2148,14 +2224,15 @@ const bkStatusStyle={
 
 // Calcula plantas que faltam adubar NESTE MÊS
 // "Falta" = nunca aplicado OU vence dentro do mês corrente (intervalDays calculado por mês)
-function bkCountPendingThisMonth(bkDates, exDates){
+function bkCountPendingThisMonth(bkDates, exDates, plants){
+  plants = plants || bkPlants;
   const now=new Date();
   const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
   const dayOfMonth=now.getDate();
   const daysLeft=daysInMonth-dayOfMonth;
 
   let count=0;
-  bkPlants.forEach(p=>{
+  plants.forEach(p=>{
     if(p.group==='skip')return;
     const st=bkGetStatus(p.intervalDays,bkDates[p.id]);
     if(st==='due'||st==='pending'||st==='soon')count++;
@@ -2167,6 +2244,20 @@ function bkCountPendingThisMonth(bkDates, exDates){
   });
   return count;
 }
+
+// Plantas adicionadas pela usuária (persistidas localmente)
+const CUSTOM_PLANTS_KEY='bokashi_custom_plants_v1';
+function bkLoadCustomPlants(){
+  try{ const r=JSON.parse(localStorage.getItem(CUSTOM_PLANTS_KEY)||'[]'); return Array.isArray(r)?r:[]; }catch{ return []; }
+}
+function bkSaveCustomPlants(arr){ try{ localStorage.setItem(CUSTOM_PLANTS_KEY,JSON.stringify(arr)); }catch{} }
+
+const bkNewPlantGroupOptions=[
+  { value:"monthly",  label:"🌵 Mensal (a cada 4 semanas)",     intervalDays:28, defaultDose:"½ col. chá" },
+  { value:"biweekly", label:"🌿 Quinzenal (a cada 2 semanas)",   intervalDays:14, defaultDose:"1 col. chá" },
+  { value:"boost",    label:"🌱 Quinzenal — dose reforçada",     intervalDays:14, defaultDose:"1½ col. chá" },
+  { value:"skip",     label:"🚫 Aguardando (sem adubação ainda)",intervalDays:null, defaultDose:"" },
+];
 
 function BokashiApp(){
   const [bkDates,setBkDates] = React.useState(()=>bkLoad(BK_KEY));
@@ -2183,6 +2274,41 @@ function BokashiApp(){
   const [search,setSearch]  = React.useState("");
   const [flashBk,setFlashBk]= React.useState({});
   const [flashEx,setFlashEx]= React.useState({});
+  const [customPlants,setCustomPlants] = React.useState(()=>bkLoadCustomPlants());
+  const [showAddForm,setShowAddForm] = React.useState(false);
+  const [newPlant,setNewPlant] = React.useState({name:"",group:"monthly",dose:"",note:""});
+
+  const allPlants = React.useMemo(()=>[...bkPlants, ...customPlants], [customPlants]);
+
+  function addCustomPlant(){
+    const name=newPlant.name.trim();
+    if(!name)return;
+    const cfg=bkNewPlantGroupOptions.find(o=>o.value===newPlant.group)||bkNewPlantGroupOptions[0];
+    const plant={
+      id:`custom_${Date.now()}`,
+      name,
+      group:cfg.value,
+      note:newPlant.note.trim()||undefined,
+      custom:true,
+    };
+    if(cfg.value!=='skip'){
+      plant.dose = newPlant.dose.trim() || cfg.defaultDose;
+      plant.intervalDays = cfg.intervalDays;
+    }
+    const updated=[...customPlants, plant];
+    setCustomPlants(updated); bkSaveCustomPlants(updated);
+    setNewPlant({name:"",group:"monthly",dose:"",note:""});
+    setShowAddForm(false);
+  }
+  function removeCustomPlant(id){
+    const updated=customPlants.filter(p=>p.id!==id);
+    setCustomPlants(updated); bkSaveCustomPlants(updated);
+    // limpa datas associadas
+    const bk={...bkDates}; if(bk[id]){delete bk[id]; setBkDates(bk); bkSave(BK_KEY,bk);}
+    const ex={...exDates}; let exChanged=false;
+    Object.keys(ex).forEach(k=>{ if(k.startsWith(`${id}_`)){delete ex[k]; exChanged=true;} });
+    if(exChanged){ setExDates(ex); bkSave(EX_KEY,ex); }
+  }
 
   // Verifica virada de mês — arquiva se mudou
   React.useEffect(()=>{
@@ -2191,7 +2317,7 @@ function BokashiApp(){
     if(savedMonth && savedMonth!==thisMonth){
       // Arquiva mês anterior
       const hist=bkLoad(BK_HIST);
-      const pending=bkCountPendingThisMonth(bkLoad(BK_KEY),bkLoad(EX_KEY));
+      const pending=bkCountPendingThisMonth(bkLoad(BK_KEY),bkLoad(EX_KEY),allPlants);
       hist[savedMonth]={ applied: Object.keys(bkLoad(BK_KEY)).length, pending };
       bkSave(BK_HIST,hist);
     }
@@ -2225,7 +2351,7 @@ function BokashiApp(){
 
   // Conta todas as plantas que têm algo para adubar (bokashi OU extras)
   let countOk=0, countPending=0;
-  bkPlants.forEach(p=>{
+  allPlants.forEach(p=>{
     const hasExtras=(p.extras||[]).length>0;
     const hasBokashi=p.group!=='skip';
     if(!hasBokashi&&!hasExtras)return; // plantas skip sem extras — ignora
@@ -2247,7 +2373,7 @@ function BokashiApp(){
   const pendingCount=countPending;
   const doneThisMonth=countOk;
 
-  const visible=bkPlants.filter(p=>{
+  const visible=allPlants.filter(p=>{
     if(!p.name.toLowerCase().includes(search.toLowerCase()))return false;
     if(filter==='all')return true;
     if(filter==='due')return plantIsDue(p);
@@ -2297,6 +2423,28 @@ function BokashiApp(){
     e('div',{style:{padding:"10px 16px 0"}},
       e('input',{value:search,onChange:ev=>setSearch(ev.target.value),placeholder:"🔍  Buscar planta...",
         style:{width:"100%",boxSizing:"border-box",padding:"10px 14px",borderRadius:10,border:"1px solid #d4cfc5",background:"#fff",fontSize:14,fontFamily:"inherit",outline:"none"}})
+    ),
+
+    // Botão Nova Planta
+    e('div',{style:{padding:"10px 16px 0"}},
+      e('button',{onClick:()=>setShowAddForm(s=>!s),style:{width:"100%",boxSizing:"border-box",padding:"10px 14px",borderRadius:10,border:"1px dashed #2e5c3a",background:showAddForm?"#e8f0ea":"#fff",color:"#2e5c3a",fontSize:13,fontFamily:"inherit",fontWeight:"bold",cursor:"pointer"}},showAddForm?"✕ Cancelar":"➕ Adicionar nova planta")
+    ),
+
+    // Formulário Nova Planta
+    showAddForm&&e('div',{style:{margin:"10px 16px 0",background:"#fff",borderRadius:12,padding:"14px",boxShadow:"0 1px 4px rgba(0,0,0,.07)",display:"flex",flexDirection:"column",gap:8}},
+      e('div',{style:{fontSize:12,fontWeight:"bold",color:"#2e5c3a",marginBottom:2}},"🌱 Nova planta"),
+      e('input',{value:newPlant.name,onChange:ev=>setNewPlant(p=>({...p,name:ev.target.value})),placeholder:"Nome da planta",
+        style:{width:"100%",boxSizing:"border-box",padding:"9px 12px",borderRadius:8,border:"1px solid #d4cfc5",fontSize:13,fontFamily:"inherit",outline:"none"}}),
+      e('select',{value:newPlant.group,onChange:ev=>setNewPlant(p=>({...p,group:ev.target.value})),
+        style:{width:"100%",boxSizing:"border-box",padding:"9px 12px",borderRadius:8,border:"1px solid #d4cfc5",fontSize:13,fontFamily:"inherit",outline:"none",background:"#fff"}},
+        ...bkNewPlantGroupOptions.map(o=>e('option',{key:o.value,value:o.value},o.label))
+      ),
+      newPlant.group!=='skip'&&e('input',{value:newPlant.dose,onChange:ev=>setNewPlant(p=>({...p,dose:ev.target.value})),
+        placeholder:`Dose (ex: ${(bkNewPlantGroupOptions.find(o=>o.value===newPlant.group)||{}).defaultDose||"½ col. chá"})`,
+        style:{width:"100%",boxSizing:"border-box",padding:"9px 12px",borderRadius:8,border:"1px solid #d4cfc5",fontSize:13,fontFamily:"inherit",outline:"none"}}),
+      e('input',{value:newPlant.note,onChange:ev=>setNewPlant(p=>({...p,note:ev.target.value})),placeholder:"Observação (opcional)",
+        style:{width:"100%",boxSizing:"border-box",padding:"9px 12px",borderRadius:8,border:"1px solid #d4cfc5",fontSize:13,fontFamily:"inherit",outline:"none"}}),
+      e('button',{onClick:addCustomPlant,disabled:!newPlant.name.trim(),style:{padding:"9px 14px",borderRadius:8,border:"none",background:newPlant.name.trim()?"#2e5c3a":"#cfd6cf",color:"#fff",fontSize:13,fontFamily:"inherit",fontWeight:"bold",cursor:newPlant.name.trim()?"pointer":"default"}},"Adicionar planta")
     ),
 
     // Grupos de plantas
@@ -2357,7 +2505,11 @@ function BokashiApp(){
                 );
               }),
 
-              plant.group==='skip'&&!(plant.extras?.length)&&e('div',{style:{padding:"0 16px 12px",fontSize:12,color:"#aaa",fontStyle:"italic"}},plant.note)
+              plant.group==='skip'&&!(plant.extras?.length)&&e('div',{style:{padding:"0 16px 12px",fontSize:12,color:"#aaa",fontStyle:"italic"}},plant.note),
+
+              plant.custom&&e('div',{style:{padding:"0 16px 12px",textAlign:"right"}},
+                e('button',{onClick:()=>removeCustomPlant(plant.id),style:{background:"transparent",color:"#c0392b",border:"1px solid #f0d8d4",borderRadius:8,padding:"4px 10px",cursor:"pointer",fontSize:11,fontFamily:"inherit"}},"🗑 Remover planta")
+              )
             );
           })
         )
