@@ -349,51 +349,82 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
 
 
 /* ===========================
-   PAGE 5 — CAPILAR
+   PAGE 5 — HOME OFFICE (horas trabalhadas)
    =========================== */
-#page-capilar{background:#faf7f2;min-height:100vh;padding-bottom:80px;}
-#page-capilar .cap-inner{max-width:520px;margin:0 auto;padding:0 16px 0;}
+#page-ho{background:#f3f6f7;min-height:100vh;padding-bottom:80px;}
+#page-ho .ho-inner{max-width:520px;margin:0 auto;padding:0 16px 0;}
 
-/* capilar styles */
-.cap-badge{display:inline-block;background:#2a2018;color:#faf7f2;font-size:10px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:14px;}
-.cap-header{text-align:center;padding:28px 0 20px;}
-.cap-header h2{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:600;line-height:1.15;color:#2a2018;margin-bottom:6px;}
-.cap-header h2 em{font-style:italic;color:#a8917a;}
-.cap-header p{font-size:13px;color:#6b5744;font-weight:300;letter-spacing:.3px;}
-.cap-legend{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;}
-.cap-legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#6b5744;}
-.cap-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.cap-progress-wrap{background:white;border-radius:18px;padding:18px 20px;box-shadow:0 2px 12px rgba(42,32,24,.07);margin-bottom:18px;}
-.cap-progress-label{display:flex;justify-content:space-between;font-size:12px;color:#6b5744;margin-bottom:10px;}
-.cap-progress-track{height:8px;background:#f0e8dc;border-radius:10px;overflow:hidden;}
-.cap-progress-fill{height:100%;background:linear-gradient(90deg,#7bb8d4,#c9a96e);border-radius:10px;transition:width .4s ease;}
-.cap-month-label{font-family:'Playfair Display',serif;font-size:13px;color:#2a2018;margin-bottom:4px;font-weight:600;}
-.cap-week-block{margin-bottom:18px;background:white;border-radius:18px;overflow:hidden;box-shadow:0 2px 12px rgba(42,32,24,.07);}
-.cap-week-header{padding:13px 20px 11px;border-bottom:1px solid #f0e8dc;display:flex;align-items:center;justify-content:space-between;}
-.cap-week-label{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:#2a2018;}
-.cap-week-dates{font-size:11px;color:#a8917a;}
-.cap-wash-card{display:flex;align-items:center;gap:14px;padding:15px 20px;cursor:pointer;transition:background .2s;border-bottom:1px solid #f0e8dc;user-select:none;-webkit-tap-highlight-color:transparent;}
-.cap-wash-card:last-child{border-bottom:none;}
-.cap-wash-card:hover{background:#f0e8dc;}
-.cap-wash-card.done{opacity:.75;}
-.cap-check-circle{width:32px;height:32px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .25s;font-size:14px;}
-.cap-wash-card.done .cap-check-circle{background:#7aab7a;border-color:#7aab7a;color:white;}
-.cap-wash-info{flex:1;}
-.cap-wash-day{font-size:13px;font-weight:500;color:#2a2018;margin-bottom:2px;}
-.cap-wash-card.done .cap-wash-day{text-decoration:line-through;color:#6b5744;}
-.cap-wash-step{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:2px 9px;border-radius:10px;letter-spacing:.2px;}
-.cap-step-H{background:#e8f4f9;color:#7bb8d4;}
-.cap-step-N{background:#faf3e6;color:#c9a96e;}
-.cap-step-R{background:#f5edf5;color:#b07ab0;}
-.cap-step-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
-.cap-tip-box{background:#f0e8dc;border-radius:12px;padding:11px 15px;margin:0 20px 14px 68px;font-size:12px;color:#6b5744;line-height:1.6;display:none;}
-.cap-tip-box.visible{display:block;}
-.cap-glossary{background:white;border-radius:18px;padding:18px;box-shadow:0 2px 12px rgba(42,32,24,.07);margin-bottom:18px;}
-.cap-glossary h3{font-family:'Playfair Display',serif;font-size:14px;margin-bottom:12px;color:#2a2018;}
-.cap-glossary-item{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;}
-.cap-glossary-icon{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
-.cap-glossary-text{font-size:12px;color:#6b5744;line-height:1.55;}
-.cap-glossary-text strong{color:#2a2018;font-size:13px;display:block;margin-bottom:1px;}
+.ho-badge{display:inline-block;background:#1d3a3f;color:#eaf4f3;font-size:10px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:14px;}
+.ho-header{text-align:center;padding:28px 0 20px;}
+.ho-header h2{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:600;line-height:1.15;color:#1d3a3f;margin-bottom:6px;}
+.ho-header h2 em{font-style:italic;color:#3e8e82;}
+.ho-header p{font-size:13px;color:#5c7470;font-weight:300;letter-spacing:.3px;}
+.ho-header-note{font-size:11px;color:#8c9b98;margin-top:8px;line-height:1.5;font-weight:300;}
+
+.ho-rate-card{background:white;border-radius:18px;padding:16px 18px;box-shadow:0 2px 12px rgba(29,58,63,.07);margin-bottom:18px;}
+.ho-rate-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.ho-rate-label{font-size:10.5px;color:#5c7470;text-transform:uppercase;letter-spacing:.07em;font-weight:500;margin-bottom:4px;}
+.ho-rate-value{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#1d3a3f;line-height:1;}
+.ho-rate-updated{font-size:10.5px;color:#8c9b98;margin-top:3px;}
+.ho-rate-refresh{flex-shrink:0;background:#eaf4f3;color:#1d3a3f;border:1px solid #cfe3e1;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.ho-rate-refresh:hover{background:#dcecea;}
+.ho-rate-refresh:disabled{opacity:.6;cursor:default;}
+.ho-rate-manual{display:flex;gap:8px;margin-top:12px;}
+.ho-rate-manual input{flex:1;border:1px solid #dde6e5;border-radius:10px;padding:9px 10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1d3a3f;background:#fbfdfc;box-sizing:border-box;}
+.ho-rate-manual input:focus{outline:none;border-color:#3e8e82;}
+.ho-rate-manual button{background:#1d3a3f;color:#eaf4f3;border:none;border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.ho-rate-manual button:hover{background:#2a4f55;}
+.ho-rate-hint{font-size:11.5px;color:#c07800;margin-top:10px;line-height:1.5;display:none;}
+.ho-rate-hint.visible{display:block;}
+.ho-rate-hint.ok{color:#2e8b57;}
+
+.ho-summary-row{display:flex;gap:10px;margin-bottom:18px;}
+.ho-summary-card{flex:1;background:white;border-radius:16px;padding:14px 8px;text-align:center;box-shadow:0 2px 12px rgba(29,58,63,.07);}
+.ho-summary-label{font-size:10.5px;color:#5c7470;text-transform:uppercase;letter-spacing:.07em;font-weight:500;margin-bottom:6px;}
+.ho-summary-hours{font-family:'DM Serif Display',serif;font-size:1.25rem;color:#1d3a3f;line-height:1;}
+.ho-summary-value{font-size:12px;color:#3e8e82;font-weight:500;margin-top:3px;}
+.ho-summary-brl{font-size:10.5px;color:#8c9b98;margin-top:1px;}
+.ho-summary-range{font-size:10px;color:#8c9b98;margin-top:4px;}
+
+.ho-form-card{background:white;border-radius:18px;padding:18px 20px;box-shadow:0 2px 12px rgba(29,58,63,.07);margin-bottom:18px;}
+.ho-form-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:#1d3a3f;margin-bottom:14px;}
+.ho-form-row{display:flex;gap:10px;margin-bottom:14px;}
+.ho-field{flex:1;}
+.ho-field-sm{flex:0 0 72px;}
+.ho-field label{display:block;font-size:10.5px;color:#5c7470;text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:5px;}
+.ho-field input,.ho-field select{width:100%;border:1px solid #dde6e5;border-radius:10px;padding:9px 10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1d3a3f;background:#fbfdfc;box-sizing:border-box;}
+.ho-field input:focus,.ho-field select:focus{outline:none;border-color:#3e8e82;}
+.ho-save-btn{width:100%;background:#1d3a3f;color:#eaf4f3;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:500;cursor:pointer;transition:background .2s;}
+.ho-save-btn:hover{background:#2a4f55;}
+.ho-form-hint{font-size:11.5px;color:#c07800;margin-top:10px;line-height:1.5;display:none;}
+.ho-form-hint.visible{display:block;}
+.ho-form-hint.ok{color:#2e8b57;}
+
+.ho-list-section,.ho-month-section{margin-bottom:20px;}
+.ho-list-section h3,.ho-month-section h3{font-family:'Playfair Display',serif;font-size:14px;color:#1d3a3f;margin-bottom:10px;padding:0 2px;}
+.ho-section-hint{font-size:11px;color:#8c9b98;margin:-4px 2px 10px;line-height:1.5;}
+.ho-list{background:white;border-radius:18px;overflow:hidden;box-shadow:0 2px 12px rgba(29,58,63,.07);}
+.ho-item{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #eef3f2;gap:10px;}
+.ho-item:last-child{border-bottom:none;}
+.ho-item-date{font-size:13px;font-weight:500;color:#1d3a3f;}
+.ho-item-date .ho-item-today{font-size:10px;color:#3e8e82;font-weight:600;}
+.ho-item-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.ho-item-hours{font-size:12.5px;color:#5c7470;}
+.ho-item-value-wrap{text-align:right;min-width:64px;}
+.ho-item-value{font-size:13px;font-weight:600;color:#1d3a3f;}
+.ho-item-brl{font-size:10px;color:#8c9b98;}
+.ho-item-del{border:none;background:none;color:#c0392b;font-size:13px;cursor:pointer;padding:2px 4px;opacity:.55;transition:opacity .2s;}
+.ho-item-del:hover{opacity:1;}
+.ho-empty{background:white;border-radius:18px;padding:24px;text-align:center;font-size:13px;color:#8c9b98;box-shadow:0 2px 12px rgba(29,58,63,.07);}
+
+.ho-table{width:100%;border-collapse:collapse;background:white;border-radius:18px;overflow:hidden;box-shadow:0 2px 12px rgba(29,58,63,.07);font-size:12px;}
+.ho-table th{background:#1d3a3f;color:#eaf4f3;font-weight:500;text-transform:uppercase;font-size:9.5px;letter-spacing:.04em;padding:10px 6px;text-align:center;}
+.ho-table th:first-child{text-align:left;padding-left:12px;}
+.ho-table td{padding:9px 6px;text-align:center;border-bottom:1px solid #eef3f2;color:#1d3a3f;}
+.ho-table td:first-child{text-align:left;padding-left:12px;font-weight:600;}
+.ho-table tr:last-child td{border-bottom:none;}
+.ho-table .ho-table-value{color:#3e8e82;font-weight:600;}
+.ho-table .ho-table-value-brl{color:#5c7470;}
 
 /* ===== CARD DIÁRIO ===== */
 .daily-card{
@@ -1158,78 +1189,99 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
   </div>
 </div>
 
-<div id="page-capilar" class="page">
-  <div class="cap-inner">
-    <div class="cap-header">
-      <div class="cap-badge">Cronograma Capilar</div>
-      <h2>Seu cabelo,<br><em>com carinho.</em></h2>
-      <p>Quartas e Domingos · Cacheado 3A/3B · Maio–Junho 2026</p>
+<div id="page-ho" class="page">
+  <div class="ho-inner">
+    <div class="ho-header">
+      <div class="ho-badge">Home Office</div>
+      <h2>Suas horas,<br><em>seu valor.</em></h2>
+      <p>$8,00 por hora trabalhada · limite de 8h pagas por dia</p>
+      <p class="ho-header-note">Os dados de todos os meses ficam salvos automaticamente neste navegador — nada é apagado quando o mês vira.</p>
     </div>
-    <div class="cap-progress-wrap">
-      <div class="cap-month-label" id="cap-month-label">Progresso de Maio</div>
-      <div class="cap-progress-label">
-        <span id="cap-prog-text">1 de 9 lavagens concluídas</span>
-        <span id="cap-prog-pct">11%</span>
+
+    <div class="ho-rate-card">
+      <div class="ho-rate-top">
+        <div>
+          <div class="ho-rate-label">Cotação do dólar</div>
+          <div class="ho-rate-value" id="ho-rate-display">—</div>
+          <div class="ho-rate-updated" id="ho-rate-updated">Nenhuma cotação salva ainda</div>
+        </div>
+        <button class="ho-rate-refresh" onclick="hoFetchRate(true)" id="ho-rate-refresh-btn">🔄 Atualizar</button>
       </div>
-      <div class="cap-progress-track"><div class="cap-progress-fill" id="cap-prog-fill" style="width:11%"></div></div>
+      <div class="ho-rate-manual">
+        <input type="text" inputmode="decimal" id="ho-rate-input" placeholder="ex: 5,35">
+        <button onclick="hoSetManualRate()">Salvar manualmente</button>
+      </div>
+      <div class="ho-rate-hint" id="ho-rate-hint"></div>
     </div>
-    <div class="cap-legend">
-      <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#7bb8d4"></div>Hidratação</div>
-      <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#c9a96e"></div>Nutrição</div>
-      <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#b07ab0"></div>Reconstrução</div>
-      <div class="cap-legend-item"><div class="cap-legend-dot" style="background:#7aab7a"></div>Concluída</div>
+
+    <div class="ho-summary-row">
+      <div class="ho-summary-card">
+        <div class="ho-summary-label">Hoje</div>
+        <div class="ho-summary-hours" id="ho-today-hours">0h</div>
+        <div class="ho-summary-value" id="ho-today-value">$0,00</div>
+        <div class="ho-summary-brl" id="ho-today-brl"></div>
+      </div>
+      <div class="ho-summary-card">
+        <div class="ho-summary-label">Ciclo atual</div>
+        <div class="ho-summary-hours" id="ho-cycle-hours">0h</div>
+        <div class="ho-summary-value" id="ho-cycle-value">$0,00</div>
+        <div class="ho-summary-brl" id="ho-cycle-brl"></div>
+        <div class="ho-summary-range" id="ho-cycle-range"></div>
+      </div>
+      <div class="ho-summary-card">
+        <div class="ho-summary-label">Este mês</div>
+        <div class="ho-summary-hours" id="ho-month-hours">0h</div>
+        <div class="ho-summary-value" id="ho-month-value">$0,00</div>
+        <div class="ho-summary-brl" id="ho-month-brl"></div>
+      </div>
     </div>
-    <div id="cap-schedule"><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 1</span><span class="cap-week-dates">03–07 de maio</span></div><div class="cap-wash-card done"><div class="cap-check-circle" style="color:#7aab7a">✓</div>
-      <div class="cap-wash-info">
-        <div class="cap-wash-day">Sáb, 03 de maio <span style="font-size:10px;color:#7aab7a;font-weight:500">• Concluída</span></div>
-        <span class="cap-wash-step cap-step-N"><span class="cap-step-dot"></span>🌿 Nutrição</span>
-      </div></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#7bb8d4"></div>
-      <div class="cap-wash-info">
-        <div class="cap-wash-day">Qua, 07 de maio</div>
-        <span class="cap-wash-step cap-step-H"><span class="cap-step-dot"></span>💧 Hidratação</span>
-      </div></div><div class="cap-tip-box">Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 2</span><span class="cap-week-dates">11–14 de maio</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#b07ab0"></div>
-      <div class="cap-wash-info">
-        <div class="cap-wash-day">Dom, 11 de maio</div>
-        <span class="cap-wash-step cap-step-R"><span class="cap-step-dot"></span>✨ Reconstrução</span>
-      </div></div><div class="cap-tip-box">Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.</div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#c9a96e"></div>
-      <div class="cap-wash-info">
-        <div class="cap-wash-day">Qua, 14 de maio</div>
-        <span class="cap-wash-step cap-step-N"><span class="cap-step-dot"></span>🌿 Nutrição</span>
-      </div></div><div class="cap-tip-box">Máscara Kolene de óleos africanos, touca plástica, 20–30 min.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 3</span><span class="cap-week-dates">18–21 de maio</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#7bb8d4"></div>
-      <div class="cap-wash-info">
-        <div class="cap-wash-day">Dom, 18 de maio</div>
-        <span class="cap-wash-step cap-step-H"><span class="cap-step-dot"></span>💧 Hidratação</span>
-      </div></div><div class="cap-tip-box">Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.</div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#b07ab0"></div>
-      <div class="cap-wash-info">
-        <div class="cap-wash-day">Qua, 21 de maio</div>
-        <span class="cap-wash-step cap-step-R"><span class="cap-step-dot"></span>✨ Reconstrução</span>
-      </div></div><div class="cap-tip-box">Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Semana 4</span><span class="cap-week-dates">25–28 de maio</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#7bb8d4"></div>
-      <div class="cap-wash-info">
-        <div class="cap-wash-day">Dom, 25 de maio</div>
-        <span class="cap-wash-step cap-step-H"><span class="cap-step-dot"></span>💧 Hidratação</span>
-      </div></div><div class="cap-tip-box">Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.</div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#c9a96e"></div>
-      <div class="cap-wash-info">
-        <div class="cap-wash-day">Qua, 28 de maio</div>
-        <span class="cap-wash-step cap-step-N"><span class="cap-step-dot"></span>🌿 Nutrição</span>
-      </div></div><div class="cap-tip-box">Máscara Kolene de óleos africanos, touca plástica, 20–30 min.</div></div><div class="cap-week-block"><div class="cap-week-header"><span class="cap-week-label">Início de Junho</span><span class="cap-week-dates">01 de junho</span></div><div class="cap-wash-card"><div class="cap-check-circle" style="color:#b07ab0"></div>
-      <div class="cap-wash-info">
-        <div class="cap-wash-day">Dom, 01 de junho</div>
-        <span class="cap-wash-step cap-step-R"><span class="cap-step-dot"></span>✨ Reconstrução</span>
-      </div></div><div class="cap-tip-box">Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.</div></div></div>
-    <div class="cap-glossary">
-      <h3>O que fazer em cada etapa</h3>
-      <div class="cap-glossary-item">
-        <div class="cap-glossary-icon H" style="background:#e8f4f9">💧</div>
-        <div class="cap-glossary-text"><strong>🔵 Hidratação — repõe água</strong>Condicionador ou máscara hidratante, 10–15 min. Finalize com leave-in leve. Seda Liso dos Sonhos serve aqui!</div>
+
+    <div class="ho-form-card">
+      <div class="ho-form-title">Registrar horas do dia</div>
+      <div class="ho-form-row">
+        <div class="ho-field">
+          <label>Data</label>
+          <input type="date" id="ho-input-date" onchange="hoOnDateChange()">
+        </div>
+        <div class="ho-field ho-field-sm">
+          <label>Horas</label>
+          <input type="number" id="ho-input-h" min="0" max="24" placeholder="0" inputmode="numeric">
+        </div>
+        <div class="ho-field ho-field-sm">
+          <label>Min</label>
+          <select id="ho-input-m">
+            <option value="0">00</option>
+            <option value="15">15</option>
+            <option value="30">30</option>
+            <option value="45">45</option>
+          </select>
+        </div>
       </div>
-      <div class="cap-glossary-item">
-        <div class="cap-glossary-icon N" style="background:#faf3e6">🌿</div>
-        <div class="cap-glossary-text"><strong>🟡 Nutrição — sela com óleos</strong>Máscara de óleos com touca, 20–30 min. Kolene de óleos africanos é perfeita!</div>
-      </div>
-      <div class="cap-glossary-item">
-        <div class="cap-glossary-icon R" style="background:#f5edf5">✨</div>
-        <div class="cap-glossary-text"><strong>🔴 Reconstrução — repõe proteína</strong>Máscara proteica (Salon Line, Biokin, Elseve), 20–30 min com calor se possível.</div>
-      </div>
+      <button class="ho-save-btn" onclick="hoSaveEntry()">Salvar</button>
+      <div class="ho-form-hint" id="ho-form-hint"></div>
+    </div>
+
+    <div class="ho-list-section">
+      <h3>Últimos registros</h3>
+      <div class="ho-list" id="ho-list"></div>
+      <div class="ho-empty" id="ho-list-empty" style="display:none;">Nenhum registro ainda. Lance suas primeiras horas acima 👆</div>
+    </div>
+
+    <div class="ho-month-section">
+      <h3>Resumo por ciclo de pagamento</h3>
+      <p class="ho-section-hint">Cada ciclo vai do dia 15 de um mês até o dia 14 do mês seguinte.</p>
+      <table class="ho-table">
+        <thead><tr><th>Ciclo</th><th>Horas</th><th>Dias</th><th>$</th><th>R$</th></tr></thead>
+        <tbody id="ho-cycle-table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="ho-month-section">
+      <h3>Resumo por mês</h3>
+      <table class="ho-table">
+        <thead><tr><th>Mês</th><th>Horas</th><th>Dias</th><th>$</th><th>R$</th></tr></thead>
+        <tbody id="ho-month-table-body"></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -1250,9 +1302,9 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
     <span class="nav-icon">✨</span>
     <span class="nav-label">Skincare</span>
   </button>
-  <button class="nav-btn" onclick="showPage('page-capilar',this)">
-    <span class="nav-icon">💧</span>
-    <span class="nav-label">Capilar</span>
+  <button class="nav-btn" onclick="showPage('page-ho',this);hoRenderAll()">
+    <span class="nav-icon">💻</span>
+    <span class="nav-label">Horas Apple</span>
   </button>
   <button class="nav-btn" onclick="showPage('page-bokashi',this);renderBokashi()">
     <span class="nav-icon">🪴</span>
@@ -1864,167 +1916,352 @@ function skinSwitchTab(tab,e){
   document.getElementById(tab).classList.add('active');
 }
 
-/* ===== CAPILAR ===== */
-const CAP_STEPS=['N','H','R','N','H','R','H','N','R'];
-const CAP_STEP_LABELS={H:'Hidratação',N:'Nutrição',R:'Reconstrução'};
-const CAP_STEP_EMOJI={H:'💧',N:'🌿',R:'✨'};
-const CAP_TIPS={H:'Condicionador Seda ou máscara hidratante, 10–15 min, enxágue bem. Leave-in leve.',N:'Máscara Kolene de óleos africanos, touca plástica, 20–30 min.',R:'Máscara proteica (Salon Line S.O.S ou Biokin), 20–30 min com calor.'};
-// Each entry estática tem uma data ISO para comparação de auto-avanço
-const CAP_DATES=[
-  {label:'Sáb, 03 de maio',week:1,date:'2026-05-03'},
-  {label:'Qua, 07 de maio',week:1,date:'2026-05-07'},
-  {label:'Dom, 11 de maio',week:2,date:'2026-05-11'},
-  {label:'Qua, 14 de maio',week:2,date:'2026-05-14'},
-  {label:'Dom, 18 de maio',week:3,date:'2026-05-18'},
-  {label:'Qua, 21 de maio',week:3,date:'2026-05-21'},
-  {label:'Dom, 25 de maio',week:4,date:'2026-05-25'},
-  {label:'Qua, 28 de maio',week:4,date:'2026-05-28'},
-  {label:'Dom, 01 de junho',week:5,date:'2026-06-01'},
-];
-const CAP_WEEK_LABELS=['','Semana 1','Semana 2','Semana 3','Semana 4','Início de Junho'];
-const CAP_WEEK_DATES=['','03–07 de maio','11–14 de maio','18–21 de maio','25–28 de maio','01 de junho'];
-const CAP_STORAGE_KEY='cronograma_capilar_v2';
-const CAP_STORAGE_KEY_OLD='cronograma_capilar_v1';
-const CAP_MONTHS_PT=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-const CAP_WEEKDAYS_PT=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+/* ===== HOME OFFICE (horas de trabalho remoto) ===== */
+const HO_RATE=8;        // valor por hora trabalhada
+const HO_LIMIT=8;       // limite de horas pagas por dia
+const HO_STORAGE_KEY='home_office_horas_v1';
+const HO_MONTHS_PT=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const HO_MONTHS_SHORT_PT=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const HO_WEEKDAYS_PT=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
-function capTodayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function capParseISO(iso){const[y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d);}
-function capToISO(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function capFormatLabel(d){return`${CAP_WEEKDAYS_PT[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} de ${CAP_MONTHS_PT[d.getMonth()]}`;}
-function capFormatShort(d){return`${String(d.getDate()).padStart(2,'0')} de ${CAP_MONTHS_PT[d.getMonth()]}`;}
-function capCap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function hoTodayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function hoParseISO(iso){const[y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d);}
+function hoToISO(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function hoCap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function hoFormatHours(dec){
+  dec=Math.max(0,dec||0);
+  const h=Math.floor(dec+1e-9);
+  const m=Math.round((dec-h)*60);
+  return m===0?`${h}h`:`${h}h${String(m).padStart(2,'0')}`;
+}
+function hoFormatMoney(v){return'$'+(v||0).toFixed(2).replace('.',',');}
+function hoPaidHours(dec){return Math.min(dec||0,HO_LIMIT);}
+function hoPaidValue(dec){return hoPaidHours(dec)*HO_RATE;}
 
-// Monta o cronograma completo: datas fixas (maio–início de junho) + continuação
-// automática (quartas e domingos, seguindo o ciclo Hidratação/Nutrição/Reconstrução
-// a partir da última etapa cadastrada), sempre cobrindo alguns meses para frente.
-function capGenerateSchedule(){
-  const entries=CAP_DATES.map((d,i)=>({label:d.label,date:d.date,step:CAP_STEPS[i],week:d.week,weekLabel:CAP_WEEK_LABELS[d.week],weekDates:CAP_WEEK_DATES[d.week]}));
+function hoLoad(){
+  try{const raw=localStorage.getItem(HO_STORAGE_KEY);const map=raw?JSON.parse(raw):{};return typeof map==='object'&&map?map:{};}catch{return{};}
+}
+function hoSave(map){try{localStorage.setItem(HO_STORAGE_KEY,JSON.stringify(map));}catch{}}
 
-  const lastDate=capParseISO(CAP_DATES[CAP_DATES.length-1].date);
-  const today=new Date();today.setHours(0,0,0,0);
-  const horizon=new Date(today);horizon.setDate(horizon.getDate()+60); // mantém ~2 meses de cronograma futuro visível
+/* ---- Cotação do dólar (USD → BRL) ---- */
+const HO_RATE_STORAGE_KEY='home_office_dolar_v1'; // mapa {data:cotação}
+function hoLoadRates(){
+  try{const raw=localStorage.getItem(HO_RATE_STORAGE_KEY);const map=raw?JSON.parse(raw):{};return typeof map==='object'&&map?map:{};}catch{return{};}
+}
+function hoSaveRates(map){try{localStorage.setItem(HO_RATE_STORAGE_KEY,JSON.stringify(map));}catch{}}
+// Cotação mais recente disponível no mapa, independente da data (usada como fallback)
+function hoLatestRateEntry(map){
+  const keys=Object.keys(map).sort();
+  if(keys.length===0)return null;
+  const k=keys[keys.length-1];
+  return{date:k,rate:map[k]};
+}
+// Cotação a usar para uma data específica: a cotação salva naquele dia,
+// ou — se não houver — a cotação mais recente conhecida até aquela data,
+// ou — em último caso — a cotação mais recente disponível em todo o histórico.
+function hoRateForDate(dateISO){
+  const map=hoLoadRates();
+  if(map[dateISO]!=null)return map[dateISO];
+  const past=Object.keys(map).filter(k=>k<dateISO).sort();
+  if(past.length>0)return map[past[past.length-1]];
+  const latest=hoLatestRateEntry(map);
+  return latest?latest.rate:null;
+}
+function hoFormatBRL(v){return'R$ '+(v||0).toFixed(2).replace('.',',');}
 
-  const future=[];
-  let cur=new Date(lastDate);
-  let stepIdx=CAP_STEPS.length; // continua o ciclo a partir da última etapa cadastrada
-  while(cur<horizon){
-    cur=new Date(cur);cur.setDate(cur.getDate()+1);
-    const wd=cur.getDay();
-    if(wd===0||wd===3){ // Domingo ou Quarta — quartas e domingos
-      future.push({label:capFormatLabel(cur),date:capToISO(cur),step:CAP_STEPS[stepIdx%CAP_STEPS.length]});
-      stepIdx++;
-    }
-  }
-
-  // Agrupa as lavagens futuras em "semanas" (pares de lavagens), continuando a numeração
-  let weekNum=CAP_WEEK_LABELS.length; // próxima semana após "Início de Junho"
-  for(let i=0;i<future.length;i+=2){
-    const pair=future.slice(i,i+2);
-    const first=capParseISO(pair[0].date);
-    const last=capParseISO(pair[pair.length-1].date);
-    const wLabel=`Semana ${weekNum}`;
-    let wDates;
-    if(pair.length===1||first.getTime()===last.getTime()){
-      wDates=capFormatShort(first);
-    }else if(first.getMonth()===last.getMonth()){
-      wDates=`${String(first.getDate()).padStart(2,'0')}–${String(last.getDate()).padStart(2,'0')} de ${CAP_MONTHS_PT[first.getMonth()]}`;
+function hoRenderRateCard(){
+  const map=hoLoadRates();
+  const today=hoTodayStr();
+  const display=document.getElementById('ho-rate-display');
+  const updated=document.getElementById('ho-rate-updated');
+  if(map[today]!=null){
+    display.textContent='R$ '+Number(map[today]).toFixed(2).replace('.',',');
+    updated.textContent='Atualizada hoje';
+  }else{
+    const latest=hoLatestRateEntry(map);
+    if(latest){
+      display.textContent='R$ '+Number(latest.rate).toFixed(2).replace('.',',');
+      const d=hoParseISO(latest.date);
+      updated.textContent=`Última cotação salva: ${String(d.getDate()).padStart(2,'0')} de ${HO_MONTHS_PT[d.getMonth()]}`;
     }else{
-      wDates=`${capFormatShort(first)} – ${capFormatShort(last)}`;
+      display.textContent='—';
+      updated.textContent='Nenhuma cotação salva ainda';
     }
-    pair.forEach(e=>{e.week=weekNum;e.weekLabel=wLabel;e.weekDates=wDates;});
-    entries.push(...pair);
-    weekNum++;
   }
-  return entries;
+}
+// Busca a cotação do dólar (USD→BRL) numa API pública e gratuita (AwesomeAPI).
+// silent=true: tentativa automática ao abrir a aba (não mostra aviso se falhar).
+async function hoFetchRate(manual){
+  const btn=document.getElementById('ho-rate-refresh-btn');
+  const hint=document.getElementById('ho-rate-hint');
+  if(btn&&manual){btn.disabled=true;btn.textContent='Buscando...';}
+  try{
+    const resp=await fetch('https://economia.awesomeapi.com.br/last/USD-BRL');
+    if(!resp.ok)throw new Error('resposta não-ok');
+    const data=await resp.json();
+    const bid=parseFloat(data&&data.USDBRL&&data.USDBRL.bid);
+    if(isNaN(bid))throw new Error('valor inválido');
+    const map=hoLoadRates();
+    map[hoTodayStr()]=bid;
+    hoSaveRates(map);
+    hoRenderRateCard();
+    hoRenderAll();
+    if(manual&&hint){
+      hint.textContent=`Cotação atualizada: R$ ${bid.toFixed(2).replace('.',',')}`;
+      hint.className='ho-rate-hint visible ok';
+    }
+  }catch(e){
+    if(manual&&hint){
+      hint.textContent='Não foi possível buscar a cotação automaticamente agora (sem internet ou serviço indisponível). Você pode informar o valor manualmente abaixo.';
+      hint.className='ho-rate-hint visible';
+    }
+  }finally{
+    if(btn&&manual){btn.disabled=false;btn.textContent='🔄 Atualizar';}
+  }
+}
+function hoSetManualRate(){
+  const input=document.getElementById('ho-rate-input');
+  const hint=document.getElementById('ho-rate-hint');
+  const v=parseFloat((input.value||'').replace(',','.'));
+  if(isNaN(v)||v<=0){
+    hint.textContent='Informe um valor de cotação válido (ex: 5,35).';
+    hint.className='ho-rate-hint visible';
+    return;
+  }
+  const map=hoLoadRates();
+  map[hoTodayStr()]=v;
+  hoSaveRates(map);
+  input.value='';
+  hint.textContent=`Cotação de hoje salva manualmente: R$ ${v.toFixed(2).replace('.',',')}`;
+  hint.className='ho-rate-hint visible ok';
+  hoRenderRateCard();
+  hoRenderAll();
 }
 
-// Estado de conclusão das lavagens, salvo por data (chave ISO) — assim o cronograma
-// pode crescer indefinidamente sem perder o progresso já marcado.
-function capLoadDoneMap(schedule){
-  let map=null;
-  try{
-    const raw=localStorage.getItem(CAP_STORAGE_KEY);
-    if(raw)map=JSON.parse(raw);
-  }catch{map=null;}
-  if(!map){
-    // Migra formato antigo (array indexado pelas 9 datas fixas), se existir
-    try{
-      const old=JSON.parse(localStorage.getItem(CAP_STORAGE_KEY_OLD)||'null');
-      map={};
-      if(Array.isArray(old)) CAP_DATES.forEach((d,i)=>{if(old[i])map[d.date]=true;});
-    }catch{map={};}
-  }
-  if(typeof map!=='object'||!map)map={};
-  map[CAP_DATES[0].date]=true; // primeira lavagem sempre concluída
-  // Auto-avanço: qualquer data passada conta como concluída
-  const today=capTodayStr();
-  schedule.forEach(e=>{if(e.date<today)map[e.date]=true;});
-  return map;
+// Ciclo de pagamento: começa no dia 15 de um mês e termina no dia 14 do mês seguinte.
+// Dado uma data qualquer, retorna o início (dia 15) do ciclo ao qual ela pertence.
+function hoCycleStart(d){
+  let y=d.getFullYear(),m=d.getMonth();
+  if(d.getDate()<15){m-=1;if(m<0){m=11;y-=1;}}
+  return new Date(y,m,15);
 }
-function capSaveDoneMap(map,schedule){
-  try{
-    const today=capTodayStr();
-    schedule.forEach(e=>{if(e.date<today)map[e.date]=true;});
-    map[CAP_DATES[0].date]=true;
-    localStorage.setItem(CAP_STORAGE_KEY,JSON.stringify(map));
-  }catch{}
+function hoCycleEnd(cycleStart){return new Date(cycleStart.getFullYear(),cycleStart.getMonth()+1,14);}
+function hoCycleKey(cycleStart){return`${cycleStart.getFullYear()}-${String(cycleStart.getMonth()+1).padStart(2,'0')}`;}
+function hoCycleLabel(cycleStart,withYear){
+  const end=hoCycleEnd(cycleStart);
+  const base=`15 ${HO_MONTHS_SHORT_PT[cycleStart.getMonth()]} – 14 ${HO_MONTHS_SHORT_PT[end.getMonth()]}`;
+  return withYear?`${base}/${end.getFullYear()}`:base;
 }
-function capUpdateProgress(schedule,doneMap){
-  const now=new Date();
-  const monthEntries=schedule.filter(e=>{const d=capParseISO(e.date);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();});
-  const total=monthEntries.length||1;
-  const c=monthEntries.filter(e=>doneMap[e.date]).length;
-  const pct=Math.round(c/total*100);
-  document.getElementById('cap-prog-text').textContent=`${c} de ${total} lavagens concluídas`;
-  document.getElementById('cap-prog-pct').textContent=`${pct}%`;
-  document.getElementById('cap-prog-fill').style.width=pct+'%';
-  const monthLabelEl=document.getElementById('cap-month-label');
-  if(monthLabelEl)monthLabelEl.textContent=`Progresso de ${capCap(CAP_MONTHS_PT[now.getMonth()])}`;
-}
-function capRender(){
-  const schedule=capGenerateSchedule();
-  const capDone=capLoadDoneMap(schedule);
-  const container=document.getElementById('cap-schedule');container.innerHTML='';
-  let currentWeek=null,weekBlock=null;
-  const today=capTodayStr();
-  schedule.forEach((d,i)=>{
-    if(d.week!==currentWeek){
-      weekBlock=document.createElement('div');weekBlock.className='cap-week-block';
-      const wh=document.createElement('div');wh.className='cap-week-header';
-      wh.innerHTML=`<span class="cap-week-label">${d.weekLabel}</span><span class="cap-week-dates">${d.weekDates}</span>`;
-      weekBlock.appendChild(wh);container.appendChild(weekBlock);currentWeek=d.week;
-    }
-    const step=d.step;const isDone=!!capDone[d.date];
-    const isToday=d.date===today;
-    const isPast=d.date<today;
-    const colorVar=step==='H'?'#7bb8d4':step==='N'?'#c9a96e':'#b07ab0';
-    const card=document.createElement('div');
-    card.className='cap-wash-card'+(isDone?' done':'');
-    if(isToday)card.style.cssText='border-left:3px solid '+colorVar+';background:#fffaf5;';
-    const todayBadge=isToday?` <span style="font-size:10px;color:${colorVar};font-weight:600">• Hoje!</span>`:'';
-    const doneBadge=isDone&&!isToday?' <span style="font-size:10px;color:#7aab7a;font-weight:500">• Concluída</span>':'';
-    card.innerHTML=`<div class="cap-check-circle" style="color:${isDone?'#7aab7a':colorVar}">${isDone?'✓':''}</div>
-      <div class="cap-wash-info">
-        <div class="cap-wash-day">${d.label}${todayBadge}${doneBadge}</div>
-        <span class="cap-wash-step cap-step-${step}"><span class="cap-step-dot"></span>${CAP_STEP_EMOJI[step]} ${CAP_STEP_LABELS[step]}</span>
-      </div>`;
-    // Permite marcar/desmarcar datas de hoje e futuras; passadas ficam auto-concluídas
-    card.addEventListener('click',()=>{
-      if(isPast&&!isToday){return;}
-      capDone[d.date]=!capDone[d.date];capSaveDoneMap(capDone,schedule);capRender();
-    });
-    weekBlock.appendChild(card);
-    if(!isDone&&i>0){
-      const tipBox=document.createElement('div');tipBox.className='cap-tip-box';tipBox.textContent=CAP_TIPS[step];
-      weekBlock.appendChild(tipBox);
-      card.addEventListener('mouseenter',()=>tipBox.classList.add('visible'));
-      card.addEventListener('mouseleave',()=>tipBox.classList.remove('visible'));
+function hoSumRange(map,startISO,endISO){
+  let hours=0,value=0,valueBRL=0,days=0,hasRate=false;
+  Object.keys(map).forEach(date=>{
+    if(date>=startISO&&date<=endISO){
+      const h=map[date];
+      const usd=hoPaidValue(h);
+      hours+=h;value+=usd;days++;
+      const rate=hoRateForDate(date);
+      if(rate){valueBRL+=usd*rate;hasRate=true;}
     }
   });
-  capUpdateProgress(schedule,capDone);
+  return{hours,value,valueBRL,days,hasRate};
 }
-capRender();
+
+function hoRenderSummary(){
+  const map=hoLoad();
+  const today=hoTodayStr();
+  const todayHours=map[today]||0;
+  const todayUSD=hoPaidValue(todayHours);
+  const todayRate=hoRateForDate(today);
+  document.getElementById('ho-today-hours').textContent=hoFormatHours(todayHours);
+  document.getElementById('ho-today-value').textContent=hoFormatMoney(todayUSD);
+  document.getElementById('ho-today-brl').textContent=todayRate?'≈ '+hoFormatBRL(todayUSD*todayRate):'';
+
+  const now=new Date();
+  const cStart=hoCycleStart(now);
+  const cEnd=hoCycleEnd(cStart);
+  const cRange=hoSumRange(map,hoToISO(cStart),hoToISO(cEnd));
+  document.getElementById('ho-cycle-hours').textContent=hoFormatHours(cRange.hours);
+  document.getElementById('ho-cycle-value').textContent=hoFormatMoney(cRange.value);
+  document.getElementById('ho-cycle-brl').textContent=cRange.hasRate?'≈ '+hoFormatBRL(cRange.valueBRL):'';
+  document.getElementById('ho-cycle-range').textContent=hoCycleLabel(cStart);
+
+  const mStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const mEnd=new Date(now.getFullYear(),now.getMonth()+1,0);
+  const mRange=hoSumRange(map,hoToISO(mStart),hoToISO(mEnd));
+  document.getElementById('ho-month-hours').textContent=hoFormatHours(mRange.hours);
+  document.getElementById('ho-month-value').textContent=hoFormatMoney(mRange.value);
+  document.getElementById('ho-month-brl').textContent=mRange.hasRate?'≈ '+hoFormatBRL(mRange.valueBRL):'';
+}
+
+// Ao escolher uma data que já tem registro, preenche os campos para facilitar a edição
+function hoOnDateChange(){
+  const date=document.getElementById('ho-input-date').value;
+  const map=hoLoad();
+  const hInput=document.getElementById('ho-input-h');
+  const mSelect=document.getElementById('ho-input-m');
+  const h=map[date];
+  const hint=document.getElementById('ho-form-hint');
+  hint.className='ho-form-hint';
+  if(h){
+    const hh=Math.floor(h+1e-9);
+    const mm=Math.round((h-hh)*60);
+    const roundedM=Math.round(mm/15)*15%60;
+    hInput.value=hh;
+    mSelect.value=String(roundedM);
+  }else{
+    hInput.value='';
+    mSelect.value='0';
+  }
+}
+
+function hoSaveEntry(){
+  const dateInput=document.getElementById('ho-input-date');
+  let date=dateInput.value;
+  if(!date){date=hoTodayStr();dateInput.value=date;}
+  const hint=document.getElementById('ho-form-hint');
+  const hVal=parseFloat(document.getElementById('ho-input-h').value);
+  const mVal=parseFloat(document.getElementById('ho-input-m').value)||0;
+  if(isNaN(hVal)||hVal<0){
+    hint.textContent='Informe um número de horas válido.';
+    hint.className='ho-form-hint visible';
+    return;
+  }
+  const decimal=hVal+mVal/60;
+  if(decimal<=0){
+    hint.textContent='Informe ao menos alguns minutos trabalhados.';
+    hint.className='ho-form-hint visible';
+    return;
+  }
+  if(decimal>24){
+    hint.textContent='Um dia tem no máximo 24 horas :)';
+    hint.className='ho-form-hint visible';
+    return;
+  }
+  const map=hoLoad();
+  map[date]=decimal;
+  hoSave(map);
+  if(decimal>HO_LIMIT){
+    hint.textContent=`Registrado ${hoFormatHours(decimal)}. Apenas ${HO_LIMIT}h são pagas por dia (limite diário) — valor: ${hoFormatMoney(hoPaidValue(decimal))}.`;
+    hint.className='ho-form-hint visible';
+  }else{
+    hint.textContent=`Salvo! ${hoFormatHours(decimal)} → ${hoFormatMoney(hoPaidValue(decimal))}`;
+    hint.className='ho-form-hint visible ok';
+  }
+  hoRenderAll();
+}
+
+function hoDeleteEntry(date){
+  const map=hoLoad();
+  delete map[date];
+  hoSave(map);
+  hoRenderAll();
+}
+
+function hoRenderList(){
+  const map=hoLoad();
+  const dates=Object.keys(map).sort((a,b)=>b.localeCompare(a));
+  const container=document.getElementById('ho-list');
+  const empty=document.getElementById('ho-list-empty');
+  if(dates.length===0){
+    container.innerHTML='';container.style.display='none';empty.style.display='block';
+    return;
+  }
+  container.style.display='block';empty.style.display='none';
+  const today=hoTodayStr();
+  container.innerHTML=dates.slice(0,60).map(date=>{
+    const h=map[date];
+    const usd=hoPaidValue(h);
+    const rate=hoRateForDate(date);
+    const d=hoParseISO(date);
+    const label=`${HO_WEEKDAYS_PT[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} de ${HO_MONTHS_PT[d.getMonth()]}`;
+    const todayTag=date===today?' <span class="ho-item-today">• Hoje</span>':'';
+    const brlLine=rate?`<div class="ho-item-brl">${hoFormatBRL(usd*rate)}</div>`:'';
+    return`<div class="ho-item">
+      <div class="ho-item-date">${label}${todayTag}</div>
+      <div class="ho-item-right">
+        <span class="ho-item-hours">${hoFormatHours(h)}</span>
+        <div class="ho-item-value-wrap">
+          <div class="ho-item-value">${hoFormatMoney(usd)}</div>
+          ${brlLine}
+        </div>
+        <button class="ho-item-del" onclick="hoDeleteEntry('${date}')" title="Remover">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function hoRenderMonthTable(){
+  const map=hoLoad();
+  const byMonth={};
+  Object.keys(map).forEach(date=>{
+    const ym=date.slice(0,7);
+    if(!byMonth[ym])byMonth[ym]={hours:0,value:0,valueBRL:0,days:0,hasRate:false};
+    const usd=hoPaidValue(map[date]);
+    const rate=hoRateForDate(date);
+    byMonth[ym].hours+=map[date];
+    byMonth[ym].value+=usd;
+    byMonth[ym].days+=1;
+    if(rate){byMonth[ym].valueBRL+=usd*rate;byMonth[ym].hasRate=true;}
+  });
+  const months=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
+  const tbody=document.getElementById('ho-month-table-body');
+  if(months.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#8c9b98;padding:16px;">Sem dados ainda</td></tr>';
+    return;
+  }
+  tbody.innerHTML=months.map(ym=>{
+    const[y,m]=ym.split('-').map(Number);
+    const label=`${hoCap(HO_MONTHS_PT[m-1])} ${y}`;
+    const r=byMonth[ym];
+    const brl=r.hasRate?hoFormatBRL(r.valueBRL):'—';
+    return`<tr><td>${label}</td><td>${hoFormatHours(r.hours)}</td><td>${r.days}</td><td class="ho-table-value">${hoFormatMoney(r.value)}</td><td class="ho-table-value-brl">${brl}</td></tr>`;
+  }).join('');
+}
+
+function hoRenderCycleTable(){
+  const map=hoLoad();
+  const byCycle={};
+  Object.keys(map).forEach(date=>{
+    const cStart=hoCycleStart(hoParseISO(date));
+    const key=hoCycleKey(cStart);
+    if(!byCycle[key])byCycle[key]={start:cStart,hours:0,value:0,valueBRL:0,days:0,hasRate:false};
+    const usd=hoPaidValue(map[date]);
+    const rate=hoRateForDate(date);
+    byCycle[key].hours+=map[date];
+    byCycle[key].value+=usd;
+    byCycle[key].days+=1;
+    if(rate){byCycle[key].valueBRL+=usd*rate;byCycle[key].hasRate=true;}
+  });
+  const keys=Object.keys(byCycle).sort((a,b)=>b.localeCompare(a));
+  const tbody=document.getElementById('ho-cycle-table-body');
+  if(keys.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#8c9b98;padding:16px;">Sem dados ainda</td></tr>';
+    return;
+  }
+  tbody.innerHTML=keys.map(key=>{
+    const r=byCycle[key];
+    const label=hoCycleLabel(r.start,true);
+    const brl=r.hasRate?hoFormatBRL(r.valueBRL):'—';
+    return`<tr><td>${label}</td><td>${hoFormatHours(r.hours)}</td><td>${r.days}</td><td class="ho-table-value">${hoFormatMoney(r.value)}</td><td class="ho-table-value-brl">${brl}</td></tr>`;
+  }).join('');
+}
+
+function hoRenderAll(){
+  const dateInput=document.getElementById('ho-input-date');
+  if(dateInput&&!dateInput.value)dateInput.value=hoTodayStr();
+  hoRenderRateCard();
+  hoRenderSummary();
+  hoRenderList();
+  hoRenderCycleTable();
+  hoRenderMonthTable();
+}
+hoRenderAll();
+// Tenta buscar a cotação do dia automaticamente ao abrir o painel, sem incomodar
+// com avisos se falhar (ex: sem internet) — quem quiser pode atualizar manualmente.
+(function hoAutoFetchToday(){
+  const map=hoLoadRates();
+  if(map[hoTodayStr()]==null)hoFetchRate(false);
+})();
 </script>
 
 
