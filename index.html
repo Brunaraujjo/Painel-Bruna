@@ -63,7 +63,7 @@
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
     const swCode = `
-      const CACHE = 'painel-bruna-v1';
+      const CACHE = 'painel-bruna-v2';
       self.addEventListener('install', e => {
         e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./'])));
         self.skipWaiting();
@@ -92,6 +92,7 @@ if('serviceWorker' in navigator){
 </script>
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&amp;family=DM+Sans:wght@300;400;500&amp;family=DM+Serif+Display:ital@0;1&amp;family=DM+Mono:wght@300;400;500&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&amp;family=IBM+Plex+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
 <style>
 /* ===== RESET & BASE ===== */
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -425,6 +426,81 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
 .ho-table tr:last-child td{border-bottom:none;}
 .ho-table .ho-table-value{color:#3e8e82;font-weight:600;}
 .ho-table .ho-table-value-brl{color:#5c7470;}
+
+/* ===========================
+   PAGE 6 — AZ-900 (estudos · trilha de certificação)
+   =========================== */
+#page-az900{
+  --az-bg:        #0f1117;
+  --az-surface:   #181c27;
+  --az-border:    #252a38;
+  --az-azure:     #0078d4;
+  --az-azure-dim: #0f3d6e;
+  --az-done:      #1a7f4b;
+  --az-done-dim:  #0d3d25;
+  --az-text:      #e2e6f0;
+  --az-muted:     #6b738a;
+  --az-tag-bg:    #1e2333;
+  background:var(--az-bg);color:var(--az-text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;padding:24px 16px 88px;
+}
+#page-az900 .az-inner{max-width:520px;margin:0 auto;}
+#page-az900 *{box-sizing:border-box;}
+
+#page-az900 .az-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:28px;}
+#page-az900 .az-header-icon{width:44px;height:44px;background:var(--az-azure);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;}
+#page-az900 .az-header-text h1{font-size:20px;font-weight:600;letter-spacing:-0.3px;}
+#page-az900 .az-header-text p{font-size:13px;color:var(--az-muted);margin-top:2px;}
+
+#page-az900 .az-progress-wrap{background:var(--az-surface);border:1px solid var(--az-border);border-radius:12px;padding:16px 18px;margin-bottom:24px;}
+#page-az900 .az-progress-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+#page-az900 .az-progress-label{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--az-muted);text-transform:uppercase;letter-spacing:0.8px;}
+#page-az900 .az-progress-pct{font-size:22px;font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--az-azure);}
+#page-az900 .az-bar-track{height:6px;background:var(--az-border);border-radius:99px;overflow:hidden;}
+#page-az900 .az-bar-fill{height:100%;background:linear-gradient(90deg,var(--az-azure-dim),var(--az-azure));border-radius:99px;transition:width .4s ease;}
+#page-az900 .az-progress-sub{font-size:12px;color:var(--az-muted);margin-top:8px;}
+
+#page-az900 .az-weeks{display:flex;flex-direction:column;gap:16px;}
+#page-az900 .az-week-card{background:var(--az-surface);border:1px solid var(--az-border);border-radius:12px;overflow:hidden;}
+#page-az900 .az-week-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;user-select:none;gap:12px;-webkit-tap-highlight-color:transparent;}
+#page-az900 .az-week-header:hover{background:rgba(255,255,255,.03);}
+#page-az900 .az-week-meta{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+#page-az900 .az-week-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--az-azure);background:var(--az-azure-dim);padding:2px 8px;border-radius:4px;flex-shrink:0;}
+#page-az900 .az-week-title{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#page-az900 .az-week-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+#page-az900 .az-week-count{font-size:12px;color:var(--az-muted);font-family:'IBM Plex Mono',monospace;}
+#page-az900 .az-week-chevron{color:var(--az-muted);font-size:12px;transition:transform .2s;}
+#page-az900 .az-week-card.open .az-week-chevron{transform:rotate(180deg);}
+#page-az900 .az-week-body{display:none;border-top:1px solid var(--az-border);}
+#page-az900 .az-week-card.open .az-week-body{display:block;}
+
+#page-az900 .az-day-item{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid var(--az-border);cursor:pointer;transition:background .15s;}
+#page-az900 .az-day-item:last-child{border-bottom:none;}
+#page-az900 .az-day-item:hover{background:rgba(255,255,255,.02);}
+#page-az900 .az-day-checkbox{width:18px;height:18px;border:1.5px solid var(--az-border);border-radius:5px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:var(--az-bg);}
+#page-az900 .az-day-item.checked .az-day-checkbox{background:var(--az-done);border-color:var(--az-done);}
+#page-az900 .az-day-item.checked .az-day-checkbox::after{content:'✓';font-size:11px;color:#fff;font-weight:700;}
+#page-az900 .az-day-content{flex:1;min-width:0;}
+#page-az900 .az-day-label{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--az-muted);margin-bottom:2px;}
+#page-az900 .az-day-text{font-size:14px;line-height:1.4;}
+#page-az900 .az-day-item.checked .az-day-text{color:var(--az-muted);text-decoration:line-through;text-decoration-color:var(--az-done);}
+#page-az900 .az-day-rest .az-day-text{color:var(--az-muted);font-style:italic;}
+#page-az900 .az-day-rest{cursor:default;}
+#page-az900 .az-day-tag{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:4px;background:var(--az-tag-bg);color:var(--az-muted);flex-shrink:0;margin-top:3px;}
+#page-az900 .az-tag-sim{color:#f0a500;background:#2e2000;}
+#page-az900 .az-tag-prat{color:#00bfae;background:#00201e;}
+#page-az900 .az-week-done-badge{font-size:10px;background:var(--az-done-dim);color:#2ecc71;border-radius:4px;padding:2px 7px;font-family:'IBM Plex Mono',monospace;}
+
+#page-az900 .az-links-section{margin-top:24px;background:var(--az-surface);border:1px solid var(--az-border);border-radius:12px;padding:16px 18px;}
+#page-az900 .az-links-section h3{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--az-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;}
+#page-az900 .az-link-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--az-border);text-decoration:none;color:var(--az-text);}
+#page-az900 .az-link-row:last-child{border-bottom:none;}
+#page-az900 .az-link-row:hover .az-link-name{color:var(--az-azure);}
+#page-az900 .az-link-dot{width:8px;height:8px;border-radius:50%;background:var(--az-azure);flex-shrink:0;}
+#page-az900 .az-link-name{font-size:14px;flex:1;}
+#page-az900 .az-link-arrow{color:var(--az-muted);font-size:12px;}
+
+#page-az900 .az-reset-btn{margin-top:20px;width:100%;padding:10px;background:transparent;border:1px solid var(--az-border);border-radius:8px;color:var(--az-muted);font-size:13px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;transition:all .15s;}
+#page-az900 .az-reset-btn:hover{border-color:#c0392b;color:#c0392b;}
 
 /* ===== CARD DIÁRIO ===== */
 .daily-card{
@@ -1286,6 +1362,55 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
   </div>
 </div>
 
+<div id="page-az900" class="page">
+  <div class="az-inner">
+    <div class="az-header">
+      <div class="az-header-icon">☁️</div>
+      <div class="az-header-text">
+        <h1>AZ-900 — Azure Fundamentals</h1>
+        <p>6 semanas · 30 min/dia · iniciante</p>
+      </div>
+    </div>
+
+    <div class="az-progress-wrap">
+      <div class="az-progress-header">
+        <span class="az-progress-label">Progresso geral</span>
+        <span class="az-progress-pct" id="az-pct">0%</span>
+      </div>
+      <div class="az-bar-track"><div class="az-bar-fill" id="az-bar" style="width:0%"></div></div>
+      <div class="az-progress-sub" id="az-prog-sub">0 de 36 dias concluídos</div>
+    </div>
+
+    <div class="az-weeks" id="az-weeks-container"></div>
+
+    <div class="az-links-section">
+      <h3>Links essenciais</h3>
+      <a class="az-link-row" href="https://learn.microsoft.com/pt-br/training/paths/azure-fundamentals-describe-cloud-concepts/" target="_blank" rel="noopener">
+        <div class="az-link-dot"></div>
+        <span class="az-link-name">Microsoft Learn — Trilha AZ-900</span>
+        <span class="az-link-arrow">↗</span>
+      </a>
+      <a class="az-link-row" href="https://learn.microsoft.com/pt-br/credentials/certifications/azure-fundamentals/" target="_blank" rel="noopener">
+        <div class="az-link-dot"></div>
+        <span class="az-link-name">Practice Assessment gratuito</span>
+        <span class="az-link-arrow">↗</span>
+      </a>
+      <a class="az-link-row" href="https://events.microsoft.com" target="_blank" rel="noopener">
+        <div class="az-link-dot"></div>
+        <span class="az-link-name">Virtual Training Days (voucher grátis)</span>
+        <span class="az-link-arrow">↗</span>
+      </a>
+      <a class="az-link-row" href="https://azure.microsoft.com/pt-br/free/" target="_blank" rel="noopener">
+        <div class="az-link-dot"></div>
+        <span class="az-link-name">Conta Azure gratuita ($200 em créditos)</span>
+        <span class="az-link-arrow">↗</span>
+      </a>
+    </div>
+
+    <button class="az-reset-btn" id="az-reset-btn">Resetar progresso</button>
+  </div>
+</div>
+
 
 
 <!-- BOTTOM NAV -->
@@ -1305,6 +1430,10 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
   <button class="nav-btn" onclick="showPage('page-ho',this);hoRenderAll()">
     <span class="nav-icon">💻</span>
     <span class="nav-label">Horas Apple</span>
+  </button>
+  <button class="nav-btn" onclick="showPage('page-az900',this)">
+    <span class="nav-icon">☁️</span>
+    <span class="nav-label">AZ-900</span>
   </button>
   <button class="nav-btn" onclick="showPage('page-bokashi',this);renderBokashi()">
     <span class="nav-icon">🪴</span>
@@ -2261,6 +2390,184 @@ hoRenderAll();
 (function hoAutoFetchToday(){
   const map=hoLoadRates();
   if(map[hoTodayStr()]==null)hoFetchRate(false);
+})();
+
+/* ===== AZ-900 (trilha de estudos) ===== */
+(function(){
+  const WEEKS=[
+    {num:"S1",title:"O que é cloud?",days:[
+      {label:"SEG",text:"O que é computação em nuvem"},
+      {label:"TER",text:"Vantagens da cloud (escalabilidade, elasticidade)"},
+      {label:"QUA",text:"IaaS vs PaaS vs SaaS"},
+      {label:"QUI",text:"Cloud pública, privada e híbrida"},
+      {label:"SEX",text:"Revisão + quiz do módulo"},
+      {label:"SÁB",text:"Simulado rápido (5–10 questões)",tag:"sim"},
+      {label:"DOM",text:"Descanso",rest:true},
+    ]},
+    {num:"S2",title:"Serviços de computação",days:[
+      {label:"SEG",text:"Máquinas Virtuais (VMs)"},
+      {label:"TER",text:"Azure App Service e Functions"},
+      {label:"QUA",text:"Containers e Kubernetes (conceitual)"},
+      {label:"QUI",text:"Azure Virtual Desktop"},
+      {label:"SEX",text:"Revisão"},
+      {label:"SÁB",text:"Simulado",tag:"sim"},
+      {label:"DOM",text:"Descanso",rest:true},
+    ]},
+    {num:"S3",title:"Rede, Armazenamento e BD",days:[
+      {label:"SEG",text:"Redes virtuais (VNet, VPN, ExpressRoute)"},
+      {label:"TER",text:"Armazenamento (Blob, File, Queue, Disk)"},
+      {label:"QUA",text:"Banco de dados (SQL, Cosmos DB)"},
+      {label:"QUI",text:"Azure DNS e Content Delivery"},
+      {label:"SEX",text:"Revisão"},
+      {label:"SÁB",text:"Simulado",tag:"sim"},
+      {label:"DOM",text:"Descanso",rest:true},
+    ]},
+    {num:"S4",title:"Segurança e Identidade",days:[
+      {label:"SEG",text:"Microsoft Entra ID (antigo Azure AD)"},
+      {label:"TER",text:"Autenticação: SSO, MFA, passwordless"},
+      {label:"QUA",text:"Azure Security Center e Defender"},
+      {label:"QUI",text:"Modelo de responsabilidade compartilhada"},
+      {label:"SEX",text:"Revisão"},
+      {label:"SÁB",text:"Simulado",tag:"sim"},
+      {label:"DOM",text:"Descanso",rest:true},
+    ]},
+    {num:"S5",title:"Governança, Custos e Compliance",days:[
+      {label:"SEG",text:"Azure Policy e RBAC"},
+      {label:"TER",text:"Calculadora de preços e TCO"},
+      {label:"QUA",text:"Planos de suporte Azure"},
+      {label:"QUI",text:"Compliance (GDPR, ISO, SOC)"},
+      {label:"SEX",text:"Revisão"},
+      {label:"SÁB",text:"Simulado",tag:"sim"},
+      {label:"DOM",text:"Descanso",rest:true},
+    ]},
+    {num:"S6",title:"Revisão geral + decisão de agendar",days:[
+      {label:"SEG",text:"Revisar pontos fracos — Semanas 1 e 2"},
+      {label:"TER",text:"Revisar pontos fracos — Semanas 3 e 4"},
+      {label:"QUA",text:"Revisar pontos fracos — Semana 5"},
+      {label:"QUI",text:"Revisão geral rápida"},
+      {label:"SEX",text:"Practice Assessment completo (45 min)",tag:"prat"},
+      {label:"SÁB",text:"Se ≥80% → agendar o exame! 🎯",tag:"sim"},
+      {label:"DOM",text:"Descanso",rest:true},
+    ]},
+  ];
+
+  const AZ_STORAGE_KEY='az900_checked';
+  const AZ_TOTAL_CHECKABLE=WEEKS.reduce((a,w)=>a+w.days.filter(d=>!d.rest).length,0);
+
+  function azLoad(){try{return JSON.parse(localStorage.getItem(AZ_STORAGE_KEY)||'{}');}catch{return{};}}
+  function azSave(s){try{localStorage.setItem(AZ_STORAGE_KEY,JSON.stringify(s));}catch{}}
+
+  let azState=azLoad();
+
+  function azKey(wi,di){return`w${wi}_d${di}`;}
+
+  function azUpdateProgress(){
+    const done=Object.values(azState).filter(Boolean).length;
+    const pct=Math.round((done/AZ_TOTAL_CHECKABLE)*100);
+    document.getElementById('az-pct').textContent=pct+'%';
+    document.getElementById('az-bar').style.width=pct+'%';
+    document.getElementById('az-prog-sub').textContent=`${done} de ${AZ_TOTAL_CHECKABLE} dias concluídos`;
+  }
+
+  function azUpdateWeekBadge(wi,card){
+    const week=WEEKS[wi];
+    const checkable=week.days.filter(d=>!d.rest);
+    const done=checkable.filter((_,di_rel)=>{
+      const di=week.days.indexOf(checkable[di_rel]);
+      return azState[azKey(wi,di)];
+    }).length;
+    const badge=card.querySelector('.az-week-done-badge');
+    const countEl=card.querySelector('.az-week-count');
+    countEl.textContent=`${done}/${checkable.length}`;
+    badge.style.display=(done===checkable.length)?'inline':'none';
+  }
+
+  function azBuildWeeks(){
+    const container=document.getElementById('az-weeks-container');
+    container.innerHTML='';
+
+    WEEKS.forEach((week,wi)=>{
+      const card=document.createElement('div');
+      card.className='az-week-card';
+      if(wi===0)card.classList.add('open');
+
+      const checkable=week.days.filter(d=>!d.rest);
+      const doneCnt=checkable.filter((_,i)=>{
+        const di=week.days.indexOf(checkable[i]);
+        return azState[azKey(wi,di)];
+      }).length;
+
+      card.innerHTML=`
+        <div class="az-week-header">
+          <div class="az-week-meta">
+            <span class="az-week-num">${week.num}</span>
+            <span class="az-week-title">${week.title}</span>
+          </div>
+          <div class="az-week-right">
+            <span class="az-week-done-badge" style="display:${doneCnt===checkable.length?'inline':'none'}">✓ completa</span>
+            <span class="az-week-count">${doneCnt}/${checkable.length}</span>
+            <span class="az-week-chevron">▾</span>
+          </div>
+        </div>
+        <div class="az-week-body"></div>
+      `;
+
+      const body=card.querySelector('.az-week-body');
+      week.days.forEach((day,di)=>{
+        const key=azKey(wi,di);
+        const isChecked=!!azState[key];
+        const item=document.createElement('div');
+        item.className='az-day-item'+(day.rest?' az-day-rest':'')+(isChecked?' checked':'');
+
+        let tagHTML='';
+        if(day.tag==='sim')tagHTML='<span class="az-day-tag az-tag-sim">simulado</span>';
+        if(day.tag==='prat')tagHTML='<span class="az-day-tag az-tag-prat">prova prática</span>';
+
+        item.innerHTML=`
+          <div class="az-day-checkbox"></div>
+          <div class="az-day-content">
+            <div class="az-day-label">${day.label}</div>
+            <div class="az-day-text">${day.text}</div>
+          </div>
+          ${tagHTML}
+        `;
+
+        if(!day.rest){
+          item.addEventListener('click',()=>{
+            azState[key]=!azState[key];
+            azSave(azState);
+            item.classList.toggle('checked',azState[key]);
+            azUpdateWeekBadge(wi,card);
+            azUpdateProgress();
+          });
+        }
+        body.appendChild(item);
+      });
+
+      card.querySelector('.az-week-header').addEventListener('click',()=>{
+        card.classList.toggle('open');
+      });
+
+      container.appendChild(card);
+    });
+
+    azUpdateProgress();
+  }
+
+  // Constrói a trilha uma única vez, ao carregar a página (igual ao
+  // comportamento original do arquivo); os cliques atualizam o DOM direto.
+  const azResetBtn=document.getElementById('az-reset-btn');
+  if(azResetBtn){
+    azResetBtn.addEventListener('click',()=>{
+      if(confirm('Tem certeza? Todo o progresso do AZ-900 será apagado.')){
+        azState={};
+        azSave(azState);
+        azBuildWeeks();
+      }
+    });
+  }
+
+  azBuildWeeks();
 })();
 </script>
 
