@@ -1270,7 +1270,7 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
     <div class="ho-header">
       <div class="ho-badge">Home Office</div>
       <h2>Suas horas,<br><em>seu valor.</em></h2>
-      <p>$8,00 por hora trabalhada · limite de 8h pagas por dia</p>
+      <p>$8,00 por hora trabalhada · limite de 10h pagas por dia</p>
       <p class="ho-header-note">Os dados de todos os meses ficam salvos automaticamente neste navegador — nada é apagado quando o mês vira.</p>
     </div>
 
@@ -1337,17 +1337,40 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
       <div class="ho-form-hint" id="ho-form-hint"></div>
     </div>
 
+    <div class="ho-form-card">
+      <div class="ho-form-title">Registrar bônus</div>
+      <p class="ho-section-hint">Bônus são contabilizados pelo valor recebido, não por horas.</p>
+      <div class="ho-form-row">
+        <div class="ho-field">
+          <label>Data</label>
+          <input type="date" id="ho-bonus-input-date" onchange="hoOnBonusDateChange()">
+        </div>
+        <div class="ho-field">
+          <label>Valor (US$)</label>
+          <input type="text" inputmode="decimal" id="ho-bonus-input-value" placeholder="ex: 25,00">
+        </div>
+      </div>
+      <button class="ho-save-btn" onclick="hoSaveBonusEntry()">Salvar bônus</button>
+      <div class="ho-form-hint" id="ho-bonus-form-hint"></div>
+    </div>
+
     <div class="ho-list-section">
       <h3>Últimos registros</h3>
       <div class="ho-list" id="ho-list"></div>
       <div class="ho-empty" id="ho-list-empty" style="display:none;">Nenhum registro ainda. Lance suas primeiras horas acima 👆</div>
     </div>
 
+    <div class="ho-list-section">
+      <h3>Bônus lançados</h3>
+      <div class="ho-list" id="ho-bonus-list"></div>
+      <div class="ho-empty" id="ho-bonus-list-empty" style="display:none;">Nenhum bônus lançado ainda.</div>
+    </div>
+
     <div class="ho-month-section">
       <h3>Resumo por ciclo de pagamento</h3>
       <p class="ho-section-hint">Cada ciclo vai do dia 15 de um mês até o dia 14 do mês seguinte.</p>
       <table class="ho-table">
-        <thead><tr><th>Ciclo</th><th>Horas</th><th>Dias</th><th>$</th><th>R$</th></tr></thead>
+        <thead><tr><th>Ciclo</th><th>Horas</th><th>Dias</th><th>Bônus</th><th>$</th><th>R$</th></tr></thead>
         <tbody id="ho-cycle-table-body"></tbody>
       </table>
     </div>
@@ -1355,7 +1378,7 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
     <div class="ho-month-section">
       <h3>Resumo por mês</h3>
       <table class="ho-table">
-        <thead><tr><th>Mês</th><th>Horas</th><th>Dias</th><th>$</th><th>R$</th></tr></thead>
+        <thead><tr><th>Mês</th><th>Horas</th><th>Dias</th><th>Bônus</th><th>$</th><th>R$</th></tr></thead>
         <tbody id="ho-month-table-body"></tbody>
       </table>
     </div>
@@ -2047,7 +2070,7 @@ function skinSwitchTab(tab,e){
 
 /* ===== HOME OFFICE (horas de trabalho remoto) ===== */
 const HO_RATE=8;        // valor por hora trabalhada
-const HO_LIMIT=8;       // limite de horas pagas por dia
+const HO_LIMIT=10;      // limite de horas pagas por dia
 const HO_STORAGE_KEY='home_office_horas_v1';
 const HO_MONTHS_PT=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const HO_MONTHS_SHORT_PT=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -2071,6 +2094,13 @@ function hoLoad(){
   try{const raw=localStorage.getItem(HO_STORAGE_KEY);const map=raw?JSON.parse(raw):{};return typeof map==='object'&&map?map:{};}catch{return{};}
 }
 function hoSave(map){try{localStorage.setItem(HO_STORAGE_KEY,JSON.stringify(map));}catch{}}
+
+/* ---- Bônus (contabilizados pelo valor em US$, não por horas) ---- */
+const HO_BONUS_STORAGE_KEY='home_office_bonus_v1'; // mapa {data: valorUSD}
+function hoLoadBonuses(){
+  try{const raw=localStorage.getItem(HO_BONUS_STORAGE_KEY);const map=raw?JSON.parse(raw):{};return typeof map==='object'&&map?map:{};}catch{return{};}
+}
+function hoSaveBonuses(map){try{localStorage.setItem(HO_BONUS_STORAGE_KEY,JSON.stringify(map));}catch{}}
 
 /* ---- Cotação do dólar (USD → BRL) ---- */
 const HO_RATE_STORAGE_KEY='home_office_dolar_v1'; // mapa {data:cotação}
@@ -2181,8 +2211,8 @@ function hoCycleLabel(cycleStart,withYear){
   const base=`15 ${HO_MONTHS_SHORT_PT[cycleStart.getMonth()]} – 14 ${HO_MONTHS_SHORT_PT[end.getMonth()]}`;
   return withYear?`${base}/${end.getFullYear()}`:base;
 }
-function hoSumRange(map,startISO,endISO){
-  let hours=0,value=0,valueBRL=0,days=0,hasRate=false;
+function hoSumRange(map,startISO,endISO,bonusMap){
+  let hours=0,value=0,valueBRL=0,days=0,hasRate=false,bonusValue=0,bonusValueBRL=0;
   Object.keys(map).forEach(date=>{
     if(date>=startISO&&date<=endISO){
       const h=map[date];
@@ -2192,34 +2222,47 @@ function hoSumRange(map,startISO,endISO){
       if(rate){valueBRL+=usd*rate;hasRate=true;}
     }
   });
-  return{hours,value,valueBRL,days,hasRate};
+  if(bonusMap){
+    Object.keys(bonusMap).forEach(date=>{
+      if(date>=startISO&&date<=endISO){
+        const b=bonusMap[date]||0;
+        bonusValue+=b;
+        const rate=hoRateForDate(date);
+        if(rate){bonusValueBRL+=b*rate;hasRate=true;}
+      }
+    });
+  }
+  return{hours,value,valueBRL,days,hasRate,bonusValue,bonusValueBRL,totalValue:value+bonusValue,totalValueBRL:valueBRL+bonusValueBRL};
 }
 
 function hoRenderSummary(){
   const map=hoLoad();
+  const bonusMap=hoLoadBonuses();
   const today=hoTodayStr();
   const todayHours=map[today]||0;
   const todayUSD=hoPaidValue(todayHours);
+  const todayBonus=bonusMap[today]||0;
   const todayRate=hoRateForDate(today);
+  const todayTotal=todayUSD+todayBonus;
   document.getElementById('ho-today-hours').textContent=hoFormatHours(todayHours);
-  document.getElementById('ho-today-value').textContent=hoFormatMoney(todayUSD);
-  document.getElementById('ho-today-brl').textContent=todayRate?'≈ '+hoFormatBRL(todayUSD*todayRate):'';
+  document.getElementById('ho-today-value').textContent=hoFormatMoney(todayTotal)+(todayBonus>0?` (+ bônus ${hoFormatMoney(todayBonus)})`:'');
+  document.getElementById('ho-today-brl').textContent=todayRate?'≈ '+hoFormatBRL(todayTotal*todayRate):'';
 
   const now=new Date();
   const cStart=hoCycleStart(now);
   const cEnd=hoCycleEnd(cStart);
-  const cRange=hoSumRange(map,hoToISO(cStart),hoToISO(cEnd));
+  const cRange=hoSumRange(map,hoToISO(cStart),hoToISO(cEnd),bonusMap);
   document.getElementById('ho-cycle-hours').textContent=hoFormatHours(cRange.hours);
-  document.getElementById('ho-cycle-value').textContent=hoFormatMoney(cRange.value);
-  document.getElementById('ho-cycle-brl').textContent=cRange.hasRate?'≈ '+hoFormatBRL(cRange.valueBRL):'';
+  document.getElementById('ho-cycle-value').textContent=hoFormatMoney(cRange.totalValue)+(cRange.bonusValue>0?` (+ bônus ${hoFormatMoney(cRange.bonusValue)})`:'');
+  document.getElementById('ho-cycle-brl').textContent=cRange.hasRate?'≈ '+hoFormatBRL(cRange.totalValueBRL):'';
   document.getElementById('ho-cycle-range').textContent=hoCycleLabel(cStart);
 
   const mStart=new Date(now.getFullYear(),now.getMonth(),1);
   const mEnd=new Date(now.getFullYear(),now.getMonth()+1,0);
-  const mRange=hoSumRange(map,hoToISO(mStart),hoToISO(mEnd));
+  const mRange=hoSumRange(map,hoToISO(mStart),hoToISO(mEnd),bonusMap);
   document.getElementById('ho-month-hours').textContent=hoFormatHours(mRange.hours);
-  document.getElementById('ho-month-value').textContent=hoFormatMoney(mRange.value);
-  document.getElementById('ho-month-brl').textContent=mRange.hasRate?'≈ '+hoFormatBRL(mRange.valueBRL):'';
+  document.getElementById('ho-month-value').textContent=hoFormatMoney(mRange.totalValue)+(mRange.bonusValue>0?` (+ bônus ${hoFormatMoney(mRange.bonusValue)})`:'');
+  document.getElementById('ho-month-brl').textContent=mRange.hasRate?'≈ '+hoFormatBRL(mRange.totalValueBRL):'';
 }
 
 // Ao escolher uma data que já tem registro, preenche os campos para facilitar a edição
@@ -2286,6 +2329,76 @@ function hoDeleteEntry(date){
   hoRenderAll();
 }
 
+// Ao escolher uma data que já tem bônus lançado, preenche o campo para facilitar a edição
+function hoOnBonusDateChange(){
+  const date=document.getElementById('ho-bonus-input-date').value;
+  const map=hoLoadBonuses();
+  const vInput=document.getElementById('ho-bonus-input-value');
+  const hint=document.getElementById('ho-bonus-form-hint');
+  hint.className='ho-form-hint';
+  const v=map[date];
+  vInput.value=v!=null?String(v).replace('.',','):'';
+}
+
+function hoSaveBonusEntry(){
+  const dateInput=document.getElementById('ho-bonus-input-date');
+  let date=dateInput.value;
+  if(!date){date=hoTodayStr();dateInput.value=date;}
+  const hint=document.getElementById('ho-bonus-form-hint');
+  const raw=(document.getElementById('ho-bonus-input-value').value||'').replace(',','.');
+  const v=parseFloat(raw);
+  if(isNaN(v)||v<=0){
+    hint.textContent='Informe um valor de bônus válido (ex: 25,00).';
+    hint.className='ho-form-hint visible';
+    return;
+  }
+  const map=hoLoadBonuses();
+  map[date]=v;
+  hoSaveBonuses(map);
+  hint.textContent=`Bônus salvo! ${hoFormatMoney(v)}`;
+  hint.className='ho-form-hint visible ok';
+  hoRenderAll();
+}
+
+function hoDeleteBonusEntry(date){
+  const map=hoLoadBonuses();
+  delete map[date];
+  hoSaveBonuses(map);
+  hoRenderAll();
+}
+
+function hoRenderBonusList(){
+  const map=hoLoadBonuses();
+  const dates=Object.keys(map).sort((a,b)=>b.localeCompare(a));
+  const container=document.getElementById('ho-bonus-list');
+  const empty=document.getElementById('ho-bonus-list-empty');
+  if(dates.length===0){
+    container.innerHTML='';container.style.display='none';empty.style.display='block';
+    return;
+  }
+  container.style.display='block';empty.style.display='none';
+  const today=hoTodayStr();
+  container.innerHTML=dates.slice(0,60).map(date=>{
+    const v=map[date];
+    const rate=hoRateForDate(date);
+    const d=hoParseISO(date);
+    const label=`${HO_WEEKDAYS_PT[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} de ${HO_MONTHS_PT[d.getMonth()]}`;
+    const todayTag=date===today?' <span class="ho-item-today">• Hoje</span>':'';
+    const brlLine=rate?`<div class="ho-item-brl">${hoFormatBRL(v*rate)}</div>`:'';
+    return`<div class="ho-item">
+      <div class="ho-item-date">${label}${todayTag}</div>
+      <div class="ho-item-right">
+        <span class="ho-item-hours">🎁 bônus</span>
+        <div class="ho-item-value-wrap">
+          <div class="ho-item-value">${hoFormatMoney(v)}</div>
+          ${brlLine}
+        </div>
+        <button class="ho-item-del" onclick="hoDeleteBonusEntry('${date}')" title="Remover">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function hoRenderList(){
   const map=hoLoad();
   const dates=Object.keys(map).sort((a,b)=>b.localeCompare(a));
@@ -2321,10 +2434,11 @@ function hoRenderList(){
 
 function hoRenderMonthTable(){
   const map=hoLoad();
+  const bonusMap=hoLoadBonuses();
   const byMonth={};
   Object.keys(map).forEach(date=>{
     const ym=date.slice(0,7);
-    if(!byMonth[ym])byMonth[ym]={hours:0,value:0,valueBRL:0,days:0,hasRate:false};
+    if(!byMonth[ym])byMonth[ym]={hours:0,value:0,valueBRL:0,days:0,hasRate:false,bonus:0,bonusBRL:0};
     const usd=hoPaidValue(map[date]);
     const rate=hoRateForDate(date);
     byMonth[ym].hours+=map[date];
@@ -2332,28 +2446,40 @@ function hoRenderMonthTable(){
     byMonth[ym].days+=1;
     if(rate){byMonth[ym].valueBRL+=usd*rate;byMonth[ym].hasRate=true;}
   });
+  Object.keys(bonusMap).forEach(date=>{
+    const ym=date.slice(0,7);
+    if(!byMonth[ym])byMonth[ym]={hours:0,value:0,valueBRL:0,days:0,hasRate:false,bonus:0,bonusBRL:0};
+    const b=bonusMap[date]||0;
+    const rate=hoRateForDate(date);
+    byMonth[ym].bonus+=b;
+    if(rate){byMonth[ym].bonusBRL+=b*rate;byMonth[ym].hasRate=true;}
+  });
   const months=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
   const tbody=document.getElementById('ho-month-table-body');
   if(months.length===0){
-    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#8c9b98;padding:16px;">Sem dados ainda</td></tr>';
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#8c9b98;padding:16px;">Sem dados ainda</td></tr>';
     return;
   }
   tbody.innerHTML=months.map(ym=>{
     const[y,m]=ym.split('-').map(Number);
     const label=`${hoCap(HO_MONTHS_PT[m-1])} ${y}`;
     const r=byMonth[ym];
-    const brl=r.hasRate?hoFormatBRL(r.valueBRL):'—';
-    return`<tr><td>${label}</td><td>${hoFormatHours(r.hours)}</td><td>${r.days}</td><td class="ho-table-value">${hoFormatMoney(r.value)}</td><td class="ho-table-value-brl">${brl}</td></tr>`;
+    const totalValue=r.value+r.bonus;
+    const totalBRL=r.valueBRL+r.bonusBRL;
+    const brl=r.hasRate?hoFormatBRL(totalBRL):'—';
+    const bonusCell=r.bonus>0?hoFormatMoney(r.bonus):'—';
+    return`<tr><td>${label}</td><td>${hoFormatHours(r.hours)}</td><td>${r.days}</td><td>${bonusCell}</td><td class="ho-table-value">${hoFormatMoney(totalValue)}</td><td class="ho-table-value-brl">${brl}</td></tr>`;
   }).join('');
 }
 
 function hoRenderCycleTable(){
   const map=hoLoad();
+  const bonusMap=hoLoadBonuses();
   const byCycle={};
   Object.keys(map).forEach(date=>{
     const cStart=hoCycleStart(hoParseISO(date));
     const key=hoCycleKey(cStart);
-    if(!byCycle[key])byCycle[key]={start:cStart,hours:0,value:0,valueBRL:0,days:0,hasRate:false};
+    if(!byCycle[key])byCycle[key]={start:cStart,hours:0,value:0,valueBRL:0,days:0,hasRate:false,bonus:0,bonusBRL:0};
     const usd=hoPaidValue(map[date]);
     const rate=hoRateForDate(date);
     byCycle[key].hours+=map[date];
@@ -2361,26 +2487,41 @@ function hoRenderCycleTable(){
     byCycle[key].days+=1;
     if(rate){byCycle[key].valueBRL+=usd*rate;byCycle[key].hasRate=true;}
   });
+  Object.keys(bonusMap).forEach(date=>{
+    const cStart=hoCycleStart(hoParseISO(date));
+    const key=hoCycleKey(cStart);
+    if(!byCycle[key])byCycle[key]={start:cStart,hours:0,value:0,valueBRL:0,days:0,hasRate:false,bonus:0,bonusBRL:0};
+    const b=bonusMap[date]||0;
+    const rate=hoRateForDate(date);
+    byCycle[key].bonus+=b;
+    if(rate){byCycle[key].bonusBRL+=b*rate;byCycle[key].hasRate=true;}
+  });
   const keys=Object.keys(byCycle).sort((a,b)=>b.localeCompare(a));
   const tbody=document.getElementById('ho-cycle-table-body');
   if(keys.length===0){
-    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#8c9b98;padding:16px;">Sem dados ainda</td></tr>';
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#8c9b98;padding:16px;">Sem dados ainda</td></tr>';
     return;
   }
   tbody.innerHTML=keys.map(key=>{
     const r=byCycle[key];
     const label=hoCycleLabel(r.start,true);
-    const brl=r.hasRate?hoFormatBRL(r.valueBRL):'—';
-    return`<tr><td>${label}</td><td>${hoFormatHours(r.hours)}</td><td>${r.days}</td><td class="ho-table-value">${hoFormatMoney(r.value)}</td><td class="ho-table-value-brl">${brl}</td></tr>`;
+    const totalValue=r.value+r.bonus;
+    const totalBRL=r.valueBRL+r.bonusBRL;
+    const brl=r.hasRate?hoFormatBRL(totalBRL):'—';
+    const bonusCell=r.bonus>0?hoFormatMoney(r.bonus):'—';
+    return`<tr><td>${label}</td><td>${hoFormatHours(r.hours)}</td><td>${r.days}</td><td>${bonusCell}</td><td class="ho-table-value">${hoFormatMoney(totalValue)}</td><td class="ho-table-value-brl">${brl}</td></tr>`;
   }).join('');
 }
 
 function hoRenderAll(){
   const dateInput=document.getElementById('ho-input-date');
   if(dateInput&&!dateInput.value)dateInput.value=hoTodayStr();
+  const bonusDateInput=document.getElementById('ho-bonus-input-date');
+  if(bonusDateInput&&!bonusDateInput.value)bonusDateInput.value=hoTodayStr();
   hoRenderRateCard();
   hoRenderSummary();
   hoRenderList();
+  hoRenderBonusList();
   hoRenderCycleTable();
   hoRenderMonthTable();
 }
