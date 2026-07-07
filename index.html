@@ -738,7 +738,7 @@ function __bootApp(){
     <button id="__authSubmit" style="width:100%;padding:13px;border-radius:11px;border:none;font-weight:700;font-size:14.5px;background:#2F5D50;color:#fff;cursor:pointer;">Entrar</button>
   </div>
 </div>
-<button id="__logoutBtn" style="display:none;position:fixed;top:10px;right:10px;z-index:99998;background:#1F4038;color:#fff;border:none;font-size:11px;padding:7px 12px;border-radius:8px;font-weight:600;cursor:pointer;">Sair</button>
+<button id="__logoutBtn" style="display:none;position:fixed;bottom:8px;left:8px;z-index:99998;background:rgba(31,64,56,.55);color:#fff;border:none;font-size:9.5px;padding:4px 8px;border-radius:6px;font-weight:600;cursor:pointer;opacity:.7;">Sair</button>
 
 <template id="__appTemplate">
 
@@ -1200,6 +1200,10 @@ function __bootApp(){
           <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><span>Topiramato</span></div>
           <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><span>Lamotrigina</span></div>
           <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><span>Fluoxetina</span></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><input type="text" placeholder="Outro..."></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><input type="text" placeholder="Outro..."></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><input type="text" placeholder="Outro..."></div>
+          <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><input type="text" placeholder="Outro..."></div>
           <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><input type="text" placeholder="Outro..."></div>
           <div class="dor-med-item"><input type="checkbox" class="dor-med-check"><input type="text" placeholder="Outro..."></div>
         </div>
@@ -1737,7 +1741,7 @@ const MED_PHASES=[
   {id:'semana3',tag:'Semana 3',title:'Quase na dose final',start:new Date(2026,4,26),end:new Date(2026,5,1),
     meds:[{name:'Lamotrigina',dose:'25mg manhã + 50mg noite',color:'#b48ef4',key:'lamo'},{name:'Topiramato',dose:'25mg noite',color:'#7ed8c8',key:'topi'},{name:'Miosan',dose:'10mg noite',color:'#f4a96a',key:'mios'}],
     note:'📌 Última semana do Topiramato e Miosan. Lamotrigina 75mg/dia.'},
-  {id:'manutencao',tag:'Manutenção',title:'Dose plena — contínuo',start:new Date(2026,5,2),end:new Date(2026,5,30),
+  {id:'manutencao',tag:'Manutenção',title:'Dose plena — contínuo',start:new Date(2026,5,2),end:new Date(2026,11,31),
     meds:[{name:'Lamotrigina',dose:'50mg manhã + 50mg noite',color:'#b48ef4',key:'lamo'}],
     note:'✅ Topiramato e Miosan encerrados. Lamotrigina 100mg/dia contínuo.'},
 ];
