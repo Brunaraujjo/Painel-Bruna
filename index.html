@@ -1971,8 +1971,6 @@ function dorSaveLocal(data){
   try{
     const key=dorMonthKey(dorViewYear,dorViewMonth);
     localStorage.setItem(key,JSON.stringify(data));
-    // Também salva na chave legada para compatibilidade
-    localStorage.setItem(DOR_LOCAL_KEY,JSON.stringify(data));
     dorShowStatus('✓ Salvo','#4caf8a');
   }catch{dorShowStatus('⚠ Erro ao salvar','#f4a96a');}
 }
@@ -1981,12 +1979,6 @@ function dorLoadLocal(){
     const key=dorMonthKey(dorViewYear,dorViewMonth);
     const s=localStorage.getItem(key);
     if(s)return JSON.parse(s);
-    // Fallback para chave legada se for o mês atual
-    const n=new Date();
-    if(dorViewYear===n.getFullYear()&&dorViewMonth===n.getMonth()){
-      const leg=localStorage.getItem(DOR_LOCAL_KEY);
-      if(leg)return JSON.parse(leg);
-    }
     return null;
   }catch{return null;}
 }
@@ -2188,7 +2180,7 @@ function dorNavMonth(dir){
   if(dir>0){
     const n=new Date();
     const alreadyAtCurrent=(dorViewYear===n.getFullYear()&&dorViewMonth===n.getMonth());
-    if(alreadyAtCurrent)return;
+    if(alreadyAtCurrent){dorLoadMonth();return;}
   }
   // Arquiva mês atual antes de sair — protegido: se um mês salvo tiver
   // dados em formato inesperado, isso NUNCA deve impedir a troca de mês
