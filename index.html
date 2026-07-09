@@ -1156,6 +1156,37 @@ function __bootApp(){
       <div class="med-summary-divider"></div>
       <div class="med-summary-stat"><div class="num" id="med-stat-remaining">48</div><div class="lbl">Restantes</div></div>
     </div>
+
+    <div style="margin:1.4rem 0;background:#fbf7ee;border:1px solid #f0e6d6;border-radius:14px;padding:16px;">
+      <div style="font-family:'DM Mono',monospace;font-size:.7rem;color:#a08060;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">💊 Controle Mensal — Lamotrigina <span id="med-lamo-month-label" style="color:#7a5ca8;"></span></div>
+      <div style="display:grid;grid-template-columns:1fr;gap:10px;">
+        <div>
+          <label style="display:block;font-size:.68rem;color:#a08060;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;">Dose diária</label>
+          <input type="text" id="med-lamo-dose" placeholder="ex.: 50mg manhã + 50mg noite (100mg/dia)" style="width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid #e8ddd0;border-radius:8px;font-size:.85rem;font-family:inherit;">
+        </div>
+        <div>
+          <label style="display:block;font-size:.68rem;color:#a08060;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;">Observações do mês</label>
+          <textarea id="med-lamo-notes" placeholder="Mudança de dose, efeitos colaterais, adesão..." style="width:100%;box-sizing:border-box;min-height:60px;padding:9px 10px;border:1px solid #e8ddd0;border-radius:8px;font-size:.85rem;font-family:inherit;resize:vertical;"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.4rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:.7rem;color:#a08060;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Histórico — Lamotrigina mês a mês</div>
+      <div id="med-lamo-hist-empty" style="display:none;text-align:center;padding:1.2rem 1rem;color:#a09880;font-size:.8rem;background:#fbf7ee;border-radius:12px;">Nenhum mês registrado ainda.</div>
+      <div style="overflow-x:auto;">
+        <table id="med-lamo-hist-table" style="width:100%;border-collapse:collapse;font-size:.78rem;display:none;">
+          <thead>
+            <tr style="background:#1a3a5c;">
+              <th style="font-family:'DM Mono',monospace;font-size:.56rem;font-weight:400;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.7);padding:.6rem .5rem;text-align:left;">Mês</th>
+              <th style="font-family:'DM Mono',monospace;font-size:.56rem;font-weight:400;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.7);padding:.6rem .5rem;text-align:left;">Dose diária</th>
+              <th style="font-family:'DM Mono',monospace;font-size:.56rem;font-weight:400;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.7);padding:.6rem .5rem;text-align:left;">Observações</th>
+            </tr>
+          </thead>
+          <tbody id="med-lamo-hist-tbody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1226,24 +1257,6 @@ function __bootApp(){
         <textarea class="dor-notes-area" placeholder="Anote aqui o que quiser discutir com o médico..."></textarea>
       </div>
 
-      <div style="margin-bottom:1.4rem;background:#fbf7ee;border:1px solid #f0e6d6;border-radius:14px;padding:16px;">
-        <div class="dor-section-title" style="margin-bottom:10px;">💊 Controle Mensal — Lamotrigina</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:.82rem;color:#5a4a3a;">
-          <span id="dor-lamo-status-dot" style="width:9px;height:9px;border-radius:50%;background:#cfc6b8;flex-shrink:0;"></span>
-          <span id="dor-lamo-status-text">Marque "Lamotrigina" na lista de medicações acima para registrar o uso deste mês.</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr;gap:10px;">
-          <div>
-            <label style="display:block;font-size:.68rem;color:#a08060;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;">Dose diária</label>
-            <input type="text" id="dor-lamo-dose" placeholder="ex.: 50mg manhã + 50mg noite (100mg/dia)" style="width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid #e8ddd0;border-radius:8px;font-size:.85rem;font-family:inherit;">
-          </div>
-          <div>
-            <label style="display:block;font-size:.68rem;color:#a08060;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;">Observações do mês</label>
-            <textarea id="dor-lamo-notes" placeholder="Mudança de dose, efeitos colaterais, adesão..." style="width:100%;box-sizing:border-box;min-height:60px;padding:9px 10px;border:1px solid #e8ddd0;border-radius:8px;font-size:.85rem;font-family:inherit;resize:vertical;"></textarea>
-          </div>
-        </div>
-      </div>
-
       <div style="margin-bottom:1.4rem;">
         <div class="dor-section-title" style="margin-bottom:10px;">Histórico de Medicações — mês a mês</div>
         <div id="dor-med-hist-empty" style="display:none;text-align:center;padding:1.4rem 1rem;color:#a09880;font-size:.8rem;background:#fbf7ee;border-radius:12px;">Nenhum mês com medicações registradas ainda.</div>
@@ -1253,7 +1266,6 @@ function __bootApp(){
               <tr style="background:#1a3a5c;">
                 <th style="font-family:'DM Mono',monospace;font-size:.56rem;font-weight:400;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.7);padding:.6rem .5rem;text-align:left;">Mês</th>
                 <th style="font-family:'DM Mono',monospace;font-size:.56rem;font-weight:400;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.7);padding:.6rem .5rem;text-align:left;">Medicações em uso</th>
-                <th style="font-family:'DM Mono',monospace;font-size:.56rem;font-weight:400;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.7);padding:.6rem .5rem;text-align:left;">Lamotrigina</th>
               </tr>
             </thead>
             <tbody id="dor-med-hist-tbody"></tbody>
@@ -1751,13 +1763,81 @@ function showPage(id, btn) {
     if(g1){g1.innerHTML='';
       for(let i=0;i<4;i++){const d=new Date(2026,5,1+i);g1.appendChild(makeCell(d,'25mg'));}
     }
-    // Fase 2: 05–30/06
+    // Fase 2: 05/06/2026 até 31/12/2026 (mesmo horizonte da manutenção da Lamotrigina)
     const g2=document.getElementById('desven-fase2-grid');
     if(g2){g2.innerHTML='';
-      for(let i=0;i<26;i++){const d=new Date(2026,5,5+i);g2.appendChild(makeCell(d,'50mg'));}
+      const fase2Start=new Date(2026,5,5);
+      const fase2End=new Date(2026,11,31);
+      const totalDias=Math.round((fase2End-fase2Start)/86400000)+1;
+      for(let i=0;i<totalDias;i++){const d=new Date(2026,5,5+i);g2.appendChild(makeCell(d,'50mg'));}
     }
     saveDesven(desvenDays);
   })();
+})();
+
+/* ===== CONTROLE MENSAL — LAMOTRIGINA (aba Medicação) ===== */
+(function medLamoControl(){
+  const KEY='med_lamo_control_v1';
+  const MONTH_NAMES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch{return{};}}
+  function save(s){try{localStorage.setItem(KEY,JSON.stringify(s));}catch{}}
+
+  function monthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+  function monthLabel(key){
+    const [y,m]=key.split('-').map(Number);
+    return `${MONTH_NAMES[m-1]} / ${y}`;
+  }
+
+  const doseEl=document.getElementById('med-lamo-dose');
+  const notesEl=document.getElementById('med-lamo-notes');
+  const labelEl=document.getElementById('med-lamo-month-label');
+  if(!doseEl||!notesEl)return;
+
+  const currentKey=monthKey(new Date());
+  if(labelEl)labelEl.textContent='· '+monthLabel(currentKey);
+
+  const state=load();
+  const cur=state[currentKey]||{dose:'',notes:''};
+  doseEl.value=cur.dose||'';
+  notesEl.value=cur.notes||'';
+
+  let saveTimer=null;
+  function persist(){
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>{
+      const s=load();
+      s[currentKey]={dose:doseEl.value,notes:notesEl.value};
+      save(s);
+      renderHistory();
+    },300);
+  }
+  doseEl.addEventListener('input',persist);
+  notesEl.addEventListener('input',persist);
+
+  function renderHistory(){
+    const table=document.getElementById('med-lamo-hist-table');
+    const tbody=document.getElementById('med-lamo-hist-tbody');
+    const empty=document.getElementById('med-lamo-hist-empty');
+    if(!table||!tbody||!empty)return;
+    const s=load();
+    const rows=Object.keys(s)
+      .filter(k=>(s[k].dose||'').trim()||(s[k].notes||'').trim())
+      .sort((a,b)=>b.localeCompare(a))
+      .map(k=>({key:k,...s[k]}));
+    if(rows.length===0){table.style.display='none';empty.style.display='block';return;}
+    empty.style.display='none';table.style.display='table';
+    tbody.innerHTML='';
+    rows.forEach((r,i)=>{
+      const tr=document.createElement('tr');
+      tr.style.cssText=`border-bottom:1px solid #ddd8d0;${i%2===0?'background:white;':'background:#f8f5f0;'}`;
+      tr.innerHTML=`
+        <td style="padding:.55rem .5rem;font-weight:600;color:#2c2c2c;white-space:nowrap;">${monthLabel(r.key)}</td>
+        <td style="padding:.55rem .5rem;color:#7a5ca8;font-weight:600;">${(r.dose||'—')}</td>
+        <td style="padding:.55rem .5rem;color:#5a4a3a;">${(r.notes||'—')}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  renderHistory();
 })();
 
 /* ===== MEDICAMENTOS ===== */
@@ -1922,8 +2002,6 @@ function dorCollectData(){
     meds:Array.from(document.querySelectorAll('.dor-med-check')).map(c=>c.checked),
     medOther:Array.from(document.querySelectorAll('.dor-med-item input[type="text"]')).map(i=>i.value),
     obs:Array.from(document.querySelectorAll('.dor-notes-area')).map(t=>t.value),
-    lamoDose:(document.getElementById('dor-lamo-dose')&&document.getElementById('dor-lamo-dose').value)||'',
-    lamoNotes:(document.getElementById('dor-lamo-notes')&&document.getElementById('dor-lamo-notes').value)||'',
     days:{}
   };
   rows.forEach(row=>{
@@ -1990,16 +2068,9 @@ function dorApplyData(saved){
     const areas=document.querySelectorAll('.dor-notes-area');
     saved.obs.forEach((v,i)=>{if(areas[i])areas[i].value=v;});
   }
-  const lamoDoseEl=document.getElementById('dor-lamo-dose');
-  const lamoNotesEl=document.getElementById('dor-lamo-notes');
-  if(lamoDoseEl)lamoDoseEl.value=saved.lamoDose||'';
-  if(lamoNotesEl)lamoNotesEl.value=saved.lamoNotes||'';
-  dorUpdateLamoStatus();
   dorUpdateSummary();
 }
 
-// Índice fixo da Lamotrigina na grade de medicações (Rivaroxabana, Topiramato, Lamotrigina, Fluoxetina, ...)
-const DOR_LAMO_INDEX=2;
 const DOR_MED_FIXED_LABELS=['Rivaroxabana','Topiramato','Lamotrigina','Fluoxetina'];
 
 // Monta o histórico de medicações mês a mês a partir de todas as chaves
@@ -2028,14 +2099,12 @@ function dorRenderMedHistory(){
         activeLabels.push(custom||'Outro');
       }
     });
-    if(activeLabels.length===0 && !(data.lamoDose||'').trim())continue; // mês sem nenhuma medicação registrada
+    if(activeLabels.length===0)continue; // mês sem nenhuma medicação registrada
     const [y,m]=key.replace('painel_dores_','').split('-').map(Number);
     rows.push({
       sortKey:key,
       month:data.month||dorMonthLabel(y,m-1),
-      labels:activeLabels,
-      lamoActive:!!meds[DOR_LAMO_INDEX],
-      lamoDose:(data.lamoDose||'').trim()
+      labels:activeLabels
     });
   }
 
@@ -2053,29 +2122,11 @@ function dorRenderMedHistory(){
     const medsHtml=r.labels.length
       ? r.labels.map(l=>`<span style="display:inline-block;background:#eef0e8;color:#3a4a3a;border-radius:20px;padding:2px 8px;margin:1px 3px 1px 0;font-size:.7rem;">${l}</span>`).join('')
       : '<span style="color:#a09880;">—</span>';
-    const lamoHtml=r.lamoActive
-      ? `<span style="color:#7a5ca8;font-weight:600;">${r.lamoDose||'em uso (dose não registrada)'}</span>`
-      : '<span style="color:#a09880;">—</span>';
     tr.innerHTML=`
       <td style="padding:.55rem .5rem;font-weight:600;color:#2c2c2c;white-space:nowrap;">${r.month}</td>
-      <td style="padding:.55rem .5rem;">${medsHtml}</td>
-      <td style="padding:.55rem .5rem;">${lamoHtml}</td>`;
+      <td style="padding:.55rem .5rem;">${medsHtml}</td>`;
     tbody.appendChild(tr);
   });
-}
-function dorUpdateLamoStatus(){
-  const checks=document.querySelectorAll('.dor-med-check');
-  const dot=document.getElementById('dor-lamo-status-dot');
-  const text=document.getElementById('dor-lamo-status-text');
-  if(!dot||!text)return;
-  const active=checks[DOR_LAMO_INDEX]&&checks[DOR_LAMO_INDEX].checked;
-  if(active){
-    dot.style.background='#b48ef4';
-    text.textContent='✓ Lamotrigina em uso neste mês.';
-  }else{
-    dot.style.background='#cfc6b8';
-    text.textContent='Marque "Lamotrigina" na lista de medicações acima para registrar o uso deste mês.';
-  }
 }
 
 function dorBuildTable(){
@@ -2139,8 +2190,9 @@ function dorNavMonth(dir){
     const alreadyAtCurrent=(dorViewYear===n.getFullYear()&&dorViewMonth===n.getMonth());
     if(alreadyAtCurrent)return;
   }
-  // Arquiva mês atual antes de sair
-  histArchiveCurrentMonth();
+  // Arquiva mês atual antes de sair — protegido: se um mês salvo tiver
+  // dados em formato inesperado, isso NUNCA deve impedir a troca de mês
+  try{histArchiveCurrentMonth();}catch(e){console.error('Falha ao arquivar mês (ignorada):',e);}
   dorViewMonth+=dir;
   if(dorViewMonth>11){dorViewMonth=0;dorViewYear++;}
   if(dorViewMonth<0){dorViewMonth=11;dorViewYear--;}
@@ -2151,7 +2203,7 @@ function dorNavMonth(dir){
 function dorGoToday(){
   const n=new Date();
   if(dorViewYear===n.getFullYear()&&dorViewMonth===n.getMonth())return;
-  histArchiveCurrentMonth();
+  try{histArchiveCurrentMonth();}catch(e){console.error('Falha ao arquivar mês (ignorada):',e);}
   dorViewYear=n.getFullYear();
   dorViewMonth=n.getMonth();
   dorLoadMonth();
@@ -2231,23 +2283,14 @@ function dorResetMonthFields(){
   document.querySelectorAll('.dor-med-check').forEach(c=>c.checked=false);
   document.querySelectorAll('.dor-med-item input[type="text"]').forEach(i=>i.value='');
   document.querySelectorAll('.dor-notes-area').forEach(t=>t.value='');
-  const lamoDoseEl=document.getElementById('dor-lamo-dose');
-  const lamoNotesEl=document.getElementById('dor-lamo-notes');
-  if(lamoDoseEl)lamoDoseEl.value='';
-  if(lamoNotesEl)lamoNotesEl.value='';
-  dorUpdateLamoStatus();
 }
 
 document.getElementById('dor-month-title').addEventListener('input',function(){
   document.getElementById('dor-footer-month').textContent=this.value;dorSaveAll();
 });
-document.querySelectorAll('.dor-med-check').forEach(c=>c.addEventListener('change',()=>{dorUpdateLamoStatus();dorSaveAll();}));
+document.querySelectorAll('.dor-med-check').forEach(c=>c.addEventListener('change',dorSaveAll));
 document.querySelectorAll('.dor-med-item input[type="text"]').forEach(i=>i.addEventListener('input',dorSaveAll));
 document.querySelectorAll('.dor-notes-area').forEach(t=>t.addEventListener('input',dorSaveAll));
-const __dorLamoDoseEl=document.getElementById('dor-lamo-dose');
-const __dorLamoNotesEl=document.getElementById('dor-lamo-notes');
-if(__dorLamoDoseEl)__dorLamoDoseEl.addEventListener('input',dorSaveAll);
-if(__dorLamoNotesEl)__dorLamoNotesEl.addEventListener('input',dorSaveAll);
 
 // Função global para botões de intensidade — chamada via onclick inline
 window.dorIntClick = function(btn, val) {
@@ -3537,6 +3580,7 @@ function histCalcSummary(data){
   if(!data||!data.days)return null;
   let daysWithPain=0,totalInt=0,rescueCount=0,worstDay=0,worstInt=0;
   Object.entries(data.days).forEach(([day,rd])=>{
+    if(!rd||typeof rd!=='object')return; // ignora registros de dia em formato inesperado
     if(rd.int>0){
       daysWithPain++;totalInt+=rd.int;
       if(rd.int>worstInt){worstInt=rd.int;worstDay=parseInt(day);}
