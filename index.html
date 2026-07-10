@@ -1519,7 +1519,7 @@ function __bootApp(){
 
     <div class="ho-month-section">
       <h3>Resumo por ciclo de pagamento</h3>
-      <p class="ho-section-hint">Cada ciclo vai do dia 15 de um mês até o dia 14 do mês seguinte.</p>
+      <p class="ho-section-hint">Ciclos Lighthouse/Cherry Opal (a partir de jun/2026, ver e-mail de 07/07/2026). Nome do ciclo = mês predominante do trabalho; pagamento cai só no mês seguinte (~dia 25).</p>
       <table class="ho-table">
         <thead><tr><th>Ciclo</th><th>Horas</th><th>Dias</th><th>Bônus</th><th>$</th><th>R$</th></tr></thead>
         <tbody id="ho-cycle-table-body"></tbody>
@@ -2507,19 +2507,63 @@ function hoSetManualRate(){
   hoRenderAll();
 }
 
-// Ciclo de pagamento: começa no dia 15 de um mês e termina no dia 14 do mês seguinte.
-// Dado uma data qualquer, retorna o início (dia 15) do ciclo ao qual ela pertence.
-function hoCycleStart(d){
+// ===== Ciclos de pagamento Lighthouse/Cherry Opal (novo modelo, confirmado por e-mail em 07/07/2026) =====
+// Períodos de trabalho exatamente como informados pela Lighthouse. O nome do ciclo é o mês
+// PREDOMINANTE do período de trabalho — o pagamento cai só no mês seguinte ao fechamento (~dia 25).
+// Fonte: e-mail "Lighthouse - Important Update: New Payment Cycles Dates" (07/07/2026)
+// + resposta de lighthouse_payments@centific.com confirmando a lógica "PO só após o fechamento do ciclo".
+const HO_CYCLES_TABLE=[
+  {start:'2026-06-15',end:'2026-06-27',label:'Transição (15–27/jun/2026)',pay:'2026-07-25 (aprox.)'},
+  {start:'2026-06-28',end:'2026-08-01',label:'Jul/2026 (28/jun–01/ago)',pay:'2026-08-25 (aprox.)'},
+  {start:'2026-08-02',end:'2026-08-29',label:'Ago/2026 (02–29/ago)',pay:'2026-09-25 (aprox.)'},
+  {start:'2026-08-30',end:'2026-09-26',label:'Set/2026 (30/ago–26/set)',pay:'2026-10-25 (aprox.)'},
+  {start:'2026-09-27',end:'2026-10-31',label:'Out/2026 (27/set–31/out)',pay:'2026-11-25 (aprox.)'},
+  {start:'2026-11-01',end:'2026-11-28',label:'Nov/2026 (01–28/nov)',pay:'2026-12-25 (aprox.)'},
+  {start:'2026-11-29',end:'2026-12-26',label:'Dez/2026 (29/nov–26/dez)',pay:'2027-01-25 (aprox.)'},
+  {start:'2026-12-27',end:'2027-01-30',label:'Jan/2027 (27/dez–30/jan)',pay:'2027-02-25 (aprox.)'},
+  {start:'2027-01-31',end:'2027-02-27',label:'Fev/2027 (31/jan–27/fev)',pay:'2027-03-25 (aprox.)'},
+  {start:'2027-02-28',end:'2027-03-27',label:'Mar/2027 (28/fev–27/mar)',pay:'2027-04-25 (aprox.)'},
+  {start:'2027-03-28',end:'2027-05-01',label:'Abr/2027 (28/mar–01/mai)',pay:'2027-05-25 (aprox.)'},
+  {start:'2027-05-02',end:'2027-05-29',label:'Mai/2027 (02–29/mai)',pay:'2027-06-25 (aprox.)'},
+  {start:'2027-05-30',end:'2027-06-26',label:'Jun/2027 (30/mai–26/jun)',pay:'2027-07-25 (aprox.)'},
+  {start:'2027-06-27',end:'2027-07-31',label:'Jul/2027 (27/jun–31/jul)',pay:'2027-08-25 (aprox.)'},
+  {start:'2027-08-01',end:'2027-08-28',label:'Ago/2027 (01–28/ago)',pay:'2027-09-25 (aprox.)'},
+  {start:'2027-08-29',end:'2027-09-25',label:'Set/2027 (29/ago–25/set)',pay:'2027-10-25 (aprox.)'}
+];
+
+// Regime antigo (até 14/06/2026): ciclo começava no dia 15 de um mês e ia até o dia 14 do mês seguinte.
+function hoLegacyCycleStart(d){
   let y=d.getFullYear(),m=d.getMonth();
   if(d.getDate()<15){m-=1;if(m<0){m=11;y-=1;}}
   return new Date(y,m,15);
 }
-function hoCycleEnd(cycleStart){return new Date(cycleStart.getFullYear(),cycleStart.getMonth()+1,14);}
-function hoCycleKey(cycleStart){return`${cycleStart.getFullYear()}-${String(cycleStart.getMonth()+1).padStart(2,'0')}`;}
-function hoCycleLabel(cycleStart,withYear){
-  const end=hoCycleEnd(cycleStart);
-  const base=`15 ${HO_MONTHS_SHORT_PT[cycleStart.getMonth()]} – 14 ${HO_MONTHS_SHORT_PT[end.getMonth()]}`;
-  return withYear?`${base}/${end.getFullYear()}`:base;
+function hoLegacyCycleEnd(cycleStart){return new Date(cycleStart.getFullYear(),cycleStart.getMonth()+1,14);}
+
+// Retorna a entrada da tabela de ciclos (ou objeto equivalente) a que uma data pertence.
+// Cobre: regime antigo (<15/06/2026) · tabela oficial (15/06/2026–25/09/2027) · além da tabela (estimado).
+function hoCycleEntry(d){
+  const iso=hoToISO(d);
+  if(iso<'2026-06-15'){
+    const cStart=hoLegacyCycleStart(d);
+    const cEnd=hoLegacyCycleEnd(cStart);
+    const base=`15 ${HO_MONTHS_SHORT_PT[cStart.getMonth()]} – 14 ${HO_MONTHS_SHORT_PT[cEnd.getMonth()]}`;
+    return{start:hoToISO(cStart),end:hoToISO(cEnd),label:`${base}/${cEnd.getFullYear()} (regime antigo)`,pay:null,legacy:true};
+  }
+  for(const entry of HO_CYCLES_TABLE){
+    if(iso>=entry.start&&iso<=entry.end)return entry;
+  }
+  // Além do último ciclo confirmado pela Lighthouse: sem data oficial ainda.
+  // Agrupa por mês civil como fallback e sinaliza que precisa ser atualizado quando a Lighthouse divulgar novas datas.
+  const y=d.getFullYear(),m=d.getMonth();
+  const mStart=new Date(y,m,1),mEnd=new Date(y,m+1,0);
+  return{start:hoToISO(mStart),end:hoToISO(mEnd),label:`${hoCap(HO_MONTHS_PT[m])} ${y} (datas ainda não divulgadas pela Lighthouse — verificar)`,pay:null,estimated:true};
+}
+function hoCycleStart(d){return hoParseISO(hoCycleEntry(d).start);}
+function hoCycleEnd(cycleStart){return hoParseISO(hoCycleEntry(cycleStart).end);}
+function hoCycleKey(cycleStart){return hoCycleEntry(cycleStart).start;}
+function hoCycleLabel(cycleStart){
+  const entry=hoCycleEntry(cycleStart);
+  return entry.pay?`${entry.label} · pagto ~${entry.pay.slice(8,10)}/${entry.pay.slice(5,7)}`:entry.label;
 }
 function hoSumRange(map,startISO,endISO,bonusMap){
   let hours=0,value=0,valueBRL=0,days=0,hasRate=false,bonusValue=0,bonusValueBRL=0;
