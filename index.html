@@ -756,7 +756,7 @@ function __bootApp(){
   <div style="padding:0 16px;" class="med-inner">
     <header>
       <h1>Controle de <em>Medicamentos</em></h1>
-      <p>Neurologia · Einstein · Mai–Dez 2026</p>
+      <p>Neurologia · Einstein · Mai–Jun 2026</p>
     </header>
 
     <!-- CARD DIÁRIO -->
@@ -839,7 +839,33 @@ function __bootApp(){
     <!-- ESQUEMA DESVENLAFAXINA -->
     <div style="margin-bottom:28px;">
       <div style="font-family:'DM Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:#c9a87c;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid #e8e0d4;">
-        Esquema · Desvenlafaxina · Fase 1 (transição) completa
+        Esquema · Desvenlafaxina
+      </div>
+
+      <!-- Fase 1: Transição 01–04/06 -->
+      <div style="background:#fffaf5;border-radius:14px;border:1px solid #f0e6d6;padding:16px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div>
+            <div style="font-size:.65rem;font-family:'DM Mono',monospace;color:#c9a87c;letter-spacing:.1em;text-transform:uppercase;">01–04 de junho · Transição</div>
+            <div style="font-size:.92rem;font-weight:600;color:#3a2e1e;margin-top:2px;">Redução da Fluoxetina</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:.82rem;color:#5a4a3a;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:#7ed8c8;flex-shrink:0;"></div>
+            <span><strong>Fluoxetina 20 mg</strong> — 1 comprimido, manhã após o café</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:#f4a96a;flex-shrink:0;"></div>
+            <span><strong>Desvenlafaxina 25 mg</strong> — ½ comprimido, manhã após o café</span>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding:8px 10px;background:#fff3e0;border-radius:8px;font-size:.75rem;color:#a06030;">
+          ⚠ Tomar os dois juntos durante 4 dias, depois passar para a fase 2
+        </div>
+        <!-- Mini calendário 01–04/06 -->
+        <div style="display:flex;gap:8px;margin-top:12px;" id="desven-fase1-grid"></div>
+      </div>
 
       <!-- Fase 2: Manutenção 05/06+ -->
       <div style="background:#fffaf5;border-radius:14px;border:1px solid #f0e6d6;padding:16px;">
@@ -855,7 +881,6 @@ function __bootApp(){
         </div>
         <!-- Mini calendário 05–30/06 -->
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;" id="desven-fase2-grid"></div>
-        <div class="med-toggle-arrow">▼</div>
       </div>
     </div>
 
