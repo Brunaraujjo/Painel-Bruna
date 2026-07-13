@@ -1466,6 +1466,18 @@ function __bootApp(){
         <tbody id="ho-month-table-body"></tbody>
       </table>
     </div>
+
+    <div class="ho-month-section">
+      <h3>Como o OneForma gera as faturas</h3>
+      <p class="ho-section-hint">
+        Fonte: e-mail da Lighthouse "June additional POs – Visibility and Invoice confirmation" (13/07/2026).<br>
+        O OneForma gera faturas em <strong>lote</strong>, só em 4 datas fixas por mês: dias <strong>5, 8, 19 e 26</strong>.
+        Para entrar num lote, a PO precisa estar <strong>totalmente aprovada antes</strong> dessa data — senão, cai automaticamente para o próximo lote.<br>
+        Fluxo padrão informado pela Lighthouse: PO aprovada antes do dia 8 do mês → fatura gerada dia 8 → confirmar até dia 15 → pago por volta do dia 25.
+        Se a aprovação só acontece depois do dia 8, a fatura sai no lote seguinte (dia 19), com confirmação até dia 1º do mês seguinte e pagamento por volta do dia 10 do mês seguinte.<br>
+        <em>Pagamento de transição (15–27/jun/2026): corrigido nesse e-mail de ~25/07 para ~10/08/2026, pois a aprovação só terminou depois do lote de 8 de julho.</em>
+      </p>
+    </div>
   </div>
 </div>
 
@@ -2400,7 +2412,7 @@ function hoSetManualRate(){
 // Fonte: e-mail "Lighthouse - Important Update: New Payment Cycles Dates" (07/07/2026)
 // + resposta de lighthouse_payments@centific.com confirmando a lógica "PO só após o fechamento do ciclo".
 const HO_CYCLES_TABLE=[
-  {start:'2026-06-15',end:'2026-06-27',label:'Transição (15–27/jun/2026)',pay:'2026-07-25 (aprox.)'},
+  {start:'2026-06-15',end:'2026-06-27',label:'Transição (15–27/jun/2026)',pay:'2026-08-10 (aprox., corrigido em 13/07)'},
   {start:'2026-06-28',end:'2026-08-01',label:'Jul/2026 (28/jun–01/ago)',pay:'2026-08-25 (aprox.)'},
   {start:'2026-08-02',end:'2026-08-29',label:'Ago/2026 (02–29/ago)',pay:'2026-09-25 (aprox.)'},
   {start:'2026-08-30',end:'2026-09-26',label:'Set/2026 (30/ago–26/set)',pay:'2026-10-25 (aprox.)'},
