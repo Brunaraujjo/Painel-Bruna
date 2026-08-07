@@ -377,6 +377,10 @@ table.dor-table td textarea{height:32px;line-height:1.4;overflow:hidden;}
 .ho-rate-manual input:focus{outline:none;border-color:#3e8e82;}
 .ho-rate-manual button{background:#1d3a3f;color:#eaf4f3;border:none;border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap;}
 .ho-rate-manual button:hover{background:#2a4f55;}
+.ho-company-card{background:white;border-radius:18px;padding:16px 18px;box-shadow:0 2px 12px rgba(29,58,63,.07);margin-bottom:18px;}
+.ho-company-row{display:flex;gap:10px;align-items:flex-end;}
+.ho-company-del{flex-shrink:0;background:#fbeceb;color:#a13a30;border:1px solid #f0d3d0;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.ho-company-del:hover{background:#f6dad8;}
 .ho-rate-hint{font-size:11.5px;color:#c07800;margin-top:10px;line-height:1.5;display:none;}
 .ho-rate-hint.visible{display:block;}
 .ho-rate-hint.ok{color:#2e8b57;}
@@ -1354,8 +1358,30 @@ function __bootApp(){
     <div class="ho-header">
       <div class="ho-badge">Home Office</div>
       <h2>Suas horas,<br><em>seu valor.</em></h2>
-      <p>$8,00 por hora trabalhada · limite de 10h pagas por dia</p>
+      <p id="ho-rate-info">$8,00 por hora trabalhada · limite de 10h pagas por dia</p>
       <p class="ho-header-note">Os dados de todos os meses ficam salvos automaticamente neste navegador — nada é apagado quando o mês vira.</p>
+    </div>
+
+    <div class="ho-company-card">
+      <div class="ho-company-row">
+        <div class="ho-field" style="margin-bottom:0;">
+          <label>Empresa / Projeto</label>
+          <select id="ho-company-select" onchange="hoOnCompanyChange()"></select>
+        </div>
+        <button class="ho-rate-refresh" onclick="hoToggleNewCompanyForm()">+ Nova</button>
+        <button class="ho-company-del" id="ho-company-del-btn" onclick="hoDeleteCompany()" title="Remover esta empresa">✕</button>
+      </div>
+      <div id="ho-new-company-form" style="display:none;margin-top:14px;">
+        <div class="ho-form-row">
+          <div class="ho-field"><label>Nome</label><input type="text" id="ho-new-company-name" placeholder="ex: OneForma-Centific"></div>
+        </div>
+        <div class="ho-form-row">
+          <div class="ho-field"><label>Valor/hora (US$)</label><input type="text" inputmode="decimal" id="ho-new-company-rate" placeholder="ex: 8,00"></div>
+          <div class="ho-field"><label>Limite h/dia (opcional)</label><input type="text" inputmode="decimal" id="ho-new-company-limit" placeholder="ex: 10"></div>
+        </div>
+        <button class="ho-save-btn" onclick="hoAddCompany()">Salvar empresa</button>
+        <div class="ho-form-hint" id="ho-new-company-hint"></div>
+      </div>
     </div>
 
     <div class="ho-rate-card">
@@ -1450,9 +1476,9 @@ function __bootApp(){
       <div class="ho-empty" id="ho-bonus-list-empty" style="display:none;">Nenhum bônus lançado ainda.</div>
     </div>
 
-    <div class="ho-month-section">
+    <div class="ho-month-section" id="ho-cycle-section">
       <h3>Resumo por ciclo de pagamento</h3>
-      <p class="ho-section-hint">Ciclos Lighthouse/Cherry Opal (a partir de jun/2026, ver e-mail de 07/07/2026). Nome do ciclo = mês predominante do trabalho; pagamento cai só no mês seguinte (~dia 25).</p>
+      <p class="ho-section-hint" id="ho-cycle-hint">Ciclos desta plataforma (a partir de jun/2026, ver e-mail de 07/07/2026). Nome do ciclo = mês predominante do trabalho; pagamento cai só no mês seguinte (~dia 25).</p>
       <table class="ho-table">
         <thead><tr><th>Ciclo</th><th>Horas</th><th>Dias</th><th>Bônus</th><th>$</th><th>R$</th></tr></thead>
         <tbody id="ho-cycle-table-body"></tbody>
@@ -1470,10 +1496,10 @@ function __bootApp(){
     <div class="ho-month-section">
       <h3>Como o OneForma gera as faturas</h3>
       <p class="ho-section-hint">
-        Fonte: e-mail da Lighthouse "June additional POs – Visibility and Invoice confirmation" (13/07/2026).<br>
+        Fonte: e-mail da plataforma "June additional POs – Visibility and Invoice confirmation" (13/07/2026).<br>
         O OneForma gera faturas em <strong>lote</strong>, só em 4 datas fixas por mês: dias <strong>5, 8, 19 e 26</strong>.
         Para entrar num lote, a PO precisa estar <strong>totalmente aprovada antes</strong> dessa data — senão, cai automaticamente para o próximo lote.<br>
-        Fluxo padrão informado pela Lighthouse: PO aprovada antes do dia 8 do mês → fatura gerada dia 8 → confirmar até dia 15 → pago por volta do dia 25.
+        Fluxo padrão informado pela plataforma: PO aprovada antes do dia 8 do mês → fatura gerada dia 8 → confirmar até dia 15 → pago por volta do dia 25.
         Se a aprovação só acontece depois do dia 8, a fatura sai no lote seguinte (dia 19), com confirmação até dia 1º do mês seguinte e pagamento por volta do dia 10 do mês seguinte.<br>
         <em>Pagamento de transição (15–27/jun/2026): corrigido nesse e-mail de ~25/07 para ~10/08/2026, pois a aprovação só terminou depois do lote de 8 de julho.</em>
       </p>
@@ -1498,7 +1524,7 @@ function __bootApp(){
   </button>
   <button class="nav-btn" onclick="showPage('page-ho',this);hoRenderAll()">
     <span class="nav-icon">💻</span>
-    <span class="nav-label">Horas Apple</span>
+    <span class="nav-label">Horas</span>
   </button>
   <button class="nav-btn" onclick="showPage('page-bokashi',this);renderBokashi()">
     <span class="nav-icon">🪴</span>
@@ -2278,12 +2304,91 @@ function skinSwitchTab(tab,e){
 }
 
 /* ===== HOME OFFICE (horas de trabalho remoto) ===== */
-const HO_RATE=8;        // valor por hora trabalhada
-const HO_LIMIT=10;      // limite de horas pagas por dia
 const HO_STORAGE_KEY='home_office_horas_v1';
+const HO_BONUS_STORAGE_KEY='home_office_bonus_v1'; // mapa {data: valorUSD}
 const HO_MONTHS_PT=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const HO_MONTHS_SHORT_PT=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 const HO_WEEKDAYS_PT=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+/* ---- Empresas / Projetos ---- */
+const HO_COMPANIES_KEY='ho_empresas_v1';
+const HO_CURRENT_COMPANY_KEY='ho_empresa_atual_v1';
+const HO_DEFAULT_COMPANY_ID='default';
+
+function hoLoadCompanies(){
+  let list;
+  try{const raw=localStorage.getItem(HO_COMPANIES_KEY);list=raw?JSON.parse(raw):null;}catch{list=null;}
+  if(!Array.isArray(list)||list.length===0){
+    list=[{id:HO_DEFAULT_COMPANY_ID,name:'Empresa 1 (ciclos automáticos)',rate:8,limit:10,cycles:true}];
+    hoSaveCompanies(list);
+  }
+  return list;
+}
+function hoSaveCompanies(list){try{localStorage.setItem(HO_COMPANIES_KEY,JSON.stringify(list));}catch{}}
+function hoGetCurrentCompanyId(){
+  const companies=hoLoadCompanies();
+  let id=null;
+  try{id=localStorage.getItem(HO_CURRENT_COMPANY_KEY);}catch{}
+  if(!id||!companies.some(c=>c.id===id))id=companies[0].id;
+  return id;
+}
+function hoSetCurrentCompanyId(id){try{localStorage.setItem(HO_CURRENT_COMPANY_KEY,id);}catch{}}
+function hoCurrentCompany(){
+  const companies=hoLoadCompanies();
+  return companies.find(c=>c.id===hoGetCurrentCompanyId())||companies[0];
+}
+function hoEntriesKey(companyId){return companyId===HO_DEFAULT_COMPANY_ID?HO_STORAGE_KEY:`${HO_STORAGE_KEY}__${companyId}`;}
+function hoBonusKey(companyId){return companyId===HO_DEFAULT_COMPANY_ID?HO_BONUS_STORAGE_KEY:`${HO_BONUS_STORAGE_KEY}__${companyId}`;}
+
+function hoPopulateCompanySelect(){
+  const sel=document.getElementById('ho-company-select');
+  if(!sel)return;
+  const companies=hoLoadCompanies();
+  const currentId=hoGetCurrentCompanyId();
+  sel.innerHTML=companies.map(c=>`<option value="${c.id}"${c.id===currentId?' selected':''}>${c.name}</option>`).join('');
+  const delBtn=document.getElementById('ho-company-del-btn');
+  if(delBtn)delBtn.style.display=(companies.length>1)?'inline-block':'none';
+}
+function hoOnCompanyChange(){
+  const sel=document.getElementById('ho-company-select');
+  hoSetCurrentCompanyId(sel.value);
+  hoRenderAll();
+}
+function hoToggleNewCompanyForm(){
+  const form=document.getElementById('ho-new-company-form');
+  form.style.display=(form.style.display==='none'||!form.style.display)?'block':'none';
+}
+function hoAddCompany(){
+  const nameInput=document.getElementById('ho-new-company-name');
+  const rateInput=document.getElementById('ho-new-company-rate');
+  const limitInput=document.getElementById('ho-new-company-limit');
+  const hint=document.getElementById('ho-new-company-hint');
+  const name=(nameInput.value||'').trim();
+  const rate=parseFloat((rateInput.value||'').replace(',','.'));
+  const limitRaw=(limitInput.value||'').replace(',','.');
+  const limit=limitRaw?parseFloat(limitRaw):null;
+  if(!name){hint.textContent='Informe o nome da empresa/projeto.';hint.className='ho-form-hint visible';return;}
+  if(isNaN(rate)||rate<=0){hint.textContent='Informe um valor por hora válido (ex: 8,00).';hint.className='ho-form-hint visible';return;}
+  if(limitRaw&&(isNaN(limit)||limit<=0)){hint.textContent='Limite de horas/dia inválido.';hint.className='ho-form-hint visible';return;}
+  const companies=hoLoadCompanies();
+  const id='c'+Date.now();
+  companies.push({id,name,rate,limit:limit||null,cycles:false});
+  hoSaveCompanies(companies);
+  hoSetCurrentCompanyId(id);
+  nameInput.value='';rateInput.value='';limitInput.value='';
+  document.getElementById('ho-new-company-form').style.display='none';
+  hoRenderAll();
+}
+function hoDeleteCompany(){
+  const companies=hoLoadCompanies();
+  if(companies.length<=1)return;
+  const current=hoCurrentCompany();
+  if(!confirm(`Remover "${current.name}"? As horas e bônus lançados nessa empresa ficam salvos no navegador, mas ela some da lista.`))return;
+  const remaining=companies.filter(c=>c.id!==current.id);
+  hoSaveCompanies(remaining);
+  hoSetCurrentCompanyId(remaining[0].id);
+  hoRenderAll();
+}
 
 function hoTodayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function hoParseISO(iso){const[y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d);}
@@ -2296,20 +2401,21 @@ function hoFormatHours(dec){
   return m===0?`${h}h`:`${h}h${String(m).padStart(2,'0')}`;
 }
 function hoFormatMoney(v){return'$'+(v||0).toFixed(2).replace('.',',');}
-function hoPaidHours(dec){return Math.min(dec||0,HO_LIMIT);}
-function hoPaidValue(dec){return hoPaidHours(dec)*HO_RATE;}
+function hoPaidHours(dec){const c=hoCurrentCompany();const limit=c.limit||Infinity;return Math.min(dec||0,limit);}
+function hoPaidValue(dec){const c=hoCurrentCompany();return hoPaidHours(dec)*c.rate;}
 
 function hoLoad(){
-  try{const raw=localStorage.getItem(HO_STORAGE_KEY);const map=raw?JSON.parse(raw):{};return typeof map==='object'&&map?map:{};}catch{return{};}
+  const key=hoEntriesKey(hoGetCurrentCompanyId());
+  try{const raw=localStorage.getItem(key);const map=raw?JSON.parse(raw):{};return typeof map==='object'&&map?map:{};}catch{return{};}
 }
-function hoSave(map){try{localStorage.setItem(HO_STORAGE_KEY,JSON.stringify(map));}catch{}}
+function hoSave(map){const key=hoEntriesKey(hoGetCurrentCompanyId());try{localStorage.setItem(key,JSON.stringify(map));}catch{}}
 
 /* ---- Bônus (contabilizados pelo valor em US$, não por horas) ---- */
-const HO_BONUS_STORAGE_KEY='home_office_bonus_v1'; // mapa {data: valorUSD}
 function hoLoadBonuses(){
-  try{const raw=localStorage.getItem(HO_BONUS_STORAGE_KEY);const map=raw?JSON.parse(raw):{};return typeof map==='object'&&map?map:{};}catch{return{};}
+  const key=hoBonusKey(hoGetCurrentCompanyId());
+  try{const raw=localStorage.getItem(key);const map=raw?JSON.parse(raw):{};return typeof map==='object'&&map?map:{};}catch{return{};}
 }
-function hoSaveBonuses(map){try{localStorage.setItem(HO_BONUS_STORAGE_KEY,JSON.stringify(map));}catch{}}
+function hoSaveBonuses(map){const key=hoBonusKey(hoGetCurrentCompanyId());try{localStorage.setItem(key,JSON.stringify(map));}catch{}}
 
 /* ---- Cotação do dólar (USD → BRL) ---- */
 const HO_RATE_STORAGE_KEY='home_office_dolar_v1'; // mapa {data:cotação}
@@ -2406,11 +2512,13 @@ function hoSetManualRate(){
   hoRenderAll();
 }
 
-// ===== Ciclos de pagamento Lighthouse/Cherry Opal (novo modelo, confirmado por e-mail em 07/07/2026) =====
-// Períodos de trabalho exatamente como informados pela Lighthouse. O nome do ciclo é o mês
+// ===== Ciclos de pagamento desta plataforma (novo modelo, confirmado por e-mail em 07/07/2026) =====
+// Períodos de trabalho exatamente como informados pela plataforma. O nome do ciclo é o mês
 // PREDOMINANTE do período de trabalho — o pagamento cai só no mês seguinte ao fechamento (~dia 25).
-// Fonte: e-mail "Lighthouse - Important Update: New Payment Cycles Dates" (07/07/2026)
-// + resposta de lighthouse_payments@centific.com confirmando a lógica "PO só após o fechamento do ciclo".
+// Fonte: e-mail "Important Update: New Payment Cycles Dates" (07/07/2026)
+// + resposta do setor de pagamentos confirmando a lógica "PO só após o fechamento do ciclo".
+// Esse calendário de ciclos só se aplica à empresa "cycles:true" (ver hoLoadCompanies). Para as
+// demais empresas/projetos cadastrados pela usuária, hoCycleEntry usa o mês civil como ciclo.
 const HO_CYCLES_TABLE=[
   {start:'2026-06-15',end:'2026-06-27',label:'Transição (15–27/jun/2026)',pay:'2026-08-10 (aprox., corrigido em 13/07)'},
   {start:'2026-06-28',end:'2026-08-01',label:'Jul/2026 (28/jun–01/ago)',pay:'2026-08-25 (aprox.)'},
@@ -2439,8 +2547,16 @@ function hoLegacyCycleStart(d){
 function hoLegacyCycleEnd(cycleStart){return new Date(cycleStart.getFullYear(),cycleStart.getMonth()+1,14);}
 
 // Retorna a entrada da tabela de ciclos (ou objeto equivalente) a que uma data pertence.
-// Cobre: regime antigo (<15/06/2026) · tabela oficial (15/06/2026–25/09/2027) · além da tabela (estimado).
+// Para a empresa com ciclos automáticos, cobre: regime antigo (<15/06/2026) · tabela oficial
+// (15/06/2026–25/09/2027) · além da tabela (estimado). Para as demais empresas, o "ciclo" é
+// simplesmente o mês civil (sem lógica de fechamento/pagamento personalizada).
 function hoCycleEntry(d){
+  const company=hoCurrentCompany();
+  if(!company.cycles){
+    const y=d.getFullYear(),m=d.getMonth();
+    const mStart=new Date(y,m,1),mEnd=new Date(y,m+1,0);
+    return{start:hoToISO(mStart),end:hoToISO(mEnd),label:`${hoCap(HO_MONTHS_PT[m])} ${y}`,pay:null};
+  }
   const iso=hoToISO(d);
   if(iso<'2026-06-15'){
     const cStart=hoLegacyCycleStart(d);
@@ -2451,11 +2567,11 @@ function hoCycleEntry(d){
   for(const entry of HO_CYCLES_TABLE){
     if(iso>=entry.start&&iso<=entry.end)return entry;
   }
-  // Além do último ciclo confirmado pela Lighthouse: sem data oficial ainda.
-  // Agrupa por mês civil como fallback e sinaliza que precisa ser atualizado quando a Lighthouse divulgar novas datas.
+  // Além do último ciclo confirmado pela plataforma: sem data oficial ainda.
+  // Agrupa por mês civil como fallback e sinaliza que precisa ser atualizado quando saírem novas datas.
   const y=d.getFullYear(),m=d.getMonth();
   const mStart=new Date(y,m,1),mEnd=new Date(y,m+1,0);
-  return{start:hoToISO(mStart),end:hoToISO(mEnd),label:`${hoCap(HO_MONTHS_PT[m])} ${y} (datas ainda não divulgadas pela Lighthouse — verificar)`,pay:null,estimated:true};
+  return{start:hoToISO(mStart),end:hoToISO(mEnd),label:`${hoCap(HO_MONTHS_PT[m])} ${y} (datas ainda não divulgadas oficialmente — verificar)`,pay:null,estimated:true};
 }
 function hoCycleStart(d){return hoParseISO(hoCycleEntry(d).start);}
 function hoCycleEnd(cycleStart){return hoParseISO(hoCycleEntry(cycleStart).end);}
@@ -2565,8 +2681,9 @@ function hoSaveEntry(){
   const map=hoLoad();
   map[date]=decimal;
   hoSave(map);
-  if(decimal>HO_LIMIT){
-    hint.textContent=`Registrado ${hoFormatHours(decimal)}. Apenas ${HO_LIMIT}h são pagas por dia (limite diário) — valor: ${hoFormatMoney(hoPaidValue(decimal))}.`;
+  const companyLimit=hoCurrentCompany().limit;
+  if(companyLimit&&decimal>companyLimit){
+    hint.textContent=`Registrado ${hoFormatHours(decimal)}. Apenas ${hoFormatHours(companyLimit)} são pagas por dia (limite diário) — valor: ${hoFormatMoney(hoPaidValue(decimal))}.`;
     hint.className='ho-form-hint visible';
   }else{
     hint.textContent=`Salvo! ${hoFormatHours(decimal)} → ${hoFormatMoney(hoPaidValue(decimal))}`;
@@ -2766,7 +2883,19 @@ function hoRenderCycleTable(){
   }).join('');
 }
 
+function hoRenderHeaderInfo(){
+  const company=hoCurrentCompany();
+  const info=document.getElementById('ho-rate-info');
+  if(info){
+    const limitTxt=company.limit?`· limite de ${hoFormatHours(company.limit)} pagas por dia`:'· sem limite diário de horas pagas';
+    info.textContent=`${hoFormatMoney(company.rate)} por hora trabalhada ${limitTxt}`;
+  }
+  const cycleSection=document.getElementById('ho-cycle-section');
+  if(cycleSection)cycleSection.style.display=company.cycles?'':'none';
+}
 function hoRenderAll(){
+  hoPopulateCompanySelect();
+  hoRenderHeaderInfo();
   const dateInput=document.getElementById('ho-input-date');
   if(dateInput&&!dateInput.value)dateInput.value=hoTodayStr();
   const bonusDateInput=document.getElementById('ho-bonus-input-date');
