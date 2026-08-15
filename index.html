@@ -1383,12 +1383,20 @@ function __bootApp(){
               <option value="bimonthly">Quinzenal (2x ao mês)</option>
             </select>
           </div>
+          <div class="ho-field">
+            <label>Moeda de pagamento</label>
+            <select id="ho-new-company-currency">
+              <option value="USD">Dólar (US$)</option>
+              <option value="EUR">Euro (€)</option>
+              <option value="BRL">Real (R$)</option>
+            </select>
+          </div>
         </div>
         <div class="ho-form-row">
           <div class="ho-field"><label>Nome do 1º projeto</label><input type="text" id="ho-new-company-project" placeholder="ex: Script Filtering"></div>
         </div>
         <div class="ho-form-row">
-          <div class="ho-field"><label>Valor/hora (US$)</label><input type="text" inputmode="decimal" id="ho-new-company-rate" placeholder="ex: 8,00"></div>
+          <div class="ho-field"><label>Valor/hora</label><input type="text" inputmode="decimal" id="ho-new-company-rate" placeholder="ex: 8,00"></div>
           <div class="ho-field"><label>Limite h/dia (opcional)</label><input type="text" inputmode="decimal" id="ho-new-company-limit" placeholder="ex: 10"></div>
         </div>
         <div class="ho-form-row">
@@ -1420,6 +1428,14 @@ function __bootApp(){
         <div class="ho-form-hint" id="ho-new-project-hint"></div>
       </div>
       <div style="margin-top:16px;">
+        <label style="font-size:12px;font-weight:600;color:var(--muted,#6B7268);">Moeda de pagamento de <span id="ho-company-currency-label"></span></label>
+        <select id="ho-company-currency" style="display:block;width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid #ddd;font-family:inherit;font-size:13px;" onchange="hoSaveCompanyCurrency()">
+          <option value="USD">Dólar (US$)</option>
+          <option value="EUR">Euro (€)</option>
+          <option value="BRL">Real (R$)</option>
+        </select>
+      </div>
+      <div style="margin-top:16px;">
         <label style="font-size:12px;font-weight:600;color:var(--muted,#6B7268);">Detalhes de pagamento de <span id="ho-company-notes-label"></span></label>
         <textarea id="ho-company-notes" rows="3" placeholder="ex: como e quando a fatura é gerada, quando cai o pagamento, particularidades do contrato..." style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid #ddd;font-family:inherit;font-size:13px;resize:vertical;"></textarea>
         <button class="ho-save-btn" style="margin-top:8px;" onclick="hoSaveCompanyNotes()">Salvar detalhes</button>
@@ -1430,7 +1446,7 @@ function __bootApp(){
     <div class="ho-month-section" id="ho-rollup-section">
       <h3>Resumo consolidado da empresa (todos os projetos) — mês atual</h3>
       <table class="ho-table">
-        <thead><tr><th>Projeto</th><th>Horas</th><th>$</th><th>R$</th></tr></thead>
+        <thead><tr><th>Projeto</th><th>Horas</th><th>Valor</th><th>R$</th></tr></thead>
         <tbody id="ho-rollup-table-body"></tbody>
         <tfoot><tr id="ho-rollup-total-row"></tr></tfoot>
       </table>
@@ -1439,7 +1455,7 @@ function __bootApp(){
     <div class="ho-month-section" id="ho-grand-total-section">
       <h3>Total geral (todas as empresas) — mês atual</h3>
       <table class="ho-table">
-        <thead><tr><th>Empresa</th><th>Horas</th><th>$</th><th>R$</th></tr></thead>
+        <thead><tr><th>Empresa</th><th>Horas</th><th>Valor</th><th>R$</th></tr></thead>
         <tbody id="ho-grand-total-table-body"></tbody>
         <tfoot><tr id="ho-grand-total-row"></tr></tfoot>
       </table>
@@ -1448,7 +1464,7 @@ function __bootApp(){
     <div class="ho-rate-card">
       <div class="ho-rate-top">
         <div>
-          <div class="ho-rate-label">Cotação do dólar</div>
+          <div class="ho-rate-label">Cotação do dólar (USD)</div>
           <div class="ho-rate-value" id="ho-rate-display">—</div>
           <div class="ho-rate-updated" id="ho-rate-updated">Nenhuma cotação salva ainda</div>
         </div>
@@ -1456,9 +1472,22 @@ function __bootApp(){
       </div>
       <div class="ho-rate-manual">
         <input type="text" inputmode="decimal" id="ho-rate-input" placeholder="ex: 5,35">
-        <button onclick="hoSetManualRate()">Salvar manualmente</button>
+        <button onclick="hoSetManualRate('USD')">Salvar manualmente</button>
       </div>
       <div class="ho-rate-hint" id="ho-rate-hint"></div>
+
+      <div class="ho-rate-top" style="margin-top:16px;">
+        <div>
+          <div class="ho-rate-label">Cotação do euro (EUR)</div>
+          <div class="ho-rate-value" id="ho-rate-display-eur">—</div>
+          <div class="ho-rate-updated" id="ho-rate-updated-eur">Nenhuma cotação salva ainda</div>
+        </div>
+      </div>
+      <div class="ho-rate-manual">
+        <input type="text" inputmode="decimal" id="ho-rate-input-eur" placeholder="ex: 5,80">
+        <button onclick="hoSetManualRate('EUR')">Salvar manualmente</button>
+      </div>
+      <div class="ho-rate-hint" id="ho-rate-hint-eur"></div>
     </div>
 
     <div class="ho-summary-row">
@@ -1542,7 +1571,7 @@ function __bootApp(){
       <p class="ho-section-hint" id="ho-cycle-hint">Ciclos desta plataforma (a partir de jun/2026, ver e-mail de 07/07/2026). Nome do ciclo = mês predominante do trabalho; pagamento cai só no mês seguinte (~dia 25).</p>
       <p class="ho-section-hint" style="margin-top:6px;"><em>Valores somam todos os projetos desta empresa.</em></p>
       <table class="ho-table">
-        <thead><tr><th>Ciclo</th><th>Horas</th><th>Dias</th><th>Bônus</th><th>$</th><th>R$</th></tr></thead>
+        <thead><tr><th>Ciclo</th><th>Horas</th><th>Dias</th><th>Bônus</th><th>Valor</th><th>R$</th></tr></thead>
         <tbody id="ho-cycle-table-body"></tbody>
       </table>
     </div>
@@ -1550,7 +1579,7 @@ function __bootApp(){
     <div class="ho-month-section">
       <h3>Resumo por mês</h3>
       <table class="ho-table">
-        <thead><tr><th>Mês</th><th>Horas</th><th>Dias</th><th>Bônus</th><th>$</th><th>R$</th></tr></thead>
+        <thead><tr><th>Mês</th><th>Horas</th><th>Dias</th><th>Bônus</th><th>Valor</th><th>R$</th></tr></thead>
         <tbody id="ho-month-table-body"></tbody>
       </table>
     </div>
@@ -2392,6 +2421,11 @@ function hoMigrateCompany(c){
   // Converte formato antigo (sem "projects", com rate/limit/cycles na própria empresa) para o novo formato.
   if(Array.isArray(c.projects)){
     if(c.notes==null)c.notes='';
+    if(c.currency==null)c.currency='USD';
+    if(c.id===HO_DEFAULT_COMPANY_ID){
+      const defaultProject=c.projects.find(p=>p.id===HO_DEFAULT_PROJECT_ID);
+      if(defaultProject&&defaultProject.name==='Projeto principal')defaultProject.name='Lighthouse/Cherry Opal';
+    }
     return c;
   }
   return{
@@ -2399,14 +2433,15 @@ function hoMigrateCompany(c){
     name:c.id===HO_DEFAULT_COMPANY_ID?'OneForma-Centific':c.name,
     cycleType:c.cycles?'oneforma':'monthly',
     notes:'',
-    projects:[{id:c.id===HO_DEFAULT_COMPANY_ID?HO_DEFAULT_PROJECT_ID:'p'+Date.now(),name:'Projeto principal',rate:c.rate||8,limit:c.limit||null}]
+    currency:'USD',
+    projects:[{id:c.id===HO_DEFAULT_COMPANY_ID?HO_DEFAULT_PROJECT_ID:'p'+Date.now(),name:c.id===HO_DEFAULT_COMPANY_ID?'Lighthouse/Cherry Opal':'Projeto principal',rate:c.rate||8,limit:c.limit||null}]
   };
 }
 function hoLoadCompanies(){
   let list;
   try{const raw=localStorage.getItem(HO_COMPANIES_KEY);list=raw?JSON.parse(raw):null;}catch{list=null;}
   if(!Array.isArray(list)||list.length===0){
-    list=[{id:HO_DEFAULT_COMPANY_ID,name:'OneForma-Centific',cycleType:'oneforma',notes:'',projects:[{id:HO_DEFAULT_PROJECT_ID,name:'Projeto principal',rate:8,limit:10}]}];
+    list=[{id:HO_DEFAULT_COMPANY_ID,name:'OneForma-Centific',cycleType:'oneforma',notes:'',currency:'USD',projects:[{id:HO_DEFAULT_PROJECT_ID,name:'Lighthouse/Cherry Opal',rate:8,limit:10}]}];
     hoSaveCompanies(list);
     return list;
   }
@@ -2479,6 +2514,7 @@ function hoToggleNewCompanyForm(){
 function hoAddCompany(){
   const nameInput=document.getElementById('ho-new-company-name');
   const cycleSelect=document.getElementById('ho-new-company-cycle');
+  const currencySelect=document.getElementById('ho-new-company-currency');
   const projectInput=document.getElementById('ho-new-company-project');
   const rateInput=document.getElementById('ho-new-company-rate');
   const limitInput=document.getElementById('ho-new-company-limit');
@@ -2496,7 +2532,7 @@ function hoAddCompany(){
   const companies=hoLoadCompanies();
   const id='c'+Date.now();
   const projectId='p'+Date.now();
-  companies.push({id,name,cycleType:cycleSelect.value,notes,projects:[{id:projectId,name:projectName,rate,limit:limit||null}]});
+  companies.push({id,name,cycleType:cycleSelect.value,currency:currencySelect.value,notes,projects:[{id:projectId,name:projectName,rate,limit:limit||null}]});
   hoSaveCompanies(companies);
   hoSetCurrentCompanyId(id);
   hoSetCurrentProjectId(id,projectId);
@@ -2513,6 +2549,15 @@ function hoSaveCompanyNotes(){
   company.notes=(textarea.value||'').trim();
   hoSaveCompanies(companies);
   if(hint){hint.textContent='Salvo!';hint.className='ho-form-hint visible';setTimeout(()=>{hint.textContent='';hint.className='ho-form-hint';},2000);}
+}
+function hoSaveCompanyCurrency(){
+  const select=document.getElementById('ho-company-currency');
+  const companies=hoLoadCompanies();
+  const company=companies.find(c=>c.id===hoGetCurrentCompanyId());
+  if(!company)return;
+  company.currency=select.value;
+  hoSaveCompanies(companies);
+  hoRenderAll();
 }
 function hoDeleteCompany(){
   const companies=hoLoadCompanies();
@@ -2588,7 +2633,8 @@ function hoFormatHours(dec){
   const m=Math.round((dec-h)*60);
   return m===0?`${h}h`:`${h}h${String(m).padStart(2,'0')}`;
 }
-function hoFormatMoney(v){return'$'+(v||0).toFixed(2).replace('.',',');}
+const HO_CURRENCY_SYMBOLS={USD:'$',EUR:'€',BRL:'R$ '};
+function hoFormatMoney(v,currency){return(HO_CURRENCY_SYMBOLS[currency]||'$')+(v||0).toFixed(2).replace('.',',');}
 function hoPaidHours(dec){const p=hoCurrentProject();const limit=p.limit||Infinity;return Math.min(dec||0,limit);}
 function hoPaidValue(dec){const p=hoCurrentProject();return hoPaidHours(dec)*p.rate;}
 
@@ -2606,32 +2652,44 @@ function hoSaveBonusFor(companyId,projectId,map){const key=hoBonusKey(companyId,
 function hoLoad(){return hoLoadFor(hoGetCurrentCompanyId(),hoGetCurrentProjectId(hoGetCurrentCompanyId()));}
 function hoSave(map){hoSaveFor(hoGetCurrentCompanyId(),hoGetCurrentProjectId(hoGetCurrentCompanyId()),map);}
 
-/* ---- Bônus (contabilizados pelo valor em US$, não por horas) ---- */
+/* ---- Bônus (contabilizados pelo valor na moeda da empresa, não por horas) ---- */
 function hoLoadBonuses(){return hoLoadBonusFor(hoGetCurrentCompanyId(),hoGetCurrentProjectId(hoGetCurrentCompanyId()));}
 function hoSaveBonuses(map){hoSaveBonusFor(hoGetCurrentCompanyId(),hoGetCurrentProjectId(hoGetCurrentCompanyId()),map);}
 
-/* ---- Cotação do dólar (USD → BRL) ---- */
-const HO_RATE_STORAGE_KEY='home_office_dolar_v1'; // mapa {data:cotação}
+/* ---- Cotação (USD → BRL e EUR → BRL) ---- */
+const HO_RATE_STORAGE_KEY='home_office_dolar_v1'; // mapa {data:{USD:cotação,EUR:cotação}} (formato antigo: {data:cotaçãoUSD})
 function hoLoadRates(){
-  try{const raw=localStorage.getItem(HO_RATE_STORAGE_KEY);const map=raw?JSON.parse(raw):{};return typeof map==='object'&&map?map:{};}catch{return{};}
+  let map;
+  try{const raw=localStorage.getItem(HO_RATE_STORAGE_KEY);map=raw?JSON.parse(raw):{};}catch{map={};}
+  if(typeof map!=='object'||!map)map={};
+  // Migra formato antigo (número = cotação USD) para o novo ({USD,EUR})
+  let migrated=false;
+  Object.keys(map).forEach(k=>{
+    if(typeof map[k]==='number'){map[k]={USD:map[k]};migrated=true;}
+  });
+  if(migrated)hoSaveRates(map);
+  return map;
 }
 function hoSaveRates(map){try{localStorage.setItem(HO_RATE_STORAGE_KEY,JSON.stringify(map));}catch{}}
-// Cotação mais recente disponível no mapa, independente da data (usada como fallback)
-function hoLatestRateEntry(map){
-  const keys=Object.keys(map).sort();
+// Cotação mais recente disponível no mapa para uma moeda, independente da data (usada como fallback)
+function hoLatestRateEntry(map,currency){
+  const keys=Object.keys(map).filter(k=>map[k]&&map[k][currency]!=null).sort();
   if(keys.length===0)return null;
   const k=keys[keys.length-1];
-  return{date:k,rate:map[k]};
+  return{date:k,rate:map[k][currency]};
 }
-// Cotação a usar para uma data específica: a cotação salva naquele dia,
+// Cotação a usar para uma data específica e moeda: a cotação salva naquele dia,
 // ou — se não houver — a cotação mais recente conhecida até aquela data,
 // ou — em último caso — a cotação mais recente disponível em todo o histórico.
-function hoRateForDate(dateISO){
+// Para moeda BRL não há conversão (a empresa já paga em reais): retorna 1.
+function hoRateForDate(dateISO,currency){
+  const cur=currency||'USD';
+  if(cur==='BRL')return 1;
   const map=hoLoadRates();
-  if(map[dateISO]!=null)return map[dateISO];
-  const past=Object.keys(map).filter(k=>k<dateISO).sort();
-  if(past.length>0)return map[past[past.length-1]];
-  const latest=hoLatestRateEntry(map);
+  if(map[dateISO]&&map[dateISO][cur]!=null)return map[dateISO][cur];
+  const past=Object.keys(map).filter(k=>k<dateISO&&map[k]&&map[k][cur]!=null).sort();
+  if(past.length>0)return map[past[past.length-1]][cur];
+  const latest=hoLatestRateEntry(map,cur);
   return latest?latest.rate:null;
 }
 function hoFormatBRL(v){return'R$ '+(v||0).toFixed(2).replace('.',',');}
@@ -2639,56 +2697,64 @@ function hoFormatBRL(v){return'R$ '+(v||0).toFixed(2).replace('.',',');}
 function hoRenderRateCard(){
   const map=hoLoadRates();
   const today=hoTodayStr();
-  const display=document.getElementById('ho-rate-display');
-  const updated=document.getElementById('ho-rate-updated');
-  if(map[today]!=null){
-    display.textContent='R$ '+Number(map[today]).toFixed(2).replace('.',',');
-    updated.textContent='Atualizada hoje';
-  }else{
-    const latest=hoLatestRateEntry(map);
-    if(latest){
-      display.textContent='R$ '+Number(latest.rate).toFixed(2).replace('.',',');
-      const d=hoParseISO(latest.date);
-      updated.textContent=`Última cotação salva: ${String(d.getDate()).padStart(2,'0')} de ${HO_MONTHS_PT[d.getMonth()]}`;
+  [{cur:'USD',displayId:'ho-rate-display',updatedId:'ho-rate-updated'},{cur:'EUR',displayId:'ho-rate-display-eur',updatedId:'ho-rate-updated-eur'}].forEach(({cur,displayId,updatedId})=>{
+    const display=document.getElementById(displayId);
+    const updated=document.getElementById(updatedId);
+    if(!display||!updated)return;
+    if(map[today]&&map[today][cur]!=null){
+      display.textContent='R$ '+Number(map[today][cur]).toFixed(2).replace('.',',');
+      updated.textContent='Atualizada hoje';
     }else{
-      display.textContent='—';
-      updated.textContent='Nenhuma cotação salva ainda';
+      const latest=hoLatestRateEntry(map,cur);
+      if(latest){
+        display.textContent='R$ '+Number(latest.rate).toFixed(2).replace('.',',');
+        const d=hoParseISO(latest.date);
+        updated.textContent=`Última cotação salva: ${String(d.getDate()).padStart(2,'0')} de ${HO_MONTHS_PT[d.getMonth()]}`;
+      }else{
+        display.textContent='—';
+        updated.textContent='Nenhuma cotação salva ainda';
+      }
     }
-  }
+  });
 }
-// Busca a cotação do dólar (USD→BRL) numa API pública e gratuita (AwesomeAPI).
+// Busca as cotações USD→BRL e EUR→BRL numa API pública e gratuita (AwesomeAPI).
 // silent=true: tentativa automática ao abrir a aba (não mostra aviso se falhar).
 async function hoFetchRate(manual){
   const btn=document.getElementById('ho-rate-refresh-btn');
   const hint=document.getElementById('ho-rate-hint');
   if(btn&&manual){btn.disabled=true;btn.textContent='Buscando...';}
   try{
-    const resp=await fetch('https://economia.awesomeapi.com.br/last/USD-BRL');
+    const resp=await fetch('https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL');
     if(!resp.ok)throw new Error('resposta não-ok');
     const data=await resp.json();
-    const bid=parseFloat(data&&data.USDBRL&&data.USDBRL.bid);
-    if(isNaN(bid))throw new Error('valor inválido');
+    const bidUSD=parseFloat(data&&data.USDBRL&&data.USDBRL.bid);
+    const bidEUR=parseFloat(data&&data.EURBRL&&data.EURBRL.bid);
+    if(isNaN(bidUSD)&&isNaN(bidEUR))throw new Error('valor inválido');
     const map=hoLoadRates();
-    map[hoTodayStr()]=bid;
+    const today=hoTodayStr();
+    map[today]=map[today]||{};
+    if(!isNaN(bidUSD))map[today].USD=bidUSD;
+    if(!isNaN(bidEUR))map[today].EUR=bidEUR;
     hoSaveRates(map);
     hoRenderRateCard();
     hoRenderAll();
     if(manual&&hint){
-      hint.textContent=`Cotação atualizada: R$ ${bid.toFixed(2).replace('.',',')}`;
+      hint.textContent=`Cotações atualizadas: US$ 1 = R$ ${bidUSD.toFixed(2).replace('.',',')} · €1 = R$ ${bidEUR.toFixed(2).replace('.',',')}`;
       hint.className='ho-rate-hint visible ok';
     }
   }catch(e){
     if(manual&&hint){
-      hint.textContent='Não foi possível buscar a cotação automaticamente agora (sem internet ou serviço indisponível). Você pode informar o valor manualmente abaixo.';
+      hint.textContent='Não foi possível buscar as cotações automaticamente agora (sem internet ou serviço indisponível). Você pode informar os valores manualmente abaixo.';
       hint.className='ho-rate-hint visible';
     }
   }finally{
     if(btn&&manual){btn.disabled=false;btn.textContent='🔄 Atualizar';}
   }
 }
-function hoSetManualRate(){
-  const input=document.getElementById('ho-rate-input');
-  const hint=document.getElementById('ho-rate-hint');
+function hoSetManualRate(currency){
+  const cur=currency||'USD';
+  const input=document.getElementById(cur==='EUR'?'ho-rate-input-eur':'ho-rate-input');
+  const hint=document.getElementById(cur==='EUR'?'ho-rate-hint-eur':'ho-rate-hint');
   const v=parseFloat((input.value||'').replace(',','.'));
   if(isNaN(v)||v<=0){
     hint.textContent='Informe um valor de cotação válido (ex: 5,35).';
@@ -2696,7 +2762,9 @@ function hoSetManualRate(){
     return;
   }
   const map=hoLoadRates();
-  map[hoTodayStr()]=v;
+  const today=hoTodayStr();
+  map[today]=map[today]||{};
+  map[today][cur]=v;
   hoSaveRates(map);
   input.value='';
   hint.textContent=`Cotação de hoje salva manualmente: R$ ${v.toFixed(2).replace('.',',')}`;
@@ -2784,14 +2852,14 @@ function hoCycleLabel(cycleStart){
   const entry=hoCycleEntry(cycleStart);
   return entry.pay?`${entry.label} · pagto ~${entry.pay.slice(8,10)}/${entry.pay.slice(5,7)}`:entry.label;
 }
-function hoSumRange(map,startISO,endISO,bonusMap){
+function hoSumRange(map,startISO,endISO,bonusMap,currency){
   let hours=0,value=0,valueBRL=0,days=0,hasRate=false,bonusValue=0,bonusValueBRL=0;
   Object.keys(map).forEach(date=>{
     if(date>=startISO&&date<=endISO){
       const h=map[date];
       const usd=hoPaidValue(h);
       hours+=h;value+=usd;days++;
-      const rate=hoRateForDate(date);
+      const rate=hoRateForDate(date,currency);
       if(rate){valueBRL+=usd*rate;hasRate=true;}
     }
   });
@@ -2800,7 +2868,7 @@ function hoSumRange(map,startISO,endISO,bonusMap){
       if(date>=startISO&&date<=endISO){
         const b=bonusMap[date]||0;
         bonusValue+=b;
-        const rate=hoRateForDate(date);
+        const rate=hoRateForDate(date,currency);
         if(rate){bonusValueBRL+=b*rate;hasRate=true;}
       }
     });
@@ -2811,30 +2879,31 @@ function hoSumRange(map,startISO,endISO,bonusMap){
 function hoRenderSummary(){
   const map=hoLoad();
   const bonusMap=hoLoadBonuses();
+  const currency=hoCurrentCompany().currency||'USD';
   const today=hoTodayStr();
   const todayHours=map[today]||0;
   const todayUSD=hoPaidValue(todayHours);
   const todayBonus=bonusMap[today]||0;
-  const todayRate=hoRateForDate(today);
+  const todayRate=hoRateForDate(today,currency);
   const todayTotal=todayUSD+todayBonus;
   document.getElementById('ho-today-hours').textContent=hoFormatHours(todayHours);
-  document.getElementById('ho-today-value').textContent=hoFormatMoney(todayTotal)+(todayBonus>0?` (+ bônus ${hoFormatMoney(todayBonus)})`:'');
+  document.getElementById('ho-today-value').textContent=hoFormatMoney(todayTotal,currency)+(todayBonus>0?` (+ bônus ${hoFormatMoney(todayBonus,currency)})`:'');
   document.getElementById('ho-today-brl').textContent=todayRate?'≈ '+hoFormatBRL(todayTotal*todayRate):'';
 
   const now=new Date();
   const cStart=hoCycleStart(now);
   const cEnd=hoCycleEnd(cStart);
-  const cRange=hoSumRange(map,hoToISO(cStart),hoToISO(cEnd),bonusMap);
+  const cRange=hoSumRange(map,hoToISO(cStart),hoToISO(cEnd),bonusMap,currency);
   document.getElementById('ho-cycle-hours').textContent=hoFormatHours(cRange.hours);
-  document.getElementById('ho-cycle-value').textContent=hoFormatMoney(cRange.totalValue)+(cRange.bonusValue>0?` (+ bônus ${hoFormatMoney(cRange.bonusValue)})`:'');
+  document.getElementById('ho-cycle-value').textContent=hoFormatMoney(cRange.totalValue,currency)+(cRange.bonusValue>0?` (+ bônus ${hoFormatMoney(cRange.bonusValue,currency)})`:'');
   document.getElementById('ho-cycle-brl').textContent=cRange.hasRate?'≈ '+hoFormatBRL(cRange.totalValueBRL):'';
   document.getElementById('ho-cycle-range').textContent=hoCycleLabel(cStart);
 
   const mStart=new Date(now.getFullYear(),now.getMonth(),1);
   const mEnd=new Date(now.getFullYear(),now.getMonth()+1,0);
-  const mRange=hoSumRange(map,hoToISO(mStart),hoToISO(mEnd),bonusMap);
+  const mRange=hoSumRange(map,hoToISO(mStart),hoToISO(mEnd),bonusMap,currency);
   document.getElementById('ho-month-hours').textContent=hoFormatHours(mRange.hours);
-  document.getElementById('ho-month-value').textContent=hoFormatMoney(mRange.totalValue)+(mRange.bonusValue>0?` (+ bônus ${hoFormatMoney(mRange.bonusValue)})`:'');
+  document.getElementById('ho-month-value').textContent=hoFormatMoney(mRange.totalValue,currency)+(mRange.bonusValue>0?` (+ bônus ${hoFormatMoney(mRange.bonusValue,currency)})`:'');
   document.getElementById('ho-month-brl').textContent=mRange.hasRate?'≈ '+hoFormatBRL(mRange.totalValueBRL):'';
 }
 
@@ -2887,10 +2956,10 @@ function hoSaveEntry(){
   hoSave(map);
   const companyLimit=hoCurrentProject().limit;
   if(companyLimit&&decimal>companyLimit){
-    hint.textContent=`Registrado ${hoFormatHours(decimal)}. Apenas ${hoFormatHours(companyLimit)} são pagas por dia (limite diário) — valor: ${hoFormatMoney(hoPaidValue(decimal))}.`;
+    hint.textContent=`Registrado ${hoFormatHours(decimal)}. Apenas ${hoFormatHours(companyLimit)} são pagas por dia (limite diário) — valor: ${hoFormatMoney(hoPaidValue(decimal),hoCurrentCompany().currency)}.`;
     hint.className='ho-form-hint visible';
   }else{
-    hint.textContent=`Salvo! ${hoFormatHours(decimal)} → ${hoFormatMoney(hoPaidValue(decimal))}`;
+    hint.textContent=`Salvo! ${hoFormatHours(decimal)} → ${hoFormatMoney(hoPaidValue(decimal),hoCurrentCompany().currency)}`;
     hint.className='ho-form-hint visible ok';
   }
   hoRenderAll();
@@ -2929,7 +2998,7 @@ function hoSaveBonusEntry(){
   const map=hoLoadBonuses();
   map[date]=v;
   hoSaveBonuses(map);
-  hint.textContent=`Bônus salvo! ${hoFormatMoney(v)}`;
+  hint.textContent=`Bônus salvo! ${hoFormatMoney(v,hoCurrentCompany().currency)}`;
   hint.className='ho-form-hint visible ok';
   hoRenderAll();
 }
@@ -2943,6 +3012,7 @@ function hoDeleteBonusEntry(date){
 
 function hoRenderBonusList(){
   const map=hoLoadBonuses();
+  const currency=hoCurrentCompany().currency||'USD';
   const dates=Object.keys(map).sort((a,b)=>b.localeCompare(a));
   const container=document.getElementById('ho-bonus-list');
   const empty=document.getElementById('ho-bonus-list-empty');
@@ -2954,7 +3024,7 @@ function hoRenderBonusList(){
   const today=hoTodayStr();
   container.innerHTML=dates.slice(0,60).map(date=>{
     const v=map[date];
-    const rate=hoRateForDate(date);
+    const rate=hoRateForDate(date,currency);
     const d=hoParseISO(date);
     const label=`${HO_WEEKDAYS_PT[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} de ${HO_MONTHS_PT[d.getMonth()]}`;
     const todayTag=date===today?' <span class="ho-item-today">• Hoje</span>':'';
@@ -2964,7 +3034,7 @@ function hoRenderBonusList(){
       <div class="ho-item-right">
         <span class="ho-item-hours">🎁 bônus</span>
         <div class="ho-item-value-wrap">
-          <div class="ho-item-value">${hoFormatMoney(v)}</div>
+          <div class="ho-item-value">${hoFormatMoney(v,currency)}</div>
           ${brlLine}
         </div>
         <button class="ho-item-del" onclick="hoDeleteBonusEntry('${date}')" title="Remover">✕</button>
@@ -2975,6 +3045,7 @@ function hoRenderBonusList(){
 
 function hoRenderList(){
   const map=hoLoad();
+  const currency=hoCurrentCompany().currency||'USD';
   const dates=Object.keys(map).sort((a,b)=>b.localeCompare(a));
   const container=document.getElementById('ho-list');
   const empty=document.getElementById('ho-list-empty');
@@ -2987,7 +3058,7 @@ function hoRenderList(){
   container.innerHTML=dates.slice(0,60).map(date=>{
     const h=map[date];
     const usd=hoPaidValue(h);
-    const rate=hoRateForDate(date);
+    const rate=hoRateForDate(date,currency);
     const d=hoParseISO(date);
     const label=`${HO_WEEKDAYS_PT[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} de ${HO_MONTHS_PT[d.getMonth()]}`;
     const todayTag=date===today?' <span class="ho-item-today">• Hoje</span>':'';
@@ -2997,7 +3068,7 @@ function hoRenderList(){
       <div class="ho-item-right">
         <span class="ho-item-hours">${hoFormatHours(h)}</span>
         <div class="ho-item-value-wrap">
-          <div class="ho-item-value">${hoFormatMoney(usd)}</div>
+          <div class="ho-item-value">${hoFormatMoney(usd,currency)}</div>
           ${brlLine}
         </div>
         <button class="ho-item-del" onclick="hoDeleteEntry('${date}')" title="Remover">✕</button>
@@ -3021,6 +3092,7 @@ function hoPaidValueFor(dec,project){
 }
 function hoRenderMonthTable(){
   const company=hoCurrentCompany();
+  const currency=company.currency||'USD';
   const allData=hoAllProjectsData(company);
   const byMonth={};
   allData.forEach(({project,entries,bonuses})=>{
@@ -3028,7 +3100,7 @@ function hoRenderMonthTable(){
       const ym=date.slice(0,7);
       if(!byMonth[ym])byMonth[ym]={hours:0,value:0,valueBRL:0,days:0,hasRate:false,bonus:0,bonusBRL:0};
       const usd=hoPaidValueFor(entries[date],project);
-      const rate=hoRateForDate(date);
+      const rate=hoRateForDate(date,currency);
       byMonth[ym].hours+=entries[date];
       byMonth[ym].value+=usd;
       byMonth[ym].days+=1;
@@ -3038,7 +3110,7 @@ function hoRenderMonthTable(){
       const ym=date.slice(0,7);
       if(!byMonth[ym])byMonth[ym]={hours:0,value:0,valueBRL:0,days:0,hasRate:false,bonus:0,bonusBRL:0};
       const b=bonuses[date]||0;
-      const rate=hoRateForDate(date);
+      const rate=hoRateForDate(date,currency);
       byMonth[ym].bonus+=b;
       if(rate){byMonth[ym].bonusBRL+=b*rate;byMonth[ym].hasRate=true;}
     });
@@ -3056,13 +3128,14 @@ function hoRenderMonthTable(){
     const totalValue=r.value+r.bonus;
     const totalBRL=r.valueBRL+r.bonusBRL;
     const brl=r.hasRate?hoFormatBRL(totalBRL):'—';
-    const bonusCell=r.bonus>0?hoFormatMoney(r.bonus):'—';
-    return`<tr><td>${label}</td><td>${hoFormatHours(r.hours)}</td><td>${r.days}</td><td>${bonusCell}</td><td class="ho-table-value">${hoFormatMoney(totalValue)}</td><td class="ho-table-value-brl">${brl}</td></tr>`;
+    const bonusCell=r.bonus>0?hoFormatMoney(r.bonus,currency):'—';
+    return`<tr><td>${label}</td><td>${hoFormatHours(r.hours)}</td><td>${r.days}</td><td>${bonusCell}</td><td class="ho-table-value">${hoFormatMoney(totalValue,currency)}</td><td class="ho-table-value-brl">${brl}</td></tr>`;
   }).join('');
 }
 
 function hoRenderCycleTable(){
   const company=hoCurrentCompany();
+  const currency=company.currency||'USD';
   const allData=hoAllProjectsData(company);
   const byCycle={};
   allData.forEach(({project,entries,bonuses})=>{
@@ -3071,7 +3144,7 @@ function hoRenderCycleTable(){
       const key=hoCycleKey(cStart);
       if(!byCycle[key])byCycle[key]={start:cStart,hours:0,value:0,valueBRL:0,days:0,hasRate:false,bonus:0,bonusBRL:0};
       const usd=hoPaidValueFor(entries[date],project);
-      const rate=hoRateForDate(date);
+      const rate=hoRateForDate(date,currency);
       byCycle[key].hours+=entries[date];
       byCycle[key].value+=usd;
       byCycle[key].days+=1;
@@ -3082,7 +3155,7 @@ function hoRenderCycleTable(){
       const key=hoCycleKey(cStart);
       if(!byCycle[key])byCycle[key]={start:cStart,hours:0,value:0,valueBRL:0,days:0,hasRate:false,bonus:0,bonusBRL:0};
       const b=bonuses[date]||0;
-      const rate=hoRateForDate(date);
+      const rate=hoRateForDate(date,currency);
       byCycle[key].bonus+=b;
       if(rate){byCycle[key].bonusBRL+=b*rate;byCycle[key].hasRate=true;}
     });
@@ -3099,8 +3172,8 @@ function hoRenderCycleTable(){
     const totalValue=r.value+r.bonus;
     const totalBRL=r.valueBRL+r.bonusBRL;
     const brl=r.hasRate?hoFormatBRL(totalBRL):'—';
-    const bonusCell=r.bonus>0?hoFormatMoney(r.bonus):'—';
-    return`<tr><td>${label}</td><td>${hoFormatHours(r.hours)}</td><td>${r.days}</td><td>${bonusCell}</td><td class="ho-table-value">${hoFormatMoney(totalValue)}</td><td class="ho-table-value-brl">${brl}</td></tr>`;
+    const bonusCell=r.bonus>0?hoFormatMoney(r.bonus,currency):'—';
+    return`<tr><td>${label}</td><td>${hoFormatHours(r.hours)}</td><td>${r.days}</td><td>${bonusCell}</td><td class="ho-table-value">${hoFormatMoney(totalValue,currency)}</td><td class="ho-table-value-brl">${brl}</td></tr>`;
   }).join('');
 }
 
@@ -3110,7 +3183,7 @@ function hoRenderHeaderInfo(){
   const info=document.getElementById('ho-rate-info');
   if(info){
     const limitTxt=project.limit?`· limite de ${hoFormatHours(project.limit)} pagas por dia`:'· sem limite diário de horas pagas';
-    info.textContent=`${hoFormatMoney(project.rate)} por hora trabalhada (${project.name}) ${limitTxt}`;
+    info.textContent=`${hoFormatMoney(project.rate,company.currency)} por hora trabalhada (${project.name}) ${limitTxt}`;
   }
   const cycleSection=document.getElementById('ho-cycle-section');
   if(cycleSection)cycleSection.style.display=(company.cycleType==='monthly'||!company.cycleType)?'none':'';
@@ -3131,6 +3204,10 @@ function hoRenderCompanyNotes(){
   const textarea=document.getElementById('ho-company-notes');
   if(label)label.textContent=company.name;
   if(textarea)textarea.value=company.notes||'';
+  const currencyLabel=document.getElementById('ho-company-currency-label');
+  const currencySelect=document.getElementById('ho-company-currency');
+  if(currencyLabel)currencyLabel.textContent=company.name;
+  if(currencySelect)currencySelect.value=company.currency||'USD';
 }
 // Soma horas e valor pago (US$) de um projeto específico dentro de um intervalo de datas,
 // usando a taxa/limite próprios daquele projeto. Inclui bônus lançados no mesmo período.
@@ -3167,14 +3244,15 @@ function hoRenderCompanyRollup(){
   if(projects.length<=1){section.style.display='none';return;}
   section.style.display='';
   const{start,end}=hoCurrentMonthRange();
-  const rate=hoRateForDate(hoTodayStr())||0;
+  const currency=company.currency||'USD';
+  const rate=hoRateForDate(hoTodayStr(),currency)||0;
   let totalHours=0,totalUSD=0;
   tbody.innerHTML=projects.map(p=>{
     const{hours,paidValue}=hoProjectSum(company.id,p,start,end);
     totalHours+=hours;totalUSD+=paidValue;
-    return`<tr><td>${p.name}</td><td>${hoFormatHours(hours)}</td><td class="ho-table-value">${hoFormatMoney(paidValue)}</td><td class="ho-table-value-brl">${rate?hoFormatBRL(paidValue*rate):'—'}</td></tr>`;
+    return`<tr><td>${p.name}</td><td>${hoFormatHours(hours)}</td><td class="ho-table-value">${hoFormatMoney(paidValue,currency)}</td><td class="ho-table-value-brl">${rate&&currency!=='BRL'?hoFormatBRL(paidValue*rate):'—'}</td></tr>`;
   }).join('');
-  totalRow.innerHTML=`<td><strong>Total ${company.name}</strong></td><td><strong>${hoFormatHours(totalHours)}</strong></td><td class="ho-table-value"><strong>${hoFormatMoney(totalUSD)}</strong></td><td class="ho-table-value-brl"><strong>${rate?hoFormatBRL(totalUSD*rate):'—'}</strong></td>`;
+  totalRow.innerHTML=`<td><strong>Total ${company.name}</strong></td><td><strong>${hoFormatHours(totalHours)}</strong></td><td class="ho-table-value"><strong>${hoFormatMoney(totalUSD,currency)}</strong></td><td class="ho-table-value-brl"><strong>${rate&&currency!=='BRL'?hoFormatBRL(totalUSD*rate):'—'}</strong></td>`;
 }
 function hoRenderGrandTotal(){
   const tbody=document.getElementById('ho-grand-total-table-body');
@@ -3182,18 +3260,23 @@ function hoRenderGrandTotal(){
   if(!tbody||!totalRow)return;
   const companies=hoLoadCompanies();
   const{start,end}=hoCurrentMonthRange();
-  const rate=hoRateForDate(hoTodayStr())||0;
-  let grandHours=0,grandUSD=0;
+  let grandHours=0,grandBRL=0;
+  const currenciesUsed=new Set();
   tbody.innerHTML=companies.map(company=>{
+    const currency=company.currency||'USD';
+    currenciesUsed.add(currency);
+    const rate=hoRateForDate(hoTodayStr(),currency)||0;
     let hours=0,usd=0;
     (company.projects||[]).forEach(p=>{
       const sum=hoProjectSum(company.id,p,start,end);
       hours+=sum.hours;usd+=sum.paidValue;
     });
-    grandHours+=hours;grandUSD+=usd;
-    return`<tr><td>${company.name}</td><td>${hoFormatHours(hours)}</td><td class="ho-table-value">${hoFormatMoney(usd)}</td><td class="ho-table-value-brl">${rate?hoFormatBRL(usd*rate):'—'}</td></tr>`;
+    const brl=currency==='BRL'?usd:(rate?usd*rate:null);
+    if(brl!=null)grandBRL+=brl;
+    grandHours+=hours;
+    return`<tr><td>${company.name}</td><td>${hoFormatHours(hours)}</td><td class="ho-table-value">${hoFormatMoney(usd,currency)}</td><td class="ho-table-value-brl">${brl!=null?hoFormatBRL(brl):'—'}</td></tr>`;
   }).join('');
-  totalRow.innerHTML=`<td><strong>Total geral</strong></td><td><strong>${hoFormatHours(grandHours)}</strong></td><td class="ho-table-value"><strong>${hoFormatMoney(grandUSD)}</strong></td><td class="ho-table-value-brl"><strong>${rate?hoFormatBRL(grandUSD*rate):'—'}</strong></td>`;
+  totalRow.innerHTML=`<td><strong>Total geral</strong></td><td><strong>${hoFormatHours(grandHours)}</strong></td><td class="ho-table-value"><em style="font-weight:400;">moedas somadas em R$ →</em></td><td class="ho-table-value-brl"><strong>${hoFormatBRL(grandBRL)}</strong></td>`;
 }
 function hoRenderAll(){
   hoPopulateCompanySelect();
