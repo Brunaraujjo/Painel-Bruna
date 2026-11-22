@@ -1,4 +1,4 @@
-const CACHE = 'painel-bruna-v3';
+const CACHE = 'painel-bruna-v4';
 const ARQUIVOS = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -13,13 +13,16 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+// Arquivos do próprio site: tenta a internet primeiro (assim as atualizações
+// aparecem logo); se estiver offline, usa a cópia guardada.
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
+    fetch(e.request).then(res => {
       const clone = res.clone();
       caches.open(CACHE).then(c => c.put(e.request, clone));
       return res;
-    }).catch(() => cached))
+    }).catch(() => caches.match(e.request))
   );
 });
