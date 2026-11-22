@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Painel">
 <meta name="application-name" content="Painel Bruna">
 <meta name="theme-color" content="#1a1410">
-<meta name="description" content="Painel pessoal — medicações, psiquiatria, dores, plantas e mais.">
+<meta name="description" content="Painel pessoal — medicações, psiquiatria, saúde (ortopedia, dermatologia, nutrição), dores e mais.">
 
 <!-- PWA: manifest e ícones são arquivos reais na mesma pasta (necessário para o Chrome instalar como app) -->
 <link rel="manifest" href="manifest.json">
@@ -474,7 +474,7 @@ const __db = firebase.firestore();
 __db.enablePersistence().catch(()=>{});
 
 const __APP_ID = "painelBruna";
-const __KEY_PREFIXES = ["daily_meds_", "desven_days_", "med_control_", "painel_dores_", "psiq_", "painel_skincare_", "home_office_horas_", "home_office_dolar_", "home_office_bonus_", "az900_checked", "bokashi_"];
+const __KEY_PREFIXES = ["daily_meds_", "desven_days_", "med_control_", "painel_dores_", "psiq_", "painel_skincare_", "home_office_horas_", "home_office_dolar_", "home_office_bonus_", "az900_checked", "bokashi_", "saude_"];
 
 function __keyMatches(k){
   return __KEY_PREFIXES.some(p => k === p || k.indexOf(p) === 0);
@@ -1000,9 +1000,9 @@ function __bootApp(){
     <span class="nav-icon">💻</span>
     <span class="nav-label">Horas Apple</span>
   </button>
-  <button class="nav-btn" onclick="showPage('page-bokashi',this);renderBokashi()">
-    <span class="nav-icon">🪴</span>
-    <span class="nav-label">Plantas</span>
+  <button class="nav-btn" onclick="showPage('page-saude',this);sauRender()">
+    <span class="nav-icon">🏥</span>
+    <span class="nav-label">Saúde</span>
   </button>
   <button class="nav-btn" onclick="showPage('page-historico',this);histRender()">
     <span class="nav-icon">📊</span>
@@ -2685,6 +2685,854 @@ window.renderBokashi=function(){
 </script>
 
 
+<!-- ===================== SAÚDE (Ortopedia · Dermatologia · Nutrição) ===================== -->
+<div id="page-saude" class="page" style="background:#f4f6f3;min-height:100vh;padding-bottom:90px;">
+  <style>
+    #page-saude{color:#2c2c2c;}
+    #page-saude .sau-head{background:linear-gradient(135deg,#1f4d44,#2f7d6b);color:#fff;padding:2rem 1.2rem 1.4rem;}
+    #page-saude .sau-head .k{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-bottom:.3rem;}
+    #page-saude .sau-head h1{font-size:1.4rem;font-weight:700;margin:0 0 .2rem;}
+    #page-saude .sau-head p{font-size:.78rem;opacity:.7;margin:0;}
+    #page-saude .sau-inner{max-width:560px;margin:0 auto;padding:1rem 1rem 0;}
+    #page-saude .sau-tabs{display:flex;gap:6px;margin-bottom:14px;}
+    #page-saude .sau-tabs button{flex:1;padding:10px 4px;border-radius:12px;border:1px solid #d4ddd6;background:#fff;color:#4a6a60;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;}
+    #page-saude .sau-tabs button.on{background:#1f4d44;border-color:#1f4d44;color:#fff;}
+    #page-saude .sau-card{background:#fff;border:1px solid #dfe6e0;border-radius:16px;padding:16px;margin-bottom:14px;}
+    #page-saude .sau-h{font-family:'DM Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:#5d9a8a;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #e6eee8;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+    #page-saude .sau-count{font-family:'DM Serif Display',serif;font-size:2rem;color:#1f4d44;line-height:1;}
+    #page-saude .sau-count small{font-family:'DM Sans',sans-serif;font-size:.78rem;color:#6a8a80;margin-left:6px;}
+    #page-saude .sau-sub{font-size:.74rem;color:#6a8a80;margin-top:4px;line-height:1.5;}
+    #page-saude .sau-lbl{display:block;font-size:.68rem;color:#6a8a80;margin:10px 0 4px;font-weight:600;}
+    #page-saude input[type=date],#page-saude input[type=text],#page-saude input[type=number],#page-saude select,#page-saude textarea{width:100%;box-sizing:border-box;border:1px solid #d4ddd6;border-radius:10px;padding:10px;font-size:.85rem;font-family:inherit;background:#fbfdfb;color:#2c2c2c;}
+    #page-saude textarea{resize:vertical;min-height:62px;}
+    #page-saude .sau-btn{background:#1f4d44;color:#fff;border:none;border-radius:10px;padding:10px 14px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+    #page-saude .sau-btn.ghost{background:transparent;color:#1f4d44;border:1px solid #bccdc3;}
+    #page-saude .sau-btn.sm{padding:6px 10px;font-size:.7rem;}
+    #page-saude .sau-row{display:flex;gap:8px;align-items:center;}
+    #page-saude .sau-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    #page-saude .sau-datenav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 14px;}
+    #page-saude .sau-datenav button{background:#fff;border:1px solid #d4ddd6;border-radius:10px;width:38px;height:38px;font-size:1.1rem;cursor:pointer;color:#1f4d44;}
+    #page-saude .sau-datenav button[disabled]{opacity:.3;cursor:default;}
+    #page-saude .sau-datelabel{text-align:center;flex:1;}
+    #page-saude .sau-datelabel b{display:block;font-size:.95rem;color:#1f4d44;}
+    #page-saude .sau-datelabel a{font-size:.68rem;color:#5d9a8a;cursor:pointer;text-decoration:underline;}
+    #page-saude .sau-item{display:flex;gap:12px;align-items:flex-start;padding:11px 4px;border-bottom:1px solid #eef3ef;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    #page-saude .sau-item:last-child{border-bottom:none;}
+    #page-saude .sau-box{width:24px;height:24px;border-radius:7px;border:2px solid #b7c7bd;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:transparent;font-size:.85rem;margin-top:1px;}
+    #page-saude .sau-item.done .sau-box{background:#4caf8a;border-color:#4caf8a;color:#fff;}
+    #page-saude .sau-item.done .sau-t{color:#8fa399;text-decoration:line-through;}
+    #page-saude .sau-t{font-size:.88rem;color:#2c2c2c;}
+    #page-saude .sau-d{font-size:.7rem;color:#8aa096;margin-top:2px;}
+    #page-saude .sau-x{margin-left:auto;background:none;border:none;color:#a5b5ab;font-size:1.1rem;cursor:pointer;padding:0 4px;}
+    #page-saude .sau-li{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #eef3ef;font-size:.83rem;}
+    #page-saude .sau-li:last-child{border-bottom:none;}
+    #page-saude .sau-li .dt{font-family:'DM Mono',monospace;font-size:.62rem;color:#5d9a8a;white-space:nowrap;padding-top:3px;}
+    #page-saude .sau-empty{font-size:.76rem;color:#9aaba2;padding:6px 0;}
+    #page-saude .sau-scale{margin-bottom:14px;}
+    #page-saude .sau-scale-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:8px;}
+    #page-saude .sau-scale-h b{font-size:.86rem;color:#1f4d44;}
+    #page-saude .sau-scale-h span{font-size:.62rem;color:#8aa096;text-align:right;}
+    #page-saude .sau-btns{display:grid;grid-template-columns:repeat(11,1fr);gap:3px;}
+    #page-saude .sau-btns button{aspect-ratio:1/1.1;border:1px solid #d4ddd6;background:#fbfdfb;border-radius:7px;font-size:.72rem;color:#4a6a60;cursor:pointer;padding:0;font-family:inherit;}
+    #page-saude .sau-btns button.on{background:#1f4d44;border-color:#1f4d44;color:#fff;font-weight:700;}
+    #page-saude .sau-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px;}
+    #page-saude .sau-sum div{background:#eef4f0;border-radius:10px;padding:8px 4px;text-align:center;}
+    #page-saude .sau-sum b{display:block;font-size:1.05rem;color:#1f4d44;}
+    #page-saude .sau-sum span{font-size:.56rem;color:#6a8a80;text-transform:uppercase;letter-spacing:.05em;}
+    #page-saude .sau-bar{height:8px;background:#e3ebe5;border-radius:99px;overflow:hidden;flex:1;}
+    #page-saude .sau-bar i{display:block;height:100%;background:#4caf8a;border-radius:99px;}
+    #page-saude .sau-guia{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:.82rem;}
+    #page-saude .sau-guia b{min-width:52px;color:#1f4d44;}
+    #page-saude .sau-guia span{min-width:38px;text-align:right;color:#4a6a60;font-weight:600;}
+    #page-saude .sau-guia button{background:#fff;border:1px solid #d4ddd6;border-radius:8px;width:30px;height:30px;font-size:1rem;color:#1f4d44;cursor:pointer;padding:0;}
+    #page-saude .sau-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+    #page-saude .sau-chips button{padding:8px 12px;border-radius:20px;border:1px solid #d4ddd6;background:#fbfdfb;font-size:.76rem;color:#4a6a60;cursor:pointer;font-family:inherit;}
+    #page-saude .sau-chips button.on{background:#1f4d44;border-color:#1f4d44;color:#fff;font-weight:600;}
+    #page-saude .sau-note{background:#fff8ee;border:1px solid #f0e0c0;border-radius:12px;padding:10px 12px;font-size:.74rem;color:#a06030;line-height:1.5;margin-top:10px;}
+    #page-saude .sau-kv{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+    #page-saude .sau-kv div{background:#eef4f0;border-radius:10px;padding:7px 4px;text-align:center;}
+    #page-saude .sau-kv b{display:block;font-size:.95rem;color:#1f4d44;}
+    #page-saude .sau-kv span{font-size:.54rem;color:#6a8a80;text-transform:uppercase;letter-spacing:.05em;}
+    #page-saude .sau-kv em{display:block;font-style:normal;font-size:.62rem;color:#5d9a8a;}
+  </style>
+
+  <div class="sau-head">
+    <div class="k">Cuidados</div>
+    <h1>Saúde</h1>
+    <p>Ortopedia · Dermatologia · Nutrição</p>
+  </div>
+  <div class="sau-inner" id="sau-root"></div>
+</div>
+
+<script>
+/* ===== SAÚDE · Ortopedia, Dermatologia, Nutrição =====
+   Dados (prefixo "saude_", sincroniza com a nuvem):
+   - saude_orto_v1  / saude_orto_log_v1  : configuração e registro diário da ortopedia
+   - saude_derm_v1  / saude_derm_log_v1  : idem dermatologia
+   - saude_nutri_v1 / saude_nutri_log_v1 : idem nutrição
+   Os resumos entram no relatório mensal da aba Histórico (e cada área tem o seu PDF).
+*/
+const SAU_ORTO_KEY='saude_orto_v1', SAU_ORTO_LOG='saude_orto_log_v1';
+const SAU_DERM_KEY='saude_derm_v1', SAU_DERM_LOG='saude_derm_log_v1';
+const SAU_NUT_KEY='saude_nutri_v1', SAU_NUT_LOG='saude_nutri_log_v1';
+const sauE=psqEsc, sauId=psqId;
+
+// ---------- Escalas e listas padrão (você pode editar os itens do checklist pelo app) ----------
+const SAU_ORTO_SCALES=[
+  {f:'d',name:'Dor (quadril / perna)',lo:'0 = nenhuma',hi:'10 = máxima'},
+  {f:'m',name:'Padrão de marcha',lo:'0 = muito ruim',hi:'10 = ótimo'},
+  {f:'q',name:'Mobilidade do quadril (destravar)',lo:'0 = travado',hi:'10 = solto'}
+];
+const SAU_BIO=[
+  {f:'peso',l:'Peso (kg)'},{f:'mm',l:'Massa muscular esquelética (kg)'},{f:'mg',l:'Massa de gordura (kg)'},
+  {f:'pgc',l:'% de gordura corporal'},{f:'imc',l:'IMC'},{f:'agua',l:'Água corporal total (L)'},
+  {f:'vis',l:'Gordura visceral (nível)'},{f:'tmb',l:'Taxa metabólica basal (kcal)'},{f:'score',l:'Pontuação InBody'}
+];
+const SAU_PER={am:'Manhã',pm:'Noite'};
+const SAU_FOCO={sup:'Superior',inf:'Inferior',todo:'Corpo todo'};
+
+function sauDefOrto(){return{
+  // guias de fisioterapia: done = sessões feitas, total = sessões da guia (edite se for diferente)
+  guias:[{id:'g1',n:1,total:10,done:10},{id:'g2',n:2,total:10,done:10},{id:'g3',n:3,total:10,done:9}],
+  sessoes:[], prox:'2026-11-23', ultConsulta:'', retorno:'',
+  items:[
+    {id:'fisio',t:'Exercícios da fisioterapia / de casa'},
+    {id:'along',t:'Alongamento'},
+    {id:'forca',t:'Fortalecimento (coxa e quadril)'},
+    {id:'cami',t:'Caminhada / atividade orientada'},
+    {id:'marcha',t:'Atenção ao padrão de marcha (passo e postura)'}
+  ],
+  medidas:[], questions:[]};}
+function sauDefDerm(){return{consulta:'',retorno:'',conduta:'',produtos:[],questions:[]};}
+function sauDefNut(){return{consulta:'',retorno:'',conduta:'',metas:{ag:'',pr:'',gd:''},suplementos:[],bio:[],questions:[]};}
+function sauLoad(key,def){
+  const s=medJSON(key,null),d=def();
+  if(s==null)medSave(key,d);
+  return (s&&typeof s==='object')?Object.assign(d,s):d;
+}
+let sauOr=sauLoad(SAU_ORTO_KEY,sauDefOrto);
+let sauDm=sauLoad(SAU_DERM_KEY,sauDefDerm);
+let sauNu=sauLoad(SAU_NUT_KEY,sauDefNut);
+let sauOrLog=medJSON(SAU_ORTO_LOG,{});
+let sauDmLog=medJSON(SAU_DERM_LOG,{});
+let sauNuLog=medJSON(SAU_NUT_LOG,{});
+let sauDate=medKey(new Date());
+let sauTabNow='orto';
+
+// ---------- Utilitários ----------
+function sauToday(){return medKey(new Date());}
+function sauYm(){return sauDate.slice(0,7);}
+function sauFull(k){if(!k)return '—';const p=k.split('-');return `${p[2]}/${p[1]}/${p[0]}`;}
+function sauNum(v){const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:null;}
+function sauN(v,dec){if(v==null||v==='')return '—';const f=Math.pow(10,dec==null?1:dec);return String(Math.round(v*f)/f).replace('.',',');}
+function sauSigned(v){if(v==null)return '';const s=sauN(v,1);return (v>0?'+':'')+s;}
+function sauCountdown(k){
+  if(!k)return 'Escolha a data.';
+  const diff=Math.round((medParse(k)-medParse(sauToday()))/86400000);
+  const d=medParse(k),f=`${MED_WD[d.getDay()]}, ${sauFull(k)}`;
+  if(diff>1)return `Em ${diff} dias · ${f}`;
+  if(diff===1)return `Amanhã · ${f}`;
+  if(diff===0)return `Hoje · ${f}`;
+  return `Já passou (${f}) — atualize quando marcar a próxima.`;
+}
+function sauByK(a,b){return a.k<b.k?-1:a.k>b.k?1:0;}
+function sauIsEmpty(v){
+  if(v==null||v===''||v===false)return true;
+  if(typeof v==='object')return Object.keys(v).every(k=>sauIsEmpty(v[k]));
+  return false;
+}
+function sauSaveCfg(kind){
+  if(kind==='o')medSave(SAU_ORTO_KEY,sauOr);
+  else if(kind==='d')medSave(SAU_DERM_KEY,sauDm);
+  else medSave(SAU_NUT_KEY,sauNu);
+}
+function sauSaveLog(kind){
+  const m={o:[sauOrLog,SAU_ORTO_LOG],d:[sauDmLog,SAU_DERM_LOG],n:[sauNuLog,SAU_NUT_LOG]}[kind];
+  Object.keys(m[0]).forEach(k=>{if(sauIsEmpty(m[0][k]))delete m[0][k];});
+  medSave(m[1],m[0]);
+}
+function sauCfg(kind){return kind==='o'?sauOr:kind==='d'?sauDm:sauNu;}
+function sauLogOf(kind){return kind==='o'?sauOrLog:kind==='d'?sauDmLog:sauNuLog;}
+function sauDay(kind){const L=sauLogOf(kind);return L[sauDate]||(L[sauDate]={});}
+function sauVal(id,v){const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v==null?'':v;}
+function sauToggleCls(id,on){const el=document.getElementById(id);if(el)el.classList.toggle('on',!!on);}
+
+// dias "esperados" no mês: do primeiro dia registrado até o fim do mês / hoje
+function sauExpectedDays(ym,log){
+  const all=Object.keys(log).sort();
+  if(!all.length)return 0;
+  const p=ym.split('-').map(Number),last=new Date(p[0],p[1],0).getDate(),todayK=sauToday();
+  let from=ym+'-01';if(all[0]>from)from=all[0];
+  let to=`${ym}-${String(last).padStart(2,'0')}`;if(todayK<to)to=todayK;
+  if(from>to)return 0;
+  let n=0;for(let d=medParse(from);medKey(d)<=to;d.setDate(d.getDate()+1))n++;
+  return n;
+}
+function sauAvg(rows,f){
+  const v=rows.map(r=>r[f]).filter(x=>typeof x==='number');
+  return v.length?Math.round(10*v.reduce((s,x)=>s+x,0)/v.length)/10:null;
+}
+
+// ---------- Navegação ----------
+function sauNavDay(dir){
+  const d=medParse(sauDate);d.setDate(d.getDate()+dir);
+  const k=medKey(d);if(k>sauToday())return;
+  sauDate=k;sauRender();
+}
+function sauGoToday(){sauDate=sauToday();sauRender();}
+function sauTab(t){
+  sauTabNow=t;
+  ['orto','derm','nutri'].forEach(x=>{
+    document.getElementById('sau-pane-'+x).style.display=(x===t)?'block':'none';
+    document.getElementById('sau-tab-'+x).classList.toggle('on',x===t);
+  });
+  window.scrollTo(0,0);
+}
+function sauRenderDate(){
+  const today=sauToday(),d=medParse(sauDate);
+  document.querySelectorAll('.sau-datelabel b').forEach(el=>{el.textContent=`${MED_WD[d.getDay()]}, ${d.getDate()} de ${MED_MON_FULL[d.getMonth()].toLowerCase()}`;});
+  document.querySelectorAll('.sau-today-link').forEach(el=>{el.style.display=sauDate===today?'none':'inline';});
+  document.querySelectorAll('.sau-next-day').forEach(el=>{el.disabled=sauDate>=today;});
+}
+
+// ---------- Perguntas para o médico (as 3 áreas) ----------
+function sauAddQ(kind){
+  const el=document.getElementById('sau-q-in-'+kind);const t=el.value.trim();if(!t)return;
+  sauCfg(kind).questions.push({id:sauId(),t:t,done:false});
+  el.value='';sauSaveCfg(kind);sauRender();
+}
+function sauToggleQ(kind,id){const q=sauCfg(kind).questions.find(x=>x.id===id);if(q){q.done=!q.done;sauSaveCfg(kind);sauRender();}}
+function sauDelQ(kind,id){const c=sauCfg(kind);c.questions=c.questions.filter(x=>x.id!==id);sauSaveCfg(kind);sauRender();}
+function sauQListHtml(kind){
+  const qs=sauCfg(kind).questions;
+  return qs.length?qs.map(q=>`<div class="sau-li"><div class="sau-item${q.done?' done':''}" style="border:none;padding:0;flex:1;" onclick="sauToggleQ('${kind}','${q.id}')"><div class="sau-box">✓</div><div class="sau-t">${sauE(q.t)}</div></div><button class="sau-x" title="Remover" onclick="sauDelQ('${kind}','${q.id}')">×</button></div>`).join('')
+    :'<div class="sau-empty">Nenhuma pergunta ainda.</div>';
+}
+function sauQCard(kind){
+  return `<div class="sau-h" style="margin-top:18px;"><span>Perguntas para o médico</span></div>
+    <div id="sau-q-${kind}"></div>
+    <div class="sau-row" style="margin-top:10px;"><input type="text" id="sau-q-in-${kind}" placeholder="Escreva uma dúvida para não esquecer…" onkeydown="if(event.key==='Enter')sauAddQ('${kind}')"><button class="sau-btn" onclick="sauAddQ('${kind}')">Adicionar</button></div>`;
+}
+function sauDateNav(){
+  return `<div class="sau-datenav"><button onclick="sauNavDay(-1)" aria-label="Dia anterior">‹</button>
+    <div class="sau-datelabel"><b></b><a class="sau-today-link" onclick="sauGoToday()">voltar para hoje</a></div>
+    <button class="sau-next-day" onclick="sauNavDay(1)" aria-label="Próximo dia">›</button></div>`;
+}
+function sauScalesHtml(scales,o,handler){
+  return scales.map(s=>{
+    let b='';for(let i=0;i<=10;i++)b+=`<button class="${o[s.f]===i?'on':''}" onclick="${handler}('${s.f}',${i})">${i}</button>`;
+    return `<div class="sau-scale"><div class="sau-scale-h"><b>${s.name}</b><span>${s.lo} · ${s.hi}</span></div><div class="sau-btns">${b}</div></div>`;
+  }).join('');
+}
+function sauOpenRel(only){
+  const ym=sauYm(),r=relSnapshot(ym);
+  const key={orto:'orto',derm:'derm',nutri:'nut'}[only];
+  if(!r||!r[key]){alert('Ainda não há registros neste mês para gerar o relatório. Navegue até um mês com registros ou registre algo hoje.');return;}
+  relOpenPdf(ym,only);
+}
+function sauRelButton(only){
+  return `<div class="sau-row" style="margin-top:10px;"><button class="sau-btn" onclick="sauOpenRel('${only}')">📄 Relatório do mês (PDF)</button></div>
+    <div class="sau-sub">Também aparece no relatório mensal da aba Histórico.</div>`;
+}
+
+// =====================================================================
+//  ORTOPEDIA
+// =====================================================================
+function sauGuiaAtiva(){return sauOr.guias.find(g=>g.done<g.total)||null;}
+function sauGuiaNum(id){const g=sauOr.guias.find(x=>x.id===id);return g?g.n:null;}
+function sauSessaoFeita(){
+  const k=document.getElementById('sau-o-sdate').value||sauToday();
+  let g=sauGuiaAtiva();
+  if(!g){ // todas completas: abre a próxima guia
+    const n=sauOr.guias.reduce((m,x)=>Math.max(m,x.n),0)+1;
+    g={id:sauId(),n:n,total:10,done:0};sauOr.guias.push(g);
+  }
+  g.done++;
+  sauOr.sessoes.push({id:sauId(),k:k,g:g.id});
+  if(sauOr.prox&&k>=sauOr.prox)sauOr.prox='';   // a sessão agendada foi feita
+  sauSaveCfg('o');sauRender();
+}
+function sauNovaGuia(){
+  const n=sauOr.guias.reduce((m,x)=>Math.max(m,x.n),0)+1;
+  sauOr.guias.push({id:sauId(),n:n,total:10,done:0});sauSaveCfg('o');sauRender();
+}
+function sauGuiaAdj(id,dir){
+  const g=sauOr.guias.find(x=>x.id===id);if(!g)return;
+  g.done=Math.max(0,Math.min(g.total,g.done+dir));sauSaveCfg('o');sauRender();
+}
+function sauGuiaTotal(id){
+  const g=sauOr.guias.find(x=>x.id===id);if(!g)return;
+  const v=prompt(`Quantas sessões tem a guia ${g.n}?`,g.total);
+  const n=parseInt(v,10);if(!n||n<1)return;
+  g.total=n;g.done=Math.min(g.done,n);sauSaveCfg('o');sauRender();
+}
+function sauDelSessao(id){
+  const s=sauOr.sessoes.find(x=>x.id===id);if(!s)return;
+  const g=sauOr.guias.find(x=>x.id===s.g);if(g)g.done=Math.max(0,g.done-1);
+  sauOr.sessoes=sauOr.sessoes.filter(x=>x.id!==id);sauSaveCfg('o');sauRender();
+}
+function sauOrSet(f,v){sauOr[f]=v||'';sauSaveCfg('o');sauRender();}
+function sauAddMed(){
+  const k=document.getElementById('sau-o-mdate').value||sauToday();
+  const cm=sauNum(document.getElementById('sau-o-mcm').value);
+  const lado=document.getElementById('sau-o-mlado').value;
+  if(cm==null)return;
+  sauOr.medidas.push({id:sauId(),k:k,cm:cm,lado:lado});
+  document.getElementById('sau-o-mcm').value='';
+  sauSaveCfg('o');sauRender();
+}
+function sauDelMed(id){sauOr.medidas=sauOr.medidas.filter(m=>m.id!==id);sauSaveCfg('o');sauRender();}
+function sauMedResumo(){
+  const out=[];
+  [['D','direita'],['E','esquerda']].forEach(p=>{
+    const L=sauOr.medidas.filter(m=>m.lado===p[0]).sort(sauByK);
+    if(!L.length)return;
+    const last=L[L.length-1],prev=L.length>1?L[L.length-2]:null,first=L[0];
+    out.push({lado:p[1],last:last,dPrev:prev?Math.round((last.cm-prev.cm)*10)/10:null,dFirst:L.length>1?Math.round((last.cm-first.cm)*10)/10:null,first:first});
+  });
+  return out;
+}
+function sauToggleOrItem(id){
+  const o=sauDay('o');if(!o.c)o.c={};
+  if(o.c[id])delete o.c[id];else o.c[id]=true;
+  sauSaveLog('o');sauRender();
+}
+function sauAddOrItem(){
+  const el=document.getElementById('sau-o-newitem');const t=el.value.trim();if(!t)return;
+  sauOr.items.push({id:sauId(),t:t});el.value='';sauSaveCfg('o');sauRender();
+}
+function sauDelOrItem(ev,id){
+  ev.stopPropagation();
+  if(!confirm('Remover este item do checklist? Os dias já marcados deixam de contar no relatório.'))return;
+  sauOr.items=sauOr.items.filter(x=>x.id!==id);sauSaveCfg('o');sauRender();
+}
+function sauSetOrScale(f,v){
+  const o=sauDay('o');o[f]=(o[f]===v)?null:v;if(o[f]==null)delete o[f];
+  sauSaveLog('o');sauRender();
+}
+function sauSetNote(kind,v){sauDay(kind).n=v;sauSaveLog(kind);}
+
+function sauRenderOrto(){
+  const tot=sauOr.guias.reduce((s,g)=>s+g.done,0);
+  document.getElementById('sau-o-total').innerHTML=`${tot}<small>sessões feitas no total</small>`;
+  document.getElementById('sau-o-guias').innerHTML=sauOr.guias.map(g=>{
+    const pct=g.total?Math.round(100*g.done/g.total):0;
+    return `<div class="sau-guia"><b>Guia ${g.n}</b><div class="sau-bar"><i style="width:${pct}%"></i></div><span>${g.done}/${g.total}</span>
+      <button onclick="sauGuiaAdj('${g.id}',-1)" aria-label="Menos uma sessão">−</button><button onclick="sauGuiaAdj('${g.id}',1)" aria-label="Mais uma sessão">+</button><button onclick="sauGuiaTotal('${g.id}')" title="Alterar total de sessões da guia" style="font-size:.8rem">✎</button></div>`;
+  }).join('');
+  const ga=sauGuiaAtiva();
+  document.getElementById('sau-o-ativa').textContent=ga?`Guia em andamento: ${ga.n} (${ga.done} de ${ga.total} sessões${ga.done===ga.total-1?' · falta 1 para fechar a guia':''}).`:'Todas as guias estão completas — ao registrar a próxima sessão, uma nova guia é criada.';
+  sauVal('sau-o-prox',sauOr.prox);
+  document.getElementById('sau-o-prox-sub').textContent=sauOr.prox?sauCountdown(sauOr.prox):'Sem sessão agendada.';
+  const ses=sauOr.sessoes.slice().sort(sauByK).reverse().slice(0,6);
+  document.getElementById('sau-o-ses').innerHTML=ses.length?ses.map(s=>`<div class="sau-li"><span class="dt">${sauFull(s.k)}</span><span>Sessão · guia ${sauGuiaNum(s.g)||'—'}</span><button class="sau-x" title="Remover" onclick="sauDelSessao('${s.id}')">×</button></div>`).join('')
+    :'<div class="sau-empty">As sessões que você registrar aqui aparecem com a data.</div>';
+  sauVal('sau-o-ult',sauOr.ultConsulta);sauVal('sau-o-ret',sauOr.retorno);
+  document.getElementById('sau-o-ret-sub').textContent=sauOr.retorno?'Retorno: '+sauCountdown(sauOr.retorno):'Informe a data de retorno quando souber.';
+  document.getElementById('sau-q-o').innerHTML=sauQListHtml('o');
+  // medidas
+  const res=sauMedResumo();
+  document.getElementById('sau-o-medsum').innerHTML=res.length?res.map(r=>`<div class="sau-sub" style="margin:0 0 8px;color:#2c2c2c;font-size:.8rem;"><b>Coxa ${r.lado}</b> · última medida em ${sauFull(r.last.k)}: <b>${sauN(r.last.cm)} cm</b>${r.dPrev!=null?`<br>${sauSigned(r.dPrev)} cm vs. medida anterior · ${sauSigned(r.dFirst)} cm desde ${sauFull(r.first.k)}`:''}</div>`).join('')
+    :'<div class="sau-empty">Nenhuma medida registrada ainda.</div>';
+  const ml=sauOr.medidas.slice().sort(sauByK).reverse().slice(0,8);
+  document.getElementById('sau-o-medlist').innerHTML=ml.map(m=>`<div class="sau-li"><span class="dt">${sauFull(m.k)}</span><span>Coxa ${m.lado==='D'?'direita':'esquerda'} · ${sauN(m.cm)} cm</span><button class="sau-x" title="Remover" onclick="sauDelMed('${m.id}')">×</button></div>`).join('');
+  // dia
+  const o=sauOrLog[sauDate]||{},c=o.c||{};
+  document.getElementById('sau-o-items').innerHTML=sauOr.items.map(it=>`<div class="sau-item${c[it.id]?' done':''}" onclick="sauToggleOrItem('${it.id}')"><div class="sau-box">✓</div><div class="sau-t">${sauE(it.t)}</div><button class="sau-x" title="Remover item" onclick="sauDelOrItem(event,'${it.id}')">×</button></div>`).join('')||'<div class="sau-empty">Nenhum item. Adicione abaixo.</div>';
+  document.getElementById('sau-o-prog').textContent=`${sauOr.items.filter(it=>c[it.id]).length}/${sauOr.items.length}`;
+  document.getElementById('sau-o-scales').innerHTML=sauScalesHtml(SAU_ORTO_SCALES,o,'sauSetOrScale');
+  const note=document.getElementById('sau-o-note');if(document.activeElement!==note)note.value=o.n||'';
+  // resumo
+  const st=sauOrtoStats(sauYm(),false);
+  document.getElementById('sau-o-sum-title').textContent=`Resumo · ${MED_MON_FULL[+sauYm().slice(5)-1]} / ${sauYm().slice(0,4)}`;
+  document.getElementById('sau-o-sum').innerHTML=st?`<div><b>${st.sessoes}</b><span>Sessões</span></div><div><b>${sauN(st.dor)}</b><span>Dor média</span></div><div><b>${sauN(st.marcha)}</b><span>Marcha média</span></div><div><b>${st.itemsPct==null?'—':st.itemsPct+'%'}</b><span>Checklist</span></div>`
+    :'<div style="grid-column:1/-1"><span>Sem registros neste mês</span></div>';
+}
+
+function sauOrtoStats(ym,closed){
+  const days=Object.keys(sauOrLog).filter(k=>k.startsWith(ym+'-')).sort();
+  const ses=sauOr.sessoes.filter(s=>s.k.startsWith(ym+'-')).sort(sauByK);
+  const med=sauOr.medidas.filter(m=>m.k.startsWith(ym+'-')).sort(sauByK);
+  const cons=!!(sauOr.ultConsulta&&sauOr.ultConsulta.startsWith(ym+'-'));
+  if(!days.length&&!ses.length&&!med.length&&!cons)return null;
+  const exp=sauExpectedDays(ym,sauOrLog);
+  const rows=days.map(k=>{const o=sauOrLog[k];return{k:k,d:o.d,m:o.m,q:o.q,c:Object.keys(o.c||{}).length,n:(o.n||'').trim()};});
+  const items=sauOr.items.map(it=>({t:it.t,n:days.filter(k=>sauOrLog[k].c&&sauOrLog[k].c[it.id]).length}));
+  const tot=items.reduce((s,x)=>s+x.n,0);
+  const ult={};
+  [['D','direita'],['E','esquerda']].forEach(p=>{
+    const L=sauOr.medidas.filter(m=>m.lado===p[0]&&m.k<=ym+'-31').sort(sauByK);
+    if(!L.length)return;
+    const last=L[L.length-1],prev=L.length>1?L[L.length-2]:null,first=L[0];
+    ult[p[1]]={k:last.k,cm:last.cm,dPrev:prev?Math.round((last.cm-prev.cm)*10)/10:null,dFirst:L.length>1?Math.round((last.cm-first.cm)*10)/10:null,firstK:first.k};
+  });
+  const r={ym:ym,sessoes:ses.length,sesRows:ses.map(s=>({k:s.k,g:sauGuiaNum(s.g)})),
+    medidas:med.map(m=>({k:m.k,cm:m.cm,lado:m.lado==='D'?'direita':'esquerda'})),ult:ult,
+    exp:exp,daysLogged:days.length,dor:sauAvg(rows,'d'),marcha:sauAvg(rows,'m'),mob:sauAvg(rows,'q'),
+    items:items,itemsPct:(exp&&items.length)?Math.round(100*tot/(exp*items.length)):null,rows:rows,
+    consulta:cons?sauOr.ultConsulta:null};
+  if(!closed){ // só fazem sentido no mês atual
+    r.guias=sauOr.guias.map(g=>({n:g.n,done:g.done,total:g.total}));
+    r.prox=sauOr.prox;r.retorno=sauOr.retorno;
+    r.perguntas=sauOr.questions.filter(q=>!q.done).map(q=>q.t);
+  }
+  return r;
+}
+
+// =====================================================================
+//  DERMATOLOGIA
+// =====================================================================
+function sauDmSet(f,v){sauDm[f]=v||'';sauSaveCfg('d');sauRender();}
+function sauDmConduta(v){sauDm.conduta=v;sauSaveCfg('d');}
+function sauAddProd(){
+  const nome=document.getElementById('sau-d-pnome').value.trim();if(!nome)return;
+  const como=document.getElementById('sau-d-pcomo').value.trim();
+  const q=document.getElementById('sau-d-pquando').value;
+  const vezes=parseInt(document.getElementById('sau-d-pvezes').value,10)||7;
+  const per=q==='ambos'?['am','pm']:[q];
+  sauDm.produtos.push({id:sauId(),nome:nome,como:como,per:per,vezes:vezes});
+  ['sau-d-pnome','sau-d-pcomo'].forEach(i=>{document.getElementById(i).value='';});
+  sauSaveCfg('d');sauRender();
+}
+function sauDelProd(id){
+  if(!confirm('Remover este produto? Os dias já marcados deixam de contar no relatório.'))return;
+  sauDm.produtos=sauDm.produtos.filter(p=>p.id!==id);sauSaveCfg('d');sauRender();
+}
+function sauToggleProd(key){
+  const o=sauDay('d');if(!o.p)o.p={};
+  if(o.p[key])delete o.p[key];else o.p[key]=true;
+  sauSaveLog('d');sauRender();
+}
+function sauRenderDerm(){
+  sauVal('sau-d-cons',sauDm.consulta);sauVal('sau-d-ret',sauDm.retorno);
+  document.getElementById('sau-d-ret-sub').textContent=sauDm.retorno?'Retorno: '+sauCountdown(sauDm.retorno):'Informe a data de retorno quando souber.';
+  const cd=document.getElementById('sau-d-conduta');if(document.activeElement!==cd)cd.value=sauDm.conduta||'';
+  document.getElementById('sau-q-d').innerHTML=sauQListHtml('d');
+  document.getElementById('sau-d-prods').innerHTML=sauDm.produtos.length?sauDm.produtos.map(p=>`<div class="sau-li"><div style="flex:1"><div class="sau-t"><b>${sauE(p.nome)}</b></div><div class="sau-d">${p.per.map(x=>SAU_PER[x]).join(' e ')} · ${p.vezes===7?'todos os dias':p.vezes+'x por semana'}</div>${p.como?`<div class="sau-d" style="color:#4a6a60">${sauE(p.como)}</div>`:''}</div><button class="sau-x" title="Remover" onclick="sauDelProd('${p.id}')">×</button></div>`).join('')
+    :'<div class="sau-empty">Nenhum produto cadastrado. Adicione abaixo o que a dermatologista indicou.</div>';
+  const o=sauDmLog[sauDate]||{},c=o.p||{};
+  let n=0,tot=0;
+  document.getElementById('sau-d-today').innerHTML=sauDm.produtos.length?sauDm.produtos.map(p=>p.per.map(x=>{
+    const key=p.id+':'+x,on=!!c[key];tot++;if(on)n++;
+    return `<div class="sau-item${on?' done':''}" onclick="sauToggleProd('${key}')"><div class="sau-box">✓</div><div><div class="sau-t">${sauE(p.nome)} <span style="color:#8aa096;font-size:.72rem">· ${SAU_PER[x]}</span></div>${p.como?`<div class="sau-d">${sauE(p.como)}</div>`:''}</div></div>`;
+  }).join('')).join(''):'<div class="sau-empty">Cadastre os produtos acima para marcar o uso diário.</div>';
+  document.getElementById('sau-d-prog').textContent=tot?`${n}/${tot}`:'';
+  const note=document.getElementById('sau-d-note');if(document.activeElement!==note)note.value=o.n||'';
+  const st=sauDermStats(sauYm(),false);
+  document.getElementById('sau-d-sum-title').textContent=`Frequência de uso · ${MED_MON_FULL[+sauYm().slice(5)-1]} / ${sauYm().slice(0,4)}`;
+  document.getElementById('sau-d-sum').innerHTML=(st&&st.prods.length)?st.prods.map(p=>`<div class="sau-li"><div style="flex:1"><div class="sau-t">${sauE(p.nome)}</div><div class="sau-d">${p.used} usos de ${p.expected} esperados</div></div><b style="color:#1f4d44">${p.pct==null?'—':p.pct+'%'}</b></div>`).join('')
+    :'<div class="sau-empty">Sem registros neste mês.</div>';
+}
+function sauDermStats(ym,closed){
+  const days=Object.keys(sauDmLog).filter(k=>k.startsWith(ym+'-')).sort();
+  const cons=!!(sauDm.consulta&&sauDm.consulta.startsWith(ym+'-'));
+  if(!days.length&&!cons)return null;
+  const exp=sauExpectedDays(ym,sauDmLog);
+  const prods=sauDm.produtos.map(p=>{
+    let used=0;
+    days.forEach(k=>{const c=sauDmLog[k].p||{};p.per.forEach(x=>{if(c[p.id+':'+x])used++;});});
+    const expected=Math.ceil(exp*(p.vezes/7)*p.per.length);
+    return{nome:p.nome,como:p.como,per:p.per.map(x=>SAU_PER[x]).join(' e '),vezes:p.vezes,used:used,expected:expected,pct:expected?Math.min(100,Math.round(100*used/expected)):null};
+  });
+  const r={ym:ym,exp:exp,daysLogged:days.length,prods:prods,
+    rows:days.map(k=>({k:k,n:(sauDmLog[k].n||'').trim(),usos:Object.keys(sauDmLog[k].p||{}).length})),
+    consulta:(cons||!closed)?sauDm.consulta:null,conduta:(cons||!closed)?(sauDm.conduta||'').trim():''};
+  if(!closed){r.retorno=sauDm.retorno;r.perguntas=sauDm.questions.filter(q=>!q.done).map(q=>q.t);}
+  return r;
+}
+
+// =====================================================================
+//  NUTRIÇÃO
+// =====================================================================
+function sauNuSet(f,v){sauNu[f]=v||'';sauSaveCfg('n');sauRender();}
+function sauNuConduta(v){sauNu.conduta=v;sauSaveCfg('n');}
+function sauSetMeta(f,v){sauNu.metas[f]=v===''?'':sauNum(v);sauSaveCfg('n');sauRender();}
+function sauAddSup(){
+  const nome=document.getElementById('sau-n-snome').value.trim();if(!nome)return;
+  const dose=document.getElementById('sau-n-sdose').value.trim();
+  sauNu.suplementos.push({id:sauId(),nome:nome,dose:dose});
+  ['sau-n-snome','sau-n-sdose'].forEach(i=>{document.getElementById(i).value='';});
+  sauSaveCfg('n');sauRender();
+}
+function sauDelSup(id){
+  if(!confirm('Remover este suplemento? Os dias já marcados deixam de contar no relatório.'))return;
+  sauNu.suplementos=sauNu.suplementos.filter(s=>s.id!==id);sauSaveCfg('n');sauRender();
+}
+function sauToggleSup(id){
+  const o=sauDay('n');if(!o.s)o.s={};
+  if(o.s[id])delete o.s[id];else o.s[id]=true;
+  sauSaveLog('n');sauRender();
+}
+function sauAddBio(){
+  const k=document.getElementById('sau-b-data').value||sauToday();
+  const b={id:sauId(),k:k};let any=false;
+  SAU_BIO.forEach(x=>{const v=sauNum(document.getElementById('sau-b-'+x.f).value);if(v!=null){b[x.f]=v;any=true;}});
+  if(!any)return;
+  sauNu.bio.push(b);
+  SAU_BIO.forEach(x=>{document.getElementById('sau-b-'+x.f).value='';});
+  sauSaveCfg('n');sauRender();
+}
+function sauDelBio(id){sauNu.bio=sauNu.bio.filter(b=>b.id!==id);sauSaveCfg('n');sauRender();}
+function sauSetNutNum(f,v){
+  const o=sauDay('n'),n=sauNum(v);
+  if(n==null||n<=0)delete o[f];else o[f]=n;
+  sauSaveLog('n');sauRender();
+}
+function sauAddAgua(ml){
+  const o=sauDay('n');o.ag=Math.max(0,(o.ag||0)+ml);if(!o.ag)delete o.ag;
+  sauSaveLog('n');sauRender();
+}
+function sauSetAct(f,v){
+  const o=sauDay('n');if(!o.a)o.a={};
+  if(f==='foco'){o.a.foco=(o.a.foco===v)?null:v;if(o.a.foco==null)delete o.a.foco;}
+  else if(f==='min'){const n=sauNum(v);if(n==null||n<=0)delete o.a.min;else o.a.min=n;}
+  else{if(v.trim())o.a.t=v.trim();else delete o.a.t;}
+  sauSaveLog('n');sauRender();
+}
+function sauBar(v,meta){
+  if(!meta)return '';
+  const pct=Math.min(100,Math.round(100*(v||0)/meta));
+  return `<div class="sau-row" style="margin-top:6px;"><div class="sau-bar"><i style="width:${pct}%"></i></div><span class="sau-d" style="margin:0;min-width:36px;text-align:right">${pct}%</span></div>`;
+}
+function sauRenderNut(){
+  sauVal('sau-n-cons',sauNu.consulta);sauVal('sau-n-ret',sauNu.retorno);
+  document.getElementById('sau-n-ret-sub').textContent=sauNu.retorno?'Retorno: '+sauCountdown(sauNu.retorno):'Informe a data de retorno quando souber.';
+  const cd=document.getElementById('sau-n-conduta');if(document.activeElement!==cd)cd.value=sauNu.conduta||'';
+  document.getElementById('sau-q-n').innerHTML=sauQListHtml('n');
+  sauVal('sau-n-meta-ag',sauNu.metas.ag);sauVal('sau-n-meta-pr',sauNu.metas.pr);sauVal('sau-n-meta-gd',sauNu.metas.gd);
+  document.getElementById('sau-n-sups').innerHTML=sauNu.suplementos.length?sauNu.suplementos.map(s=>`<div class="sau-li"><div style="flex:1"><div class="sau-t"><b>${sauE(s.nome)}</b></div>${s.dose?`<div class="sau-d">${sauE(s.dose)}</div>`:''}</div><button class="sau-x" title="Remover" onclick="sauDelSup('${s.id}')">×</button></div>`).join('')
+    :'<div class="sau-empty">Nenhum suplemento (cadastre só se a nutricionista indicar).</div>';
+  // bioimpedância
+  const bl=sauNu.bio.slice().sort(sauByK);
+  const last=bl[bl.length-1],prev=bl.length>1?bl[bl.length-2]:null;
+  document.getElementById('sau-b-last').innerHTML=last?`<div class="sau-sub" style="margin:0 0 4px;color:#2c2c2c">Última bioimpedância: <b>${sauFull(last.k)}</b></div><div class="sau-kv">${SAU_BIO.filter(x=>last[x.f]!=null).map(x=>`<div><b>${sauN(last[x.f],x.f==='tmb'||x.f==='score'?0:1)}</b><span>${x.l.replace(/ \(.*\)/,'')}</span>${prev&&prev[x.f]!=null?`<em>${sauSigned(Math.round((last[x.f]-prev[x.f])*10)/10)} vs. anterior</em>`:''}</div>`).join('')}</div>`
+    :'<div class="sau-empty">Nenhuma bioimpedância registrada ainda.</div>';
+  document.getElementById('sau-b-list').innerHTML=bl.slice().reverse().slice(0,8).map(b=>`<div class="sau-li"><span class="dt">${sauFull(b.k)}</span><span style="flex:1">${SAU_BIO.filter(x=>b[x.f]!=null).slice(0,4).map(x=>`${x.l.replace(/ \(.*\)/,'')}: ${sauN(b[x.f])}`).join(' · ')}</span><button class="sau-x" title="Remover" onclick="sauDelBio('${b.id}')">×</button></div>`).join('');
+  // dia
+  const o=sauNuLog[sauDate]||{},m=sauNu.metas,a=o.a||{};
+  sauVal('sau-n-ag',o.ag);sauVal('sau-n-pr',o.pr);sauVal('sau-n-gd',o.gd);
+  document.getElementById('sau-n-ag-bar').innerHTML=m.ag?`<div class="sau-d">${o.ag||0} de ${m.ag} ml</div>`+sauBar(o.ag,m.ag):'<div class="sau-d">Defina a meta de água acima.</div>';
+  document.getElementById('sau-n-pr-bar').innerHTML=m.pr?`<div class="sau-d">${o.pr||0} de ${m.pr} g</div>`+sauBar(o.pr,m.pr):'<div class="sau-d">Defina a meta de proteína acima.</div>';
+  document.getElementById('sau-n-gd-bar').innerHTML=m.gd?`<div class="sau-d">${o.gd||0} de ${m.gd} g</div>`+sauBar(o.gd,m.gd):'<div class="sau-d">Defina a meta de gordura acima.</div>';
+  const sc=o.s||{};
+  document.getElementById('sau-n-today-sups').innerHTML=sauNu.suplementos.length?sauNu.suplementos.map(s=>`<div class="sau-item${sc[s.id]?' done':''}" onclick="sauToggleSup('${s.id}')"><div class="sau-box">✓</div><div><div class="sau-t">${sauE(s.nome)}</div>${s.dose?`<div class="sau-d">${sauE(s.dose)}</div>`:''}</div></div>`).join(''):'<div class="sau-empty">Sem suplementos cadastrados.</div>';
+  sauVal('sau-n-act-t',a.t);sauVal('sau-n-act-min',a.min);
+  Object.keys(SAU_FOCO).forEach(f=>sauToggleCls('sau-n-foco-'+f,a.foco===f));
+  const note=document.getElementById('sau-n-note');if(document.activeElement!==note)note.value=o.n||'';
+  const st=sauNutStats(sauYm(),false);
+  document.getElementById('sau-n-sum-title').textContent=`Resumo · ${MED_MON_FULL[+sauYm().slice(5)-1]} / ${sauYm().slice(0,4)}`;
+  document.getElementById('sau-n-sum').innerHTML=st?`<div><b>${st.ag==null?'—':sauN(st.ag,0)}</b><span>Água média (ml)</span></div><div><b>${st.pr==null?'—':sauN(st.pr,0)}</b><span>Proteína média (g)</span></div><div><b>${st.gd==null?'—':sauN(st.gd,0)}</b><span>Gordura média (g)</span></div><div><b>${st.atDias}</b><span>Dias com atividade</span></div>`
+    :'<div style="grid-column:1/-1"><span>Sem registros neste mês</span></div>';
+}
+function sauNutStats(ym,closed){
+  const days=Object.keys(sauNuLog).filter(k=>k.startsWith(ym+'-')).sort();
+  const bio=sauNu.bio.filter(b=>b.k.startsWith(ym+'-')).sort(sauByK);
+  const cons=!!(sauNu.consulta&&sauNu.consulta.startsWith(ym+'-'));
+  if(!days.length&&!bio.length&&!cons)return null;
+  const exp=sauExpectedDays(ym,sauNuLog);
+  const rows=days.map(k=>{const o=sauNuLog[k],a=o.a||{};return{k:k,ag:o.ag,pr:o.pr,gd:o.gd,sup:Object.keys(o.s||{}).length,at:a.t||'',min:a.min,foco:a.foco?SAU_FOCO[a.foco]:'',n:(o.n||'').trim()};});
+  const m=sauNu.metas;
+  const metDays=(f,meta)=>meta?rows.filter(r=>typeof r[f]==='number'&&r[f]>=meta).length:null;
+  const sups=sauNu.suplementos.map(s=>({nome:s.nome,dose:s.dose,n:days.filter(k=>sauNuLog[k].s&&sauNuLog[k].s[s.id]).length}));
+  const comAt=rows.filter(r=>r.foco||r.at||r.min);
+  const foco={sup:0,inf:0,todo:0};
+  days.forEach(k=>{const a=sauNuLog[k].a;if(a&&a.foco)foco[a.foco]++;});
+  const lastBio=sauNu.bio.filter(b=>b.k<=ym+'-31').sort(sauByK);
+  const r={ym:ym,exp:exp,daysLogged:days.length,metas:{ag:m.ag,pr:m.pr,gd:m.gd},
+    ag:sauAvg(rows,'ag'),pr:sauAvg(rows,'pr'),gd:sauAvg(rows,'gd'),
+    agMet:metDays('ag',m.ag),prMet:metDays('pr',m.pr),agN:rows.filter(x=>typeof x.ag==='number').length,prN:rows.filter(x=>typeof x.pr==='number').length,
+    sups:sups,atDias:comAt.length,atMin:comAt.reduce((s,x)=>s+(x.min||0),0),foco:{sup:foco.sup,inf:foco.inf,todo:foco.todo},
+    bio:bio.map(b=>Object.assign({},b)),bioPrev:(bio.length&&lastBio.length>bio.length)?lastBio[lastBio.length-bio.length-1]:null,
+    rows:rows,consulta:(cons||!closed)?sauNu.consulta:null,conduta:(cons||!closed)?(sauNu.conduta||'').trim():''};
+  if(!closed){r.retorno=sauNu.retorno;r.perguntas=sauNu.questions.filter(q=>!q.done).map(q=>q.t);}
+  return r;
+}
+
+// meses que têm algum registro de saúde (usado pelo Histórico)
+function sauMonthsWithData(){
+  const set={};
+  [sauOrLog,sauDmLog,sauNuLog].forEach(L=>Object.keys(L).forEach(k=>{set[k.slice(0,7)]=1;}));
+  sauOr.sessoes.forEach(s=>{set[s.k.slice(0,7)]=1;});
+  sauOr.medidas.forEach(m=>{set[m.k.slice(0,7)]=1;});
+  sauNu.bio.forEach(b=>{set[b.k.slice(0,7)]=1;});
+  [sauOr.ultConsulta,sauDm.consulta,sauNu.consulta].forEach(k=>{if(k)set[k.slice(0,7)]=1;});
+  return Object.keys(set);
+}
+
+// =====================================================================
+//  RELATÓRIOS (cartão do Histórico + PDF) — mesmo padrão da psiquiatria
+// =====================================================================
+function sauOrtoCard(o){
+  let h=`<div class="rel-grid"><div><b>${o.sessoes}</b><span>Sessões no mês</span></div><div><b>${relNum(o.dor)}</b><span>Dor média</span></div><div><b>${relNum(o.marcha)}</b><span>Marcha média</span></div><div><b>${o.itemsPct==null?'—':o.itemsPct+'%'}</b><span>Checklist</span></div></div>`;
+  const u=Object.keys(o.ult).map(l=>`Coxa ${l}: ${relNum(o.ult[l].cm)} cm (${medFmt(o.ult[l].k)})${o.ult[l].dFirst!=null?' · '+sauSigned(o.ult[l].dFirst)+' cm desde '+medFmt(o.ult[l].firstK):''}`).join(' · ');
+  h+=`<div class="rel-line" style="margin-top:6px;">${o.daysLogged} dia(s) com registro${u?' · '+u:''}</div>`;
+  return h;
+}
+function sauDermCard(d){
+  if(!d.prods.length)return `<div class="rel-line">${d.daysLogged} dia(s) com registro${d.consulta?' · consulta em '+sauFull(d.consulta):''}</div>`;
+  return `<div class="rel-line">`+d.prods.map(p=>`${sauE(p.nome)}: ${p.used} de ${p.expected} usos (${p.pct==null?'—':p.pct+'%'})`).join('<br>')+`</div>`+(d.consulta?`<div class="rel-line" style="margin-top:4px;">Consulta em ${sauFull(d.consulta)}</div>`:'');
+}
+function sauNutCard(n){
+  let h=`<div class="rel-grid"><div><b>${n.ag==null?'—':relNum(Math.round(n.ag))}</b><span>Água média (ml)</span></div><div><b>${n.pr==null?'—':relNum(Math.round(n.pr))}</b><span>Proteína média (g)</span></div><div><b>${n.gd==null?'—':relNum(Math.round(n.gd))}</b><span>Gordura média (g)</span></div><div><b>${n.atDias}</b><span>Dias c/ atividade</span></div></div>`;
+  const b=n.bio.length?n.bio[n.bio.length-1]:null;
+  h+=`<div class="rel-line" style="margin-top:6px;">${n.daysLogged} dia(s) com registro${b?' · bioimpedância '+medFmt(b.k)+(b.peso!=null?': '+relNum(b.peso)+' kg':'')+(b.pgc!=null?', '+relNum(b.pgc)+'% gordura':''):''}${n.consulta?' · consulta em '+sauFull(n.consulta):''}</div>`;
+  return h;
+}
+
+function sauPdfOrto(o){
+  const E=sauE,fk=k=>medFmt(k);
+  let h='<h2>Ortopedia</h2>';
+  if(!o)return h+'<div class="sub">Sem registros neste mês.</div>';
+  h+=`<div class="kv"><div><b>${o.sessoes}</b><span>Sessões no mês</span></div><div><b>${relNum(o.dor)}</b><span>Dor média (0–10)</span></div><div><b>${relNum(o.marcha)}</b><span>Marcha média (0–10)</span></div><div><b>${relNum(o.mob)}</b><span>Mobilidade média (0–10)</span></div></div>
+  <div class="sub">Dor: 0 = nenhuma, 10 = máxima · Marcha: 0 = muito ruim, 10 = ótimo · Mobilidade do quadril: 0 = travado, 10 = solto.</div>`;
+  if(o.consulta)h+=`<div class="sub">Última consulta: ${sauFull(o.consulta)}${o.retorno?' · retorno previsto: '+sauFull(o.retorno):''}</div>`;
+  else if(o.retorno)h+=`<div class="sub">Retorno previsto: ${sauFull(o.retorno)}</div>`;
+  if(o.guias){
+    h+='<h3>Fisioterapia · sessões por guia</h3><table><tr><th>Guia</th><th class="c">Sessões feitas</th></tr>'+o.guias.map(g=>`<tr><td>Guia ${g.n}</td><td class="c">${g.done} de ${g.total}</td></tr>`).join('')+'</table>';
+    if(o.prox)h+=`<div class="sub">Próxima sessão agendada: ${sauFull(o.prox)}</div>`;
+  }
+  if(o.sesRows.length)h+='<h3>Sessões realizadas neste mês</h3><ul>'+o.sesRows.map(s=>`<li>${fk(s.k)} — guia ${s.g||'—'}</li>`).join('')+'</ul>';
+  const ul=Object.keys(o.ult);
+  if(ul.length){
+    h+='<h3>Medidas da coxa (musculatura)</h3><table><tr><th>Lado</th><th>Última medida</th><th class="c">Medida</th><th class="c">vs. anterior</th><th class="c">desde a 1ª</th></tr>'
+      +ul.map(l=>{const u=o.ult[l];return `<tr><td>Coxa ${l}</td><td>${sauFull(u.k)}</td><td class="c">${relNum(u.cm)} cm</td><td class="c">${u.dPrev==null?'—':sauSigned(u.dPrev)+' cm'}</td><td class="c">${u.dFirst==null?'—':sauSigned(u.dFirst)+' cm (desde '+fk(u.firstK)+')'}</td></tr>`;}).join('')+'</table>';
+    if(o.medidas.length)h+='<div class="sub">Medidas feitas neste mês: '+o.medidas.map(m=>`${fk(m.k)} coxa ${m.lado} ${relNum(m.cm)} cm`).join(' · ')+'</div>';
+  }
+  h+=`<h3>Checklist diário (dias cumpridos${o.exp?' de '+o.exp:''})</h3><table><tr><th>Item</th><th class="c">Dias</th></tr>${o.items.map(i=>`<tr><td>${E(i.t)}</td><td class="c">${i.n} de ${o.exp}</td></tr>`).join('')}</table>`;
+  if(o.rows.length)h+=`<h3>Registro diário</h3><table><tr><th>Dia</th><th class="c">Dor</th><th class="c">Marcha</th><th class="c">Mobilidade</th><th class="c">Checklist</th><th>Anotação</th></tr>${o.rows.map(x=>`<tr><td>${fk(x.k)}</td><td class="c">${x.d==null?'':x.d}</td><td class="c">${x.m==null?'':x.m}</td><td class="c">${x.q==null?'':x.q}</td><td class="c">${x.c}/${o.items.length}</td><td>${E(x.n)}</td></tr>`).join('')}</table>`;
+  if(o.perguntas){h+='<h3>Perguntas para a próxima consulta</h3>';h+=o.perguntas.length?'<ul>'+o.perguntas.map(t=>`<li>${E(t)}</li>`).join('')+'</ul>':'<div class="sub">Nenhuma pergunta pendente.</div>';}
+  return h;
+}
+function sauPdfDerm(d){
+  const E=sauE,fk=k=>medFmt(k);
+  let h='<h2>Dermatologia</h2>';
+  if(!d)return h+'<div class="sub">Sem registros neste mês.</div>';
+  if(d.consulta)h+=`<div class="sub">Consulta: ${sauFull(d.consulta)}${d.retorno?' · retorno previsto: '+sauFull(d.retorno):''}</div>`;
+  else if(d.retorno)h+=`<div class="sub">Retorno previsto: ${sauFull(d.retorno)}</div>`;
+  if(d.conduta)h+=`<h3>Conduta</h3><div style="white-space:pre-wrap">${E(d.conduta)}</div>`;
+  if(d.prods.length)h+=`<h3>Produtos, modo de uso e frequência de uso</h3><table><tr><th>Produto</th><th>Como usar</th><th class="c">Quando</th><th class="c">Usos</th><th class="c">%</th></tr>${d.prods.map(p=>`<tr><td>${E(p.nome)}</td><td>${E(p.como||'')}</td><td class="c">${p.per} · ${p.vezes===7?'diário':p.vezes+'x/sem.'}</td><td class="c">${p.used} de ${p.expected}</td><td class="c">${p.pct==null?'—':p.pct+'%'}</td></tr>`).join('')}</table>
+    <div class="sub">Usos esperados calculados a partir do primeiro dia registrado e da frequência combinada para cada produto.</div>`;
+  const notes=d.rows.filter(x=>x.n);
+  if(notes.length)h+='<h3>Observações (reações, irritação, etc.)</h3><ul>'+notes.map(x=>`<li><b>${fk(x.k)}</b> — ${E(x.n)}</li>`).join('')+'</ul>';
+  if(d.perguntas){h+='<h3>Perguntas para a próxima consulta</h3>';h+=d.perguntas.length?'<ul>'+d.perguntas.map(t=>`<li>${E(t)}</li>`).join('')+'</ul>':'<div class="sub">Nenhuma pergunta pendente.</div>';}
+  return h;
+}
+function sauPdfNut(n){
+  const E=sauE,fk=k=>medFmt(k);
+  let h='<h2>Nutrição</h2>';
+  if(!n)return h+'<div class="sub">Sem registros neste mês.</div>';
+  if(n.consulta)h+=`<div class="sub">Consulta: ${sauFull(n.consulta)}${n.retorno?' · retorno previsto: '+sauFull(n.retorno):''}</div>`;
+  else if(n.retorno)h+=`<div class="sub">Retorno previsto: ${sauFull(n.retorno)}</div>`;
+  if(n.conduta)h+=`<h3>Orientações da nutricionista</h3><div style="white-space:pre-wrap">${E(n.conduta)}</div>`;
+  const m=n.metas,mt=(v,u)=>v?`${relNum(v)} ${u}`:'não definida';
+  h+=`<h3>Metas diárias e média do mês</h3><table><tr><th></th><th class="c">Meta</th><th class="c">Média registrada</th><th class="c">Dias que bateu a meta</th></tr>
+    <tr><td>Água</td><td class="c">${mt(m.ag,'ml')}</td><td class="c">${n.ag==null?'—':relNum(Math.round(n.ag))+' ml'}</td><td class="c">${n.agMet==null?'—':n.agMet+' de '+n.agN}</td></tr>
+    <tr><td>Proteína</td><td class="c">${mt(m.pr,'g')}</td><td class="c">${n.pr==null?'—':relNum(Math.round(n.pr))+' g'}</td><td class="c">${n.prMet==null?'—':n.prMet+' de '+n.prN}</td></tr>
+    <tr><td>Gordura</td><td class="c">${mt(m.gd,'g')}</td><td class="c">${n.gd==null?'—':relNum(Math.round(n.gd))+' g'}</td><td class="c">—</td></tr></table>`;
+  if(n.sups.length)h+=`<h3>Suplementação</h3><table><tr><th>Suplemento</th><th>Dose / como</th><th class="c">Dias tomados</th></tr>${n.sups.map(s=>`<tr><td>${E(s.nome)}</td><td>${E(s.dose||'')}</td><td class="c">${s.n} de ${n.exp}</td></tr>`).join('')}</table>`;
+  h+=`<h3>Atividade física</h3><div class="kv"><div><b>${n.atDias}</b><span>Dias com atividade</span></div><div><b>${n.atMin}</b><span>Minutos registrados</span></div><div><b>${n.foco.sup}</b><span>Superior</span></div><div><b>${n.foco.inf}</b><span>Inferior</span></div><div><b>${n.foco.todo}</b><span>Corpo todo</span></div></div>`;
+  if(n.bio.length){
+    h+='<h3>Bioimpedância (InBody)</h3><table><tr><th>Data</th>'+SAU_BIO.map(x=>`<th class="c">${x.l.replace(/ \(.*\)/,'')}</th>`).join('')+'</tr>'
+      +n.bio.map(b=>`<tr><td>${fk(b.k)}</td>${SAU_BIO.map(x=>`<td class="c">${b[x.f]==null?'':relNum(b[x.f])}</td>`).join('')}</tr>`).join('')+'</table>';
+    if(n.bioPrev)h+=`<div class="sub">Medição anterior (${sauFull(n.bioPrev.k)}): ${SAU_BIO.filter(x=>n.bioPrev[x.f]!=null).map(x=>`${x.l.replace(/ \(.*\)/,'')} ${relNum(n.bioPrev[x.f])}`).join(' · ')}</div>`;
+  }
+  if(n.rows.length)h+=`<h3>Registro diário</h3><table><tr><th>Dia</th><th class="c">Água (ml)</th><th class="c">Prot. (g)</th><th class="c">Gord. (g)</th><th>Atividade</th><th>Anotação</th></tr>${n.rows.map(x=>`<tr><td>${fk(x.k)}</td><td class="c">${x.ag==null?'':x.ag}</td><td class="c">${x.pr==null?'':x.pr}</td><td class="c">${x.gd==null?'':x.gd}</td><td>${[x.foco,E(x.at||''),x.min?x.min+' min':''].filter(Boolean).join(' · ')}</td><td>${E(x.n)}</td></tr>`).join('')}</table>`;
+  if(n.perguntas){h+='<h3>Perguntas para a próxima consulta</h3>';h+=n.perguntas.length?'<ul>'+n.perguntas.map(t=>`<li>${E(t)}</li>`).join('')+'</ul>':'<div class="sub">Nenhuma pergunta pendente.</div>';}
+  return h;
+}
+
+// =====================================================================
+//  MONTAGEM DA TELA (roda uma vez) E RENDER GERAL
+// =====================================================================
+function sauBuild(){
+  const today=sauToday();
+  const consultaCard=(kind,pre,extra)=>`
+    <div class="sau-card">
+      <div class="sau-h"><span>Consulta</span></div>
+      <label class="sau-lbl">Data da consulta${kind==='o'?' (última)':''}</label>
+      <input type="date" id="sau-${pre}-${kind==='o'?'ult':'cons'}" onchange="${kind==='o'?"sauOrSet('ultConsulta',this.value)":kind==='d'?"sauDmSet('consulta',this.value)":"sauNuSet('consulta',this.value)"}">
+      <label class="sau-lbl">Data de retorno</label>
+      <input type="date" id="sau-${pre}-ret" onchange="${kind==='o'?"sauOrSet('retorno',this.value)":kind==='d'?"sauDmSet('retorno',this.value)":"sauNuSet('retorno',this.value)"}">
+      <div class="sau-sub" id="sau-${pre}-ret-sub"></div>
+      ${extra||''}
+      ${sauQCard(kind)}
+    </div>`;
+  const noteCard=(kind,id,ph)=>`<textarea id="${id}" placeholder="${ph}" oninput="sauSetNote('${kind}',this.value)" style="margin-top:6px"></textarea>`;
+
+  document.getElementById('sau-root').innerHTML=`
+  <div class="sau-tabs">
+    <button id="sau-tab-orto" class="on" onclick="sauTab('orto')">🦵 Ortopedia</button>
+    <button id="sau-tab-derm" onclick="sauTab('derm')">🧴 Dermato</button>
+    <button id="sau-tab-nutri" onclick="sauTab('nutri')">🥗 Nutri</button>
+  </div>
+
+  <!-- ========== ORTOPEDIA ========== -->
+  <div id="sau-pane-orto">
+    <div class="sau-card">
+      <div class="sau-h"><span>Fisioterapia · sessões por guia</span></div>
+      <div class="sau-count" id="sau-o-total">—</div>
+      <div id="sau-o-guias" style="margin-top:10px"></div>
+      <div class="sau-sub" id="sau-o-ativa"></div>
+      <label class="sau-lbl">Registrar uma sessão feita (data)</label>
+      <div class="sau-row"><input type="date" id="sau-o-sdate" value="${today}"><button class="sau-btn" onclick="sauSessaoFeita()">＋ Sessão feita</button></div>
+      <div class="sau-row" style="margin-top:8px"><button class="sau-btn ghost sm" onclick="sauNovaGuia()">＋ Nova guia</button><span class="sau-sub" style="margin:0">use + / − nas guias para ajustar a contagem; ✎ muda o total da guia.</span></div>
+      <label class="sau-lbl">Próxima sessão agendada</label>
+      <input type="date" id="sau-o-prox" onchange="sauOrSet('prox',this.value)">
+      <div class="sau-sub" id="sau-o-prox-sub"></div>
+      <div class="sau-h" style="margin-top:16px"><span>Últimas sessões registradas</span></div>
+      <div id="sau-o-ses"></div>
+    </div>
+
+    ${consultaCard('o','o')}
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Coxa · ganho de músculo</span></div>
+      <div id="sau-o-medsum"></div>
+      <label class="sau-lbl">Nova medida</label>
+      <div class="sau-grid2"><input type="date" id="sau-o-mdate" value="${today}"><input type="number" step="0.1" inputmode="decimal" id="sau-o-mcm" placeholder="cm (ex: 48,5)"></div>
+      <div class="sau-row" style="margin-top:8px"><select id="sau-o-mlado"><option value="D">Coxa direita</option><option value="E">Coxa esquerda</option></select><button class="sau-btn" onclick="sauAddMed()">Registrar</button></div>
+      <div id="sau-o-medlist" style="margin-top:10px"></div>
+    </div>
+
+    ${sauDateNav()}
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Cuidados do dia · ortopedia</span><span id="sau-o-prog"></span></div>
+      <div id="sau-o-items"></div>
+      <div class="sau-row" style="margin-top:10px"><input type="text" id="sau-o-newitem" placeholder="Novo item do checklist…" onkeydown="if(event.key==='Enter')sauAddOrItem()"><button class="sau-btn" onclick="sauAddOrItem()">Adicionar</button></div>
+    </div>
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Como foi o dia · 0 a 10</span></div>
+      <div id="sau-o-scales"></div>
+      ${noteCard('o','sau-o-note','Anotação do dia (onde doeu, o que piorou/melhorou…)')}
+    </div>
+
+    <div class="sau-card">
+      <div class="sau-h"><span id="sau-o-sum-title">Resumo do mês</span></div>
+      <div class="sau-sum" id="sau-o-sum"></div>
+      ${sauRelButton('orto')}
+    </div>
+  </div>
+
+  <!-- ========== DERMATOLOGIA ========== -->
+  <div id="sau-pane-derm" style="display:none">
+    ${consultaCard('d','d',`<label class="sau-lbl">Conduta (o que a dermatologista orientou)</label><textarea id="sau-d-conduta" placeholder="Ex.: diagnóstico, tratamento, cuidados, tempo de uso…" onchange="sauDmConduta(this.value)"></textarea>`)}
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Produtos e como usar</span></div>
+      <div id="sau-d-prods"></div>
+      <label class="sau-lbl">Novo produto</label>
+      <input type="text" id="sau-d-pnome" placeholder="Nome do produto">
+      <textarea id="sau-d-pcomo" placeholder="Como usar (quantidade, local, tempo de ação, enxágue…)" style="margin-top:8px;min-height:52px"></textarea>
+      <div class="sau-grid2" style="margin-top:8px">
+        <select id="sau-d-pquando"><option value="am">Manhã</option><option value="pm">Noite</option><option value="ambos">Manhã e noite</option></select>
+        <select id="sau-d-pvezes"><option value="7">Todos os dias</option><option value="6">6x por semana</option><option value="5">5x por semana</option><option value="4">4x por semana</option><option value="3">3x por semana</option><option value="2">2x por semana</option><option value="1">1x por semana</option></select>
+      </div>
+      <div style="margin-top:8px"><button class="sau-btn" onclick="sauAddProd()">Adicionar produto</button></div>
+    </div>
+
+    ${sauDateNav()}
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Uso do dia</span><span id="sau-d-prog"></span></div>
+      <div id="sau-d-today"></div>
+      ${noteCard('d','sau-d-note','Observação do dia (irritação, ardência, melhora…)')}
+    </div>
+
+    <div class="sau-card">
+      <div class="sau-h"><span id="sau-d-sum-title">Frequência de uso</span></div>
+      <div id="sau-d-sum"></div>
+      ${sauRelButton('derm')}
+    </div>
+  </div>
+
+  <!-- ========== NUTRIÇÃO ========== -->
+  <div id="sau-pane-nutri" style="display:none">
+    ${consultaCard('n','n',`<label class="sau-lbl">Orientações da nutricionista</label><textarea id="sau-n-conduta" placeholder="Plano alimentar, ajustes, observações…" onchange="sauNuConduta(this.value)"></textarea>`)}
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Metas diárias</span></div>
+      <div class="sau-grid2">
+        <div><label class="sau-lbl" style="margin-top:0">Água (ml)</label><input type="number" inputmode="decimal" id="sau-n-meta-ag" placeholder="ex: 2500" onchange="sauSetMeta('ag',this.value)"></div>
+        <div><label class="sau-lbl" style="margin-top:0">Proteína (g)</label><input type="number" inputmode="decimal" id="sau-n-meta-pr" placeholder="ex: 100" onchange="sauSetMeta('pr',this.value)"></div>
+      </div>
+      <div class="sau-grid2"><div><label class="sau-lbl">Gordura (g)</label><input type="number" inputmode="decimal" id="sau-n-meta-gd" placeholder="ex: 60" onchange="sauSetMeta('gd',this.value)"></div><div></div></div>
+      <div class="sau-sub">Preencha com os valores que a nutricionista definiu.</div>
+    </div>
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Suplementação</span></div>
+      <div id="sau-n-sups"></div>
+      <label class="sau-lbl">Novo suplemento (se necessário)</label>
+      <div class="sau-grid2"><input type="text" id="sau-n-snome" placeholder="Nome"><input type="text" id="sau-n-sdose" placeholder="Dose / quando tomar"></div>
+      <div style="margin-top:8px"><button class="sau-btn" onclick="sauAddSup()">Adicionar</button></div>
+    </div>
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Bioimpedância · InBody</span></div>
+      <div id="sau-b-last"></div>
+      <label class="sau-lbl">Nova medição (preencha o que tiver)</label>
+      <input type="date" id="sau-b-data" value="${today}">
+      <div class="sau-grid2" style="margin-top:8px">${SAU_BIO.map(x=>`<div><label class="sau-lbl" style="margin-top:0;font-size:.62rem">${x.l}</label><input type="number" step="0.1" inputmode="decimal" id="sau-b-${x.f}"></div>`).join('')}</div>
+      <div style="margin-top:10px"><button class="sau-btn" onclick="sauAddBio()">Registrar bioimpedância</button></div>
+      <div id="sau-b-list" style="margin-top:10px"></div>
+    </div>
+
+    ${sauDateNav()}
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Hoje · água, proteína e gordura</span></div>
+      <label class="sau-lbl" style="margin-top:0">Água (ml)</label>
+      <div class="sau-row"><input type="number" inputmode="decimal" id="sau-n-ag" onchange="sauSetNutNum('ag',this.value)" placeholder="0"></div>
+      <div class="sau-chips"><button onclick="sauAddAgua(200)">+200</button><button onclick="sauAddAgua(300)">+300</button><button onclick="sauAddAgua(500)">+500</button><button onclick="sauAddAgua(-200)">−200</button></div>
+      <div id="sau-n-ag-bar"></div>
+      <label class="sau-lbl">Proteína (g)</label>
+      <input type="number" inputmode="decimal" id="sau-n-pr" onchange="sauSetNutNum('pr',this.value)" placeholder="0">
+      <div id="sau-n-pr-bar"></div>
+      <label class="sau-lbl">Gordura (g)</label>
+      <input type="number" inputmode="decimal" id="sau-n-gd" onchange="sauSetNutNum('gd',this.value)" placeholder="0">
+      <div id="sau-n-gd-bar"></div>
+    </div>
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Suplementos de hoje</span></div>
+      <div id="sau-n-today-sups"></div>
+    </div>
+
+    <div class="sau-card">
+      <div class="sau-h"><span>Atividade física de hoje</span></div>
+      <input type="text" id="sau-n-act-t" placeholder="Qual atividade? (ex: musculação, caminhada)" onchange="sauSetAct('t',this.value)">
+      <div class="sau-grid2" style="margin-top:8px"><input type="number" inputmode="decimal" id="sau-n-act-min" placeholder="Minutos" onchange="sauSetAct('min',this.value)"><div></div></div>
+      <label class="sau-lbl">Foco do treino</label>
+      <div class="sau-chips">${Object.keys(SAU_FOCO).map(f=>`<button id="sau-n-foco-${f}" onclick="sauSetAct('foco','${f}')">${SAU_FOCO[f]}</button>`).join('')}</div>
+      ${noteCard('n','sau-n-note','Anotação do dia (fome, energia, o que comeu fora do plano…)')}
+    </div>
+
+    <div class="sau-card">
+      <div class="sau-h"><span id="sau-n-sum-title">Resumo do mês</span></div>
+      <div class="sau-sum" id="sau-n-sum"></div>
+      ${sauRelButton('nutri')}
+    </div>
+  </div>`;
+}
+
+function sauRender(){
+  sauRenderDate();
+  sauRenderOrto();sauRenderDerm();sauRenderNut();
+}
+sauBuild();
+sauRender();
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible')return;
+  const t=sauToday();
+  if(sauDate===sauLastToday&&t!==sauLastToday)sauDate=t;
+  sauLastToday=t;sauRender();
+});
+let sauLastToday=sauToday();
+</script>
+
 <div id="page-historico" class="page" style="background:#f7f5f0;min-height:100vh;padding-bottom:80px;">
   <style>
     #page-historico .rel-card{background:#fff;border:1px solid #e6e0d4;border-radius:16px;padding:16px;margin-bottom:14px;}
@@ -2736,7 +3584,7 @@ window.renderBokashi=function(){
   <header style="background:linear-gradient(135deg,#1a3a5c,#2a5298);color:white;padding:2rem 1.2rem 1.4rem;margin-bottom:0;">
     <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;opacity:.5;margin-bottom:.3rem;">Resumo</div>
     <h1 style="font-size:1.4rem;font-weight:700;margin:0 0 .2rem;">Histórico</h1>
-    <p style="font-size:.78rem;opacity:.6;margin:0;">Fechamento mensal · dores, medicações e psiquiatria</p>
+    <p style="font-size:.78rem;opacity:.6;margin:0;">Fechamento mensal · dores, medicações, psiquiatria e saúde</p>
   </header>
   <div style="padding:1.2rem;">
     <div id="hist-empty" style="display:none;text-align:center;padding:3rem 1rem;color:#a09880;font-size:.85rem;">Nenhum dado salvo ainda.</div>
@@ -2837,8 +3685,9 @@ function relBuild(ym){
   const meds=medMonthStats(ym);
   const psiq=psqMonthStats(ym);
   if(psiq&&closed){delete psiq.perguntas;delete psiq.psico;}   // pendências só fazem sentido no mês atual
-  if(!pain&&!meds&&!psiq)return null;
-  return{ym:ym,label:relLabel(ym),pain:pain,meds:meds,psiq:psiq};
+  const orto=sauOrtoStats(ym,closed),derm=sauDermStats(ym,closed),nut=sauNutStats(ym,closed);
+  if(!pain&&!meds&&!psiq&&!orto&&!derm&&!nut)return null;
+  return{ym:ym,label:relLabel(ym),pain:pain,meds:meds,psiq:psiq,orto:orto,derm:derm,nut:nut};
 }
 
 function relMonthsWithData(){
@@ -2850,6 +3699,7 @@ function relMonthsWithData(){
   Object.keys(medLog).forEach(k=>{set[k.slice(0,7)]=1;});
   Object.keys(psqLog).forEach(k=>{set[k.slice(0,7)]=1;});
   psqEfx.forEach(e=>{set[e.k.slice(0,7)]=1;});
+  sauMonthsWithData().forEach(k=>{set[k]=1;});
   return Object.keys(set).sort().reverse();
 }
 
@@ -2894,26 +3744,31 @@ function relCardHtml(r,live){
     qHtml=`<div class="rel-grid"><div><b>${relNum(q.humor)}</b><span>Humor médio</span></div><div><b>${relNum(q.ansiedade)}</b><span>Ansiedade média</span></div><div><b>${relNum(q.sono)}</b><span>Sono médio</span></div><div><b>${q.orientPct==null?'—':q.orientPct+'%'}</b><span>Orientações</span></div></div>
       <div class="rel-line" style="margin-top:6px;">${q.daysLogged} dia(s) com registro · ${q.efeitos.length} anotação(ões) de efeitos da medicação</div>`;
   }
+  const sec=(t,body,only)=>`<div class="rel-sec"><div class="rel-sec-t">${t}${body?` <button class="rel-pdf" style="padding:2px 8px;font-size:.56rem;margin-left:6px;" onclick="relOpenPdf('${r.ym}','${only}')">PDF</button>`:''}</div>${body||'<div class="rel-none">Sem registros neste mês.</div>'}</div>`;
   return `<div class="rel-card">
     <div class="rel-card-h"><div><b>${r.label}</b><span class="rel-chip ${live?'live':'closed'}">${live?'em andamento':'fechado'}</span></div>
       <button class="rel-pdf" onclick="relOpenPdf('${r.ym}')">📄 PDF</button></div>
     <div class="rel-sec"><div class="rel-sec-t">Dores</div>${pHtml}</div>
     <div class="rel-sec"><div class="rel-sec-t">Medicações</div>${mHtml}</div>
     <div class="rel-sec"><div class="rel-sec-t">Psiquiatria</div>${qHtml}</div>
+    ${sec('Ortopedia',r.orto?sauOrtoCard(r.orto):'','orto')}
+    ${sec('Dermatologia',r.derm?sauDermCard(r.derm):'','derm')}
+    ${sec('Nutrição',r.nut?sauNutCard(r.nut):'','nutri')}
   </div>`;
 }
 
 /* ---------- PDF (tela de impressão do próprio navegador) ---------- */
-function relPdfHtml(r){
+function relPdfHtml(r,only){
   const E=psqEsc;
+  const show=s=>!only||only===s;
   const today=new Date();
   const gen=`${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}`;
   const fk=k=>medFmt(k);
-  let h=`<h1>Relatório de acompanhamento</h1>
+  let h=`<h1>Relatório de acompanhamento${only?' · '+({orto:'Ortopedia',derm:'Dermatologia',nutri:'Nutrição'}[only]||''):''}</h1>
     <div class="sub">${r.label}${r.ym>=relCur()?' (parcial — mês em andamento)':''} · gerado em ${gen}</div>
     <div class="disc">Registro pessoal feito por Bruna no painel de acompanhamento, para apoiar a conversa na consulta. Não substitui avaliação médica.</div>`;
 
-  // Medicações
+  if(show('meds')){
   h+='<h2>Medicações</h2>';
   if(r.meds){
     const m=r.meds;
@@ -2929,7 +3784,8 @@ function relPdfHtml(r){
     <div class="sub">Contagem a partir de ${fk(m.from)} até ${fk(m.to)}.</div>`;
   }else h+='<div class="sub">Sem registros neste mês.</div>';
 
-  // Dores
+  }
+  if(show('pain')){
   h+='<h2>Dores</h2>';
   if(r.pain){
     const p=r.pain;
@@ -2938,7 +3794,8 @@ function relPdfHtml(r){
     ${p.rows.map(x=>`<tr><td>${String(x.d).padStart(2,'0')}</td><td class="c">${x.int||''}</td><td>${E(x.loc)}</td><td>${E(x.sym)}</td><td>${E(x.resc)}</td><td>${E(x.notes)}</td></tr>`).join('')}</table>`;
   }else h+='<div class="sub">Sem registros neste mês.</div>';
 
-  // Psiquiatria
+  }
+  if(show('psiq')){
   h+='<h2>Psiquiatria</h2>';
   if(r.psiq){
     const q=r.psiq;
@@ -2962,16 +3819,20 @@ function relPdfHtml(r){
       h+=`<h3>Psicoterapia</h3><div class="sub">${q.psico.done?'Retomada':'Ainda não retomada'}${q.psico.when?' · '+E(q.psico.when):''}</div>`;
     }
   }else h+='<div class="sub">Sem registros neste mês.</div>';
+  }
+  if(show('orto'))h+=sauPdfOrto(r.orto);
+  if(show('derm'))h+=sauPdfDerm(r.derm);
+  if(show('nutri'))h+=sauPdfNut(r.nut);
   return h;
 }
 
-function relOpenPdf(ym){
+function relOpenPdf(ym,only){
   const r=relSnapshot(ym);
   if(!r)return;
   relClose();
   const ov=document.createElement('div');
   ov.id='rel-overlay';
-  ov.innerHTML=`<div class="rel-toolbar"><button class="rel-tb-btn" onclick="window.print()">🖨 Imprimir / salvar como PDF</button><button class="rel-tb-btn ghost" onclick="relClose()">Fechar</button></div><div class="rel-doc">${relPdfHtml(r)}</div>`;
+  ov.innerHTML=`<div class="rel-toolbar"><button class="rel-tb-btn" onclick="window.print()">🖨 Imprimir / salvar como PDF</button><button class="rel-tb-btn ghost" onclick="relClose()">Fechar</button></div><div class="rel-doc">${relPdfHtml(r,only)}</div>`;
   document.body.appendChild(ov);
   document.body.classList.add('rel-open');
   ov.scrollTop=0;
